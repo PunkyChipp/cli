@@ -35,13 +35,14 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
 // MARK: - Currencies
 
 enum Currency: String, CaseIterable, Codable, Identifiable {
-    case motes, pollen, biomass, stardust
+    case motes, pollen, biomass, sap, stardust
     var id: String { rawValue }
     var name: String {
         switch self {
         case .motes:    return "Motes"
         case .pollen:   return "Pollen"
         case .biomass:  return "Biomass"
+        case .sap:      return "Sap"
         case .stardust: return "Stardust"
         }
     }
@@ -50,6 +51,7 @@ enum Currency: String, CaseIterable, Codable, Identifiable {
         case .motes:    return "sparkle"
         case .pollen:   return "circle.grid.cross.fill"
         case .biomass:  return "leaf.circle.fill"
+        case .sap:      return "drop.fill"
         case .stardust: return "star.fill"
         }
     }
@@ -58,6 +60,7 @@ enum Currency: String, CaseIterable, Codable, Identifiable {
         case .motes:    return Color(hex: 0x9be7a6)
         case .pollen:   return Color(hex: 0xffe27a)
         case .biomass:  return Color(hex: 0x7ad6a0)
+        case .sap:      return Color(hex: 0xc9ff6b)
         case .stardust: return Color(hex: 0xc6a0ff)
         }
     }
@@ -102,11 +105,23 @@ final class GameModel {
     var motes: Double = 0
     var pollen: Double = 0
     var biomass: Double = 0
+    var sap: Double = 0
     var stardust: Double = 0
 
     // --- Generators & upgrades ---
     var generators: [Generator] = GameModel.defaultGenerators()
     var upgradeLevels: [String: Int] = [:]
+
+    // --- The Root Web (cell index 0..<rootBoardCount -> node kind) ---
+    var rootNodes: [Int: RootNodeKind] = [:]
+
+    // --- The Long Year (season cycle, 0..<1) ---
+    var yearPhase: Double = 0
+
+    // --- Field Journal (ids of discoveries made) ---
+    var discovered: Set<String> = []
+    /// Transient queue of just-unlocked discoveries, for the toast. Not saved.
+    var newlyDiscovered: [String] = []
 
     // --- Progression ---
     var worldIndex: Int = 0
@@ -218,6 +233,7 @@ final class GameModel {
         case .motes:    return motes
         case .pollen:   return pollen
         case .biomass:  return biomass
+        case .sap:      return sap
         case .stardust: return stardust
         }
     }
@@ -226,6 +242,7 @@ final class GameModel {
         case .motes:    motes -= v
         case .pollen:   pollen -= v
         case .biomass:  biomass -= v
+        case .sap:      sap -= v
         case .stardust: stardust -= v
         }
     }
@@ -256,6 +273,9 @@ final class GameModel {
         m *= stardustMult
         m *= worldMult
         m *= pow(1.5, L("prod1")) * pow(2.0, L("p_prod"))
+        m *= rootWebMult       // The Root Web (spatial puzzle layer)
+        m *= journalMult       // Field Journal discoveries
+        m *= seasonProdMult    // Day-phase photosynthesis bonus
         return m
     }
 
@@ -263,7 +283,7 @@ final class GameModel {
 
     var clickValue: Double {
         let base = pow(2.0, L("tap1")) * pow(3.0, L("p_click"))
-        return base * max(1.0, globalMult)
+        return base * max(1.0, globalMult) * seasonTapMult
     }
 
     func effectiveCost(_ g: Generator) -> Double {
@@ -336,7 +356,7 @@ final class GameModel {
     var pollenGain: Double {
         let threshold = 1.0e6
         guard motesEarnedThisBloom >= threshold else { return 0 }
-        return (sqrt(motesEarnedThisBloom / threshold)).rounded(.down)
+        return (sqrt(motesEarnedThisBloom / threshold) * seasonBloomMult).rounded(.down)
     }
     var canBloom: Bool { pollenGain >= 1 }
 
@@ -402,6 +422,9 @@ final class GameModel {
             upgradeLevels[def.id] = 0
         }
         resetMoteLayer()
+        // The Root Web is part of the cosmos and collapses with it.
+        rootNodes = [:]
+        sap = 0
         // Stellar Endowment: free Biomass to bootstrap the new cosmos.
         let endow = L("s_start")
         if endow > 0 { biomass = pow(5.0, endow) }
@@ -448,7 +471,10 @@ final class GameModel {
         if dt > 1.0 { dt = 1.0 }   // clamp hitches; long gaps go through offline progress
 
         advance(dt)
+        advanceSeason(dt)
+        accrueSap(dt)
         runAutomation()
+        checkDiscoveries()
 
         // Persist a few times a minute.
         if now.timeIntervalSince(lastSave) > 5 { save() }
@@ -518,9 +544,14 @@ final class GameModel {
 
     struct SaveData: Codable {
         var motes, pollen, biomass, stardust: Double
+        var sap: Double = 0
         var genCounts: [Double]
         var genBought: [Int]
         var upgradeLevels: [String: Int]
+        var rootCells: [Int] = []
+        var rootKinds: [String] = []
+        var yearPhase: Double = 0
+        var discovered: [String] = []
         var worldIndex: Int
         var difficulty: Difficulty
         var motesEarnedThisBloom: Double
@@ -532,11 +563,18 @@ final class GameModel {
 
     func save() {
         lastSave = Date()
+        let cells = Array(rootNodes.keys)
+        let kinds = cells.map { rootNodes[$0]!.rawValue }
         let data = SaveData(
             motes: motes, pollen: pollen, biomass: biomass, stardust: stardust,
+            sap: sap,
             genCounts: generators.map { $0.count },
             genBought: generators.map { $0.bought },
             upgradeLevels: upgradeLevels,
+            rootCells: cells,
+            rootKinds: kinds,
+            yearPhase: yearPhase,
+            discovered: Array(discovered),
             worldIndex: worldIndex,
             difficulty: difficulty,
             motesEarnedThisBloom: motesEarnedThisBloom,
@@ -554,12 +592,19 @@ final class GameModel {
         guard let raw = UserDefaults.standard.data(forKey: GameModel.saveKey),
               let s = try? JSONDecoder().decode(SaveData.self, from: raw) else { return }
         motes = s.motes; pollen = s.pollen; biomass = s.biomass; stardust = s.stardust
+        sap = s.sap
         generators = GameModel.defaultGenerators()
         for i in generators.indices {
             if i < s.genCounts.count { generators[i].count = s.genCounts[i] }
             if i < s.genBought.count { generators[i].bought = s.genBought[i] }
         }
         upgradeLevels = s.upgradeLevels
+        rootNodes = [:]
+        for (i, cell) in s.rootCells.enumerated() where i < s.rootKinds.count {
+            if let kind = RootNodeKind(rawValue: s.rootKinds[i]) { rootNodes[cell] = kind }
+        }
+        yearPhase = s.yearPhase
+        discovered = Set(s.discovered)
         worldIndex = s.worldIndex
         difficulty = s.difficulty
         motesEarnedThisBloom = s.motesEarnedThisBloom
@@ -571,9 +616,13 @@ final class GameModel {
 
     /// Wipe everything and start over (used from Settings).
     func hardReset() {
-        motes = 0; pollen = 0; biomass = 0; stardust = 0
+        motes = 0; pollen = 0; biomass = 0; stardust = 0; sap = 0
         generators = GameModel.defaultGenerators()
         upgradeLevels = [:]
+        rootNodes = [:]
+        yearPhase = 0
+        discovered = []
+        newlyDiscovered = []
         worldIndex = 0
         motesEarnedThisBloom = 0
         totalTaps = 0; blooms = 0; terraforms = 0; singularities = 0

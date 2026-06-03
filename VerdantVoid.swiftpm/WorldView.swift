@@ -5,139 +5,154 @@ private struct FloatingGain: Identifiable {
     let text: String
     let x: CGFloat
     let y: CGFloat
+    let color: Color
 }
 
-/// A "+N" label that drifts upward and fades out on appear.
+/// A glowing "+N" that drifts up and fades.
 private struct FloatingGainView: View {
     let text: String
+    let color: Color
     @State private var rise: CGFloat = 0
     @State private var opacity: Double = 1
-
     var body: some View {
         Text(text)
-            .font(.system(.headline, design: .rounded).weight(.bold))
+            .font(.system(size: 17, weight: .semibold))
             .foregroundStyle(.white)
-            .shadow(radius: 4)
-            .offset(y: rise)
-            .opacity(opacity)
-            .onAppear {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    rise = -70
-                    opacity = 0
-                }
-            }
+            .glow(color, radius: 6)
+            .offset(y: rise).opacity(opacity)
+            .onAppear { withAnimation(.easeOut(duration: 0.85)) { rise = -80; opacity = 0 } }
+    }
+}
+
+/// An expanding ring of light emitted on tap.
+private struct TapRing: Identifiable {
+    let id = UUID(); let x: CGFloat; let y: CGFloat; let color: Color
+}
+private struct TapRingView: View {
+    let color: Color
+    @State private var scale: CGFloat = 0.2
+    @State private var opacity: Double = 0.8
+    var body: some View {
+        Circle().strokeBorder(color, lineWidth: 2).frame(width: 120, height: 120)
+            .scaleEffect(scale).opacity(opacity).glow(color, radius: 8)
+            .onAppear { withAnimation(.easeOut(duration: 0.6)) { scale = 1.4; opacity = 0 } }
     }
 }
 
 struct WorldView: View {
     @Environment(GameModel.self) private var model
     @State private var gains: [FloatingGain] = []
-    @State private var pulse = false
+    @State private var rings: [TapRing] = []
+
+    private var vitality: Double {
+        min(1.0, log10(max(1, model.motesPerSecond) + 10) / 10)
+    }
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
             CurrencyBar(model: model)
 
-            // World identity
-            VStack(spacing: 4) {
-                Text("World \(model.worldIndex + 1)")
-                    .font(.system(size: 12, weight: .heavy, design: .rounded))
+            VStack(spacing: 3) {
+                Text("WORLD \(model.worldIndex + 1)")
+                    .font(.system(size: 11, weight: .semibold)).tracking(3)
                     .foregroundStyle(model.currentWorld.accent)
-                    .textCase(.uppercase).tracking(2)
                 Text(model.currentWorld.name)
-                    .font(.system(.title, design: .rounded).weight(.heavy))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 28, weight: .light)).foregroundStyle(.white)
                 Text(model.currentWorld.blurb)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.75))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+                    .font(.system(size: 13)).foregroundStyle(.white.opacity(0.7))
+                    .multilineTextAlignment(.center).padding(.horizontal, 24)
             }
+
+            SeasonBanner()
 
             Spacer(minLength: 0)
 
-            // Tap orb
             GeometryReader { geo in
                 ZStack {
-                    Circle()
-                        .fill(
-                            RadialGradient(colors: [model.currentWorld.accent.opacity(0.9),
-                                                    model.currentWorld.accent.opacity(0.25)],
-                                           center: .center, startRadius: 4, endRadius: 150)
-                        )
-                        .frame(width: 220, height: 220)
-                        .scaleEffect(pulse ? 1.04 : 0.97)
-                        .shadow(color: model.currentWorld.accent.opacity(0.6), radius: 30)
-                        .overlay(
-                            Image(systemName: model.currentWorld.glyph)
-                                .font(.system(size: 70, weight: .bold))
-                                .foregroundStyle(.white.opacity(0.9))
-                        )
-                        .position(x: geo.size.width / 2, y: geo.size.height / 2)
-                        .contentShape(Circle())
-                        .onTapGesture {
-                            handleTap(in: geo.size)
-                        }
-
-                    ForEach(gains) { g in
-                        FloatingGainView(text: g.text)
-                            .position(x: g.x, y: g.y)
-                    }
+                    OrganismView(growth: vitality, accent: model.currentWorld.accent,
+                                 glow2: model.currentWorld.glow2, seed: UInt64(model.worldIndex + 1))
+                    ForEach(rings) { r in TapRingView(color: r.color).position(x: r.x, y: r.y) }
+                    ForEach(gains) { g in FloatingGainView(text: g.text, color: g.color).position(x: g.x, y: g.y) }
                 }
+                .contentShape(Rectangle())
+                .gesture(
+                    SpatialTapGesture().onEnded { value in
+                        handleTap(at: value.location, in: geo.size)
+                    }
+                )
             }
-            .frame(height: 300)
+            .frame(height: 320)
 
-            Text("Tap to gather  ·  +\(fmt(model.clickValue)) Motes")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.8))
+            Text("Tap the bloom  ·  +\(fmt(model.clickValue)) Motes")
+                .font(.system(size: 13, weight: .medium)).foregroundStyle(.white.opacity(0.8))
 
             Spacer(minLength: 0)
 
-            if model.offlineMotes > 0 {
-                offlineBanner
-            }
+            if model.offlineMotes > 0 { offlineBanner }
         }
         .padding(.vertical, 8)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true)) {
-                pulse = true
-            }
-        }
     }
 
     private var offlineBanner: some View {
         HStack(spacing: 10) {
-            Image(systemName: "moon.zzz.fill").foregroundStyle(.yellow)
+            Image(systemName: "moon.zzz.fill").foregroundStyle(Color(hex: 0xffe27a)).glow(Color(hex: 0xffe27a), radius: 4)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Welcome back!").font(.system(.subheadline, design: .rounded).weight(.bold))
+                Text("Welcome back").font(.system(size: 14, weight: .semibold))
                 Text("Gathered \(fmt(model.offlineMotes)) Motes over \(fmtTime(model.offlineSeconds)) away.")
-                    .font(.system(size: 12, weight: .medium)).opacity(0.85)
+                    .font(.system(size: 12)).opacity(0.8)
             }
             Spacer()
-            Button {
-                withAnimation { model.offlineMotes = 0 }
-            } label: {
-                Image(systemName: "xmark.circle.fill").foregroundStyle(.white.opacity(0.7))
+            Button { withAnimation { model.offlineMotes = 0 } } label: {
+                Image(systemName: "xmark.circle.fill").foregroundStyle(.white.opacity(0.6))
             }
         }
         .foregroundStyle(.white)
-        .card()
+        .card(accent: model.currentWorld.accent)
         .padding(.horizontal, 16)
     }
 
-    private func handleTap(in size: CGSize) {
+    private func handleTap(at p: CGPoint, in size: CGSize) {
         model.tap()
-        let g = FloatingGain(
-            text: "+\(fmt(model.clickValue))",
-            x: size.width / 2 + CGFloat.random(in: -50...50),
-            y: size.height / 2 - 60
-        )
-        withAnimation(.easeOut(duration: 0.1)) { gains.append(g) }
-        // Drift upward then remove.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            withAnimation(.easeOut(duration: 0.2)) {
-                gains.removeAll { $0.id == g.id }
+        let color = model.currentWorld.accent
+        let g = FloatingGain(text: "+\(fmt(model.clickValue))",
+                             x: min(max(p.x, 30), size.width - 30), y: p.y - 10, color: color)
+        gains.append(g)
+        rings.append(TapRing(x: p.x, y: p.y, color: color))
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
+            gains.removeAll { $0.id == g.id }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            if !rings.isEmpty { rings.removeFirst() }
+        }
+    }
+}
+
+/// Compact indicator of the current season + its bonus + a progress bar.
+struct SeasonBanner: View {
+    @Environment(GameModel.self) private var model
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: model.seasonGlyph).font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(model.seasonColor).glow(model.seasonColor, radius: 5).frame(width: 26)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(model.seasonName).font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
+                    Spacer()
+                    Text(fmtTime(model.seasonTimeRemaining))
+                        .font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.5)).monospacedDigit()
+                }
+                Text(model.seasonBlurb).font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.white.opacity(0.08))
+                        Capsule().fill(model.seasonColor)
+                            .frame(width: geo.size.width * CGFloat(model.seasonProgress))
+                    }
+                }
+                .frame(height: 4)
             }
         }
+        .card(accent: model.seasonColor)
+        .padding(.horizontal, 16)
     }
 }
