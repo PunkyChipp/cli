@@ -1,76 +1,79 @@
 # Verdant Void 🌱
 
 An idle / incremental game for **Swift Playgrounds on iPad (iOS 26)**. Seed life
-into dead worlds, grow it into an exponential garden, then reset it all for power
-and travel to entirely new worlds.
+into dead worlds, grow it into an exponential garden, weave a glowing root-web
+beneath the surface, and reset it all for power across nine hand-themed worlds.
 
-Inspired by the feel of *Grass Cutting Incremental* (the satisfying tap loop and
-the thrill of entering a brand-new zone), but with its own mechanics and theme.
+Inspired by the *feel* of *Grass Cutting Incremental* — the satisfying tap loop,
+the thrill of a new zone, and systems that are more than "number go up" (its
+Constellations, Solarians, and Gauntlet) — but with its own mechanics, theme,
+and art.
+
+## Art direction: bioluminescent line-art
+
+Everything is drawn **procedurally in code** (`Canvas` / `Path`), no images:
+near-black world-fields lit by glowing organic lines, drifting fireflies, a
+celestial orb that tracks the day/night cycle, and a central **living organism**
+on the tap screen that visibly grows as you progress.
 
 ## How to run
 
-1. Copy the **`VerdantVoid.swiftpm`** folder onto your iPad (AirDrop, Files,
-   iCloud Drive, or `git clone`).
-2. Tap it to open in **Swift Playgrounds** (or open it in Xcode on a Mac).
-3. Press **Run**. The game autosaves and keeps progressing while you're away.
-
-Targets iOS 17+ APIs, so it runs great on iOS 26.
+1. Copy the **`VerdantVoid.swiftpm`** folder onto your iPad (or unzip the
+   provided zip). Keep it in the Files app.
+2. Tap the **whole `.swiftpm` folder** to open it in **Swift Playgrounds**
+   (or open it in Xcode on a Mac). Don't open an individual `.swift` file.
+3. Press **Run**. It autosaves and keeps progressing while you're away.
 
 ## Three difficulty modes
 
-Chosen on first launch and changeable any time in **Settings** — difficulty only
-changes the **game speed**:
-
-| Mode   | Speed | Feel |
-|--------|-------|------|
-| Easy   | 2.0×  | Relaxed climb, great for a first run |
-| Medium | 1.0×  | The intended balance |
-| Hard   | 0.5×  | Every reset layer matters |
+Chosen on first launch, changeable any time in **Settings** — difficulty only
+changes the **game speed**: Easy 2×, Medium 1×, Hard 0.5×.
 
 ## The core loop
 
-- **Tap** the world orb to gather **Motes**.
-- Buy **6 tiers of lifeforms** (Spore → Sprout → Shrub → Tree → Grove → Ancient).
-  Each tier produces the one below it, so growth snowballs exponentially.
+- **Tap** the glowing bloom to gather **Motes** (with light-ring + drifting
+  number feedback).
+- Buy **6 tiers of lifeforms** (Spore → … → Ancient); each tier grows the one
+  below, so production snowballs exponentially.
 - Spend Motes on **upgrades** (tap power, production, cheaper costs…).
 
-## Four stacked reset layers
+## Reset layers & deeper systems
 
-Each layer resets the ones beneath it for a more powerful currency:
+1. **Bloom → Pollen.** Reset for a permanent multiplier + its own shop.
+2. **Terraform → Biomass.** Reset the Mote+Pollen layers, gain Biomass, and
+   travel to the **next of 9 worlds** — each re-skins the entire game (its own
+   glow palette) and boosts production.
+3. **Singularity → Stardust.** Collapse everything into a permanent **Cosmos
+   tech tree** + automation (Auto-Tap / Buy / Bloom / Terraform).
+4. **The Root Web** *(unlocks after your first Terraform).* A 5×5 lattice you
+   grow with **Sap**. The puzzle: every node draws **Water**; overdraw your
+   budget and the web **wilts**. **Nodules** raise the budget, **Conduits** boost
+   neighbours, **Bloomcaps** reward clusters, a **Heartwood** multiplies the whole
+   web. *Placement* is the game.
+5. **The Long Year.** A Dawn → Day → Dusk → Night cycle that re-skins the sky and
+   shifts which action pays best (tap, production, Sap, or Bloom).
+6. **Field Journal.** 26 discoveries found through play, each granting a small
+   permanent compounding bonus, announced with a toast.
 
-1. **Bloom → Pollen.** Reset Motes/generators for Pollen, a permanent production
-   multiplier plus its own upgrade shop.
-2. **Terraform → Biomass.** Reset the Mote + Pollen layers, gain Biomass, and
-   travel to the **next world**. There are **9 hand-themed worlds** — Barren Void,
-   Mossfield Flats, Ashen Wastes, Frostfall Tundra, Verdant Expanse, Crystal
-   Caverns, Sunken Abyss, Emberforge Core, Stormcrest Skies, and The Living Star.
-   Each re-skins the whole game (sky, accent, glyph) and boosts production, so
-   crossing over genuinely feels like arriving somewhere new.
-3. **Singularity → Stardust.** Collapse everything into Stardust, spent on a
-   permanent **Cosmos tech tree** with global multipliers and game-speed boosts.
-4. **Automation** (unlocked via Stardust tech): Auto-Tap, Auto-Buy generators,
-   Auto-Bloom, and Auto-Terraform — so the late game idles itself.
-
-## Other touches
-
-- Offline progress (capped, and the cap is upgradable).
-- Floating tap numbers and a pulsing, per-world themed orb.
-- Full save/load via `UserDefaults`, plus an erase-progress option.
+Plus capped, upgradable offline progress and full save/load.
 
 ## Project layout (`VerdantVoid.swiftpm/`)
 
 | File | Purpose |
 |------|---------|
-| `Package.swift` | Swift Playgrounds app manifest |
-| `MyApp.swift` | `@main` entry point |
-| `Model.swift` | Game state, economy, reset layers, save/load, tick loop |
-| `Theme.swift` | The 9 world definitions + colors |
+| `Package.swift`, `MyApp.swift` | Swift Playgrounds manifest + `@main` |
+| `Model.swift` | State, economy, reset layers, save/load, tick loop |
+| `RootWeb.swift` / `RootWebView.swift` | Root Web logic + interactive board |
+| `Seasons.swift` | The Long Year cycle + multipliers |
+| `Journal.swift` / `JournalView.swift` | Discoveries + bonuses |
+| `Theme.swift` | The 9 worlds + glow palettes |
+| `Visuals.swift` | Procedural glow art: background, organism, helpers |
+| `Components.swift` | Reusable UI (currency bar, glow cards/buttons) |
 | `Format.swift` | Big-number / time formatting |
-| `Components.swift` | Reusable UI (currency bar, cards, buttons) |
-| `ContentView.swift` | Tab layout + first-run difficulty picker |
-| `WorldView.swift` | Tap surface |
-| `GrowView.swift` | Generators |
-| `UpgradesView.swift` | Per-currency upgrade shops |
-| `PrestigeView.swift` | Bloom / Terraform / Singularity |
-| `CosmosView.swift` | Stardust tech + automation |
-| `SettingsView.swift` | Difficulty, stats, save management |
+| `ContentView.swift` | Tabs, background, first-run picker, toast |
+| `WorldView` / `GrowView` / `UpgradesView` / `PrestigeView` / `CosmosView` / `SettingsView` | Screens |
+
+## Building / CI
+
+A GitHub Actions workflow (`.github/workflows/build.yml`) compiles the package
+on a macOS runner so changes are type-checked without an Apple machine locally.

@@ -21,7 +21,7 @@ func neonStroke(_ ctx: GraphicsContext, _ path: Path, color: Color, width: CGFlo
         layer.addFilter(.blur(radius: glow))
         layer.stroke(path, with: .color(color.opacity(0.85)), lineWidth: width * 2.0)
     }
-    ctx.stroke(path, with: .color(color), lineWidth: width, lineCap: .round)
+    ctx.stroke(path, with: .color(color), style: StrokeStyle(lineWidth: width, lineCap: .round))
 }
 
 /// A soft radial dot of light.
