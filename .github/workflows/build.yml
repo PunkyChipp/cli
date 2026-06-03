@@ -1,0 +1,43 @@
+name: Build
+
+# Compiles the Swift Playgrounds app package on a real macOS + Xcode runner so
+# code can be type-checked even though the dev container is Linux (no Apple SDK).
+# Scoped to the working branches + manual runs to conserve private-repo minutes.
+
+on:
+  push:
+    branches:
+      - "claude/**"
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: List schemes
+        working-directory: VerdantVoid.swiftpm
+        run: xcodebuild -list || true
+
+      - name: Build .swiftpm for iOS Simulator
+        working-directory: VerdantVoid.swiftpm
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -scheme "Verdant Void" \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee "$RUNNER_TEMP/xcodebuild.log"
+
+      - name: Compile error summary
+        if: failure()
+        run: |
+          echo "=== error: lines ==="
+          grep -nE "error:" "$RUNNER_TEMP/xcodebuild.log" || \
+            echo "No 'error:' lines found — likely a scheme/config issue; check the full build log above."
