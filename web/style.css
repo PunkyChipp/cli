@@ -59,3 +59,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sa
   border-radius: 12px; background: rgba(255,255,255,.05); color: #fff; font-weight: 700; }
 .atog.on { background: rgba(120,230,200,.16); border-color: rgba(120,230,200,.5); }
 .atog span { font-size: 12px; opacity: .8; }
+
+/* bosses / bestiary */
+.ovbigglyph { font-size: 84px; margin: 6px 0; }
+.bestiary { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 12px; max-height: 200px; overflow-y: auto; }
+.bestrow { display: grid; grid-template-columns: 26px 1fr auto auto; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(255,255,255,.04); border-radius: 8px; font-size: 12px; }
+.bestrow .bg { font-size: 16px; }
+.bestrow .bn { text-transform: capitalize; color: rgba(255,255,255,.75); }
+.bestrow .bm { color: #9be7a6; font-size: 11px; font-weight: 700; }

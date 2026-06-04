@@ -71,7 +71,7 @@ const EVO = {
   e_start:  { cat: "Instinct", name: "Muscle Memory", icon: "🧠", cap: 15, base: 3, growth: 1.5, desc: "Start each dive already part-grown." },
   e_autoeat:  { cat: "Instinct", name: "Remora",   icon: "🐠", cap: 1, base: 40, growth: 1, desc: "A remora eats nearby fish for you." },
   e_autobuy:  { cat: "Instinct", name: "Instinct", icon: "⚙", cap: 1, base: 60, growth: 1, desc: "Auto-buys the cheapest orb upgrade." },
-  e_automolt: { cat: "Instinct", name: "Life Cycle", icon: "♻", cap: 1, base: 120, growth: 1, desc: "Molts automatically at your target." }
+  e_automolt: { cat: "Instinct", name: "Life Cycle", icon: "♻", cap: 1, base: 120, growth: 1, desc: "Rebirths automatically at your target." }
 };
 const EVO_KEYS = Object.keys(EVO);
 const EVO_CATS = ["Hunt", "Body", "Senses", "Instinct"];
@@ -83,6 +83,15 @@ const EGGS = [
   { g: "🦴", msg: "An ominous bone. Best not to ask.", b: 2 }, { g: "🛸", msg: "…a UFO. Down HERE?", b: 8 },
   { g: "👀", msg: "Something watched you pass. It blinked.", b: 0, spooky: 1 }, { g: "🐙", msg: "A vast tentacle slid back into the black.", b: 0, spooky: 1 }
 ];
+// Apex Predators — boss encounters that roam the deep. Grow past sizeReq to fight them.
+const APEX = [
+  { id: "squid",    name: "Colossal Squid", glyph: "🦑", layer: 2, hp: 70,   sizeReq: 55,  r: 60,  color: "#c08bff", biomass: 6e3,  roe: 8,   trophy: "Beak of the Squid (+15% all gains)" },
+  { id: "devil",    name: "Black Seadevil", glyph: "🐡", layer: 3, hp: 200,  sizeReq: 130, r: 70,  color: "#ff5c6a", biomass: 4e4,  roe: 20,  trophy: "Devil's Lure (+15% all gains)" },
+  { id: "meg",      name: "Megalodon",      glyph: "🦈", layer: 4, hp: 520,  sizeReq: 260, r: 95,  color: "#9fe9ff", biomass: 3e5,  roe: 50,  trophy: "Ancient Tooth (+15% all gains)" },
+  { id: "guardian", name: "The Drowned God", glyph: "🐙", layer: 5, hp: 1400, sizeReq: 360, r: 130, color: "#ffd86b", biomass: 2e6, roe: 140, trophy: "Crown of the Deep (+15% all gains)" }
+];
+function apexFor(layerIdx) { return APEX.find(a => a.layer === layerIdx) || null; }
+const BEST_THRESH = [20, 100, 500, 2500, 12000];
 
 // ---------- state ----------
 function newState() {
@@ -90,11 +99,13 @@ function newState() {
     up: { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0 },
     perm: { pglow: 0, pspeed: 0, pbite: 0, psense: 0, pappet: 0 },
     roe: 0, molts: 0, apexTier: 0, deepLayer: 0, evo: {}, autoOn: {}, autoMoltTarget: 3, moltSeen: false,
-    wreckFound: false, deepest: 0, eggs: {}, stats: { eaten: 0, salvage: 0, playtime: 0 }, lastSave: Date.now() };
+    wreckFound: false, deepest: 0, eggs: {}, best: {}, trophies: {}, bossKills: {},
+    stats: { eaten: 0, salvage: 0, playtime: 0 }, lastSave: Date.now() };
 }
 let S = newState();
 const W = { creature: null, fish: [], orbs: [], eggs: [], treas: [], parts: [], floats: [],
-  cam: { x: 0, y: 0 }, shake: 0, combo: 0, comboT: 0, eggTimer: 9, treasTimer: 10, t: 0, barrier: null, hintT: 0 };
+  cam: { x: 0, y: 0 }, shake: 0, combo: 0, comboT: 0, eggTimer: 9, treasTimer: 10, t: 0, barrier: null, hintT: 0,
+  boss: null, bossCD: 20, frenzy: null, frenzyTimer: 80, autoBuyT: 0, autoEatT: 0, warnT: 0 };
 let CV, X, VW = 800, VH = 600;
 const input = { x: 0, y: 0, down: false, keys: {} };
 
@@ -111,7 +122,11 @@ function magnetR() { const b = S.up.magnet + ev("e_magnet"); return b > 0 ? 50 +
 function luckChance() { return 0.015 + 0.012 * S.up.luck + 0.012 * ev("e_luck"); }
 function appetite() { return 1 + 0.22 * S.up.appetite + 0.25 * S.perm.pappet; }
 function depthMult() { return 1 + 0.6 * layerAt(W.creature ? W.creature.y : 0); }
-function gainMult() { return appetite() * depthMult() * apexMult() * voracity(); }
+function bestiaryMult() { let m = 1; for (const id in S.best) { let r = 0; for (const t of BEST_THRESH) if (S.best[id] >= t) r++; m *= 1 + 0.04 * r; } return m; }
+function trophyMult() { return Math.pow(1.15, Object.keys(S.trophies).length); }
+function frenzyMult() { return (W.frenzy && W.frenzy.t > 0) ? W.frenzy.mult : 1; }
+function bitePower() { return 4 + creatureR() * 0.25 + S.apexTier * 2 + 2 * ev("e_bite"); }
+function gainMult() { return appetite() * depthMult() * apexMult() * voracity() * bestiaryMult() * trophyMult() * frenzyMult(); }
 function sizeGain(g) { return g * (1 + 0.08 * ev("e_size")); }
 function creatureR() { return clamp(11 + Math.sqrt(S.size) * 1.9, 11, 70); }
 function comboMult() { return 1 + W.combo * 0.12; }
@@ -217,6 +232,7 @@ function update(dt) {
 
   // wreck reveal
   if (!S.wreckFound && S.size >= WRECK_REQ && c.y > NL * LH + 120) reachWreck();
+  updateBoss(dt); updateFrenzy(dt);
 
   // fish
   const cr = creatureR(), br = cr + biteRange(), mr = magnetR();
@@ -266,7 +282,9 @@ function update(dt) {
 }
 
 function eat(i, f, ft) { W.fish.splice(i, 1); const gain = ft.val * gainMult() * comboMult();
-  S.biomass = Math.min(1e300, S.biomass + gain); S.size = Math.min(1e300, S.size + sizeGain(ft.grow)); S.stats.eaten++; W.combo = Math.min(12, W.combo + 1); W.comboT = 2;
+  S.biomass = Math.min(1e300, S.biomass + gain); S.size = Math.min(1e300, S.size + sizeGain(ft.grow)); S.stats.eaten++;
+  if (f.id) { const pv = S.best[f.id] || 0; S.best[f.id] = pv + 1; for (const t of BEST_THRESH) if (pv < t && pv + 1 >= t) { addFloat(f.x, f.y - 18, "✦ " + (FISH[f.id] ? "" : "") + "Bestiary!", "#9be7a6"); break; } }
+  W.combo = Math.min(12, W.combo + 1); W.comboT = 2;
   W.creature.chomp = 1; W.shake = Math.min(1, W.shake + ft.r / 60); addParts(f.x, f.y, ft.color, Math.min(20, 4 + (ft.r | 0)), 120); addFloat(f.x, f.y, "+" + fmt(gain), ft.color); }
 function eatEgg(e) { const d = e.d, found = !S.eggs[d.g]; S.eggs[d.g] = true; const gain = d.b * 12 * gainMult();
   if (gain > 0) { S.biomass += gain; addFloat(e.x, e.y, "+" + fmt(gain), "#ffd86b"); } W.creature.chomp = 1; W.shake = .6; addParts(e.x, e.y, "#ffd86b", 16, 130); toast((found ? "✦ NEW · " : "") + d.g + "  " + d.msg); }
@@ -295,6 +313,56 @@ function autoBuyCheapest() { let best = null, bc = Infinity; for (const o of W.o
 function remoraEat() { const c = W.creature, R = creatureR() + biteRange() + 90; let bi = -1, bd = R * R;
   for (let i = 0; i < W.fish.length; i++) { const f = W.fish[i]; if (f.t.needs && creatureR() < f.t.r * 0.82) continue; const d = d2(f.x, f.y, c.x, c.y); if (d < bd) { bd = d; bi = i; } }
   if (bi >= 0) eat(bi, W.fish[bi], W.fish[bi].t); }
+
+// ---- Apex Predator bosses ----
+function updateBoss(dt) {
+  const c = W.creature, li = layerAt(c.y), inWreck = c.y > NL * LH + 120;
+  if (!W.boss) {
+    W.bossCD -= dt;
+    const target = inWreck ? APEX.find(a => a.layer === 5) : apexFor(li);
+    if (target && W.bossCD <= 0 && S.size >= target.sizeReq * 0.5) {
+      W.boss = { a: target, x: clamp(c.x + rr(-260, 260), 110, WW - 110), y: clamp(c.y + (inWreck ? -260 : rr(-180, 180)), 120, WORLD.h - 120), hp: target.hp, max: target.hp, hitCD: 0, ph: 0 };
+      toast("⚠ " + target.name + " stirs nearby…");
+    }
+    return;
+  }
+  const b = W.boss; b.ph += dt * 2; b.hitCD = Math.max(0, b.hitCD - dt);
+  const dx = c.x - b.x, dy = c.y - b.y, d = Math.hypot(dx, dy) || 1;
+  b.x += dx / d * 42 * dt; b.y += dy / d * 42 * dt;
+  const cr = creatureR();
+  if (d < b.a.r + cr) {
+    if (S.size >= b.a.sizeReq) {
+      if (b.hitCD <= 0 && Math.hypot(c.vx, c.vy) > 55) { b.hp -= bitePower(); b.hitCD = 0.25; W.shake = Math.min(1, W.shake + 0.4); W.creature.chomp = 1; addParts((c.x + b.x) / 2, (c.y + b.y) / 2, b.a.color, 14, 150); c.vx *= -0.4; c.vy *= -0.4; }
+    } else { c.vx = -dx / d * 430; c.vy = -dy / d * 430; if (W.warnT <= 0) { W.warnT = 1.4; addFloat(c.x, c.y - 40, "Too small — grow to " + fmt(b.a.sizeReq), "#ff8a94"); } }
+  }
+  W.warnT -= dt;
+  if (b.hp <= 0) killBoss(b);
+}
+function killBoss(b) {
+  const a = b.a, bm = a.biomass * (1 + 0.5 * S.apexTier);
+  S.biomass = Math.min(1e300, S.biomass + bm); S.roe += a.roe; S.bossKills[a.id] = (S.bossKills[a.id] || 0) + 1;
+  const first = !S.trophies[a.id]; if (first) S.trophies[a.id] = true;
+  addParts(b.x, b.y, a.color, 44, 240); W.shake = 1; W.boss = null; W.bossCD = rr(28, 52);
+  document.getElementById("overlay").innerHTML =
+    `<div class="ov" style="border-color:${a.color}88"><div class="ovtag" style="color:${a.color}">APEX SLAIN</div>` +
+    `<div class="ovbigglyph">${a.glyph}</div><div class="ovt2" style="color:${a.color}">${a.name}</div>` +
+    `<div class="ovs">+${fmt(bm)} Biomass · +${a.roe} Roe 🥚</div>` +
+    (first ? `<div class="ovs" style="color:${a.color}"><b>Trophy unlocked:</b> ${a.trophy}</div>` : `<div class="ovs">Slain ×${S.bossKills[a.id]}</div>`) +
+    `<button class="ovbtn" onclick="hideOverlay()">Feast</button></div>`;
+  showOverlay();
+}
+// ---- Feeding Frenzy events ----
+function updateFrenzy(dt) {
+  if (W.frenzy) { W.frenzy.t -= dt; if (W.frenzy.t <= 0) W.frenzy = null; }
+  W.frenzyTimer -= dt;
+  if (W.frenzyTimer <= 0) { W.frenzyTimer = rr(70, 130); startFrenzy(); }
+}
+function startFrenzy() {
+  const c = W.creature; W.frenzy = { t: 12, mult: 3 };
+  for (let i = 0; i < 16; i++) { const id = Math.random() < 0.5 ? "darter" : "glow", f = FISH[id], a = Math.random() * 6.28, dx = rr(60, 260);
+    W.fish.push({ id, t: f, x: clamp(c.x + Math.cos(a) * dx, 20, WW - 20), y: clamp(c.y + Math.sin(a) * dx, 20, WORLD.h - 20), vx: 0, vy: 0, ph: rr(0, 6.28), wob: 0 }); }
+  toast("🌀 FEEDING FRENZY ×3 — eat fast!");
+}
 
 // ---------- render ----------
 function render() {
@@ -331,6 +399,9 @@ function render() {
   // eggs
   for (const e of W.eggs) { glow(e.x, e.y, 22, e.d.spooky ? "#ff5c6a" : "#ffd86b", .25 + .15 * Math.sin(e.ph)); X.font = "26px serif"; X.fillText(e.d.g, e.x, e.y); }
   for (const p of W.parts) glow(p.x, p.y, 4, p.color, .6 * clamp(p.life / p.max, 0, 1));
+  if (W.boss) { const b = W.boss, a = b.a; glow(b.x, b.y, a.r + 22, a.color, .3 + .12 * Math.sin(b.ph)); X.font = (a.r * 1.9 | 0) + "px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText(a.glyph, b.x, b.y);
+    const bw = a.r * 2, hpf = clamp(b.hp / b.max, 0, 1); X.fillStyle = "rgba(0,0,0,.5)"; X.fillRect(b.x - bw / 2, b.y - a.r - 24, bw, 8); X.fillStyle = a.color; X.fillRect(b.x - bw / 2, b.y - a.r - 24, bw * hpf, 8);
+    ftxt(b.x, b.y - a.r - 34, a.name + (S.size >= a.sizeReq ? "  (ram it!)" : "  · grow to " + fmt(a.sizeReq)), a.color, 13); }
   drawCreature();
   if (ev("e_autoeat") && S.autoOn.eat) { const c = W.creature, a = W.t * 2, rr2 = creatureR() + 30, rx = c.x + Math.cos(a) * rr2, ry = c.y + Math.sin(a) * rr2;
     glow(rx, ry, 12, "#ffd27a", .5); X.font = "16px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText("🐠", rx, ry); }
@@ -344,6 +415,7 @@ function render() {
     lg.addColorStop(0, "rgba(0,0,0,0)"); lg.addColorStop(1, "rgba(0,0,0," + dark + ")"); X.fillStyle = lg; X.fillRect(0, 0, VW, VH); }
 
   if (W.combo > 1) { X.textAlign = "center"; X.fillStyle = accentAt(W.creature.y); X.font = "700 22px system-ui"; X.fillText("×" + comboMult().toFixed(1) + " combo", VW / 2, 96); }
+  if (W.frenzy && W.frenzy.t > 0) { X.textAlign = "center"; X.fillStyle = "#ffd86b"; X.font = "800 26px system-ui"; X.globalAlpha = clamp(W.frenzy.t, 0, 1); X.fillText("🌀 FEEDING FRENZY ×" + W.frenzy.mult, VW / 2, 130); X.globalAlpha = 1; }
 }
 function drawWreck() {
   const wy = NL * LH + 560, wx = WW / 2;
@@ -399,16 +471,16 @@ function hud() {
 function moltBanner() {
   document.getElementById("overlay").innerHTML =
     `<div class="ov" style="border-color:rgba(255,158,194,.5)"><div class="ovtag" style="color:#ff9ec2">A NEW INSTINCT</div>` +
-    `<div class="ovt2">You can Molt</div><div class="ovs">Shed your form to start the dive over — but keep <b>Roe</b> and rise an <b>Apex Tier</b> (a permanent multiplier on everything). Spend Roe in the <b>Evolution</b> tree (🧬) to come back faster and stronger every time.</div>` +
+    `<div class="ovt2">You can Rebirth</div><div class="ovs">Begin the dive anew — but keep <b>Roe</b> and rise an <b>Apex Tier</b> (a permanent multiplier on everything). Spend Roe in the <b>Evolution</b> tree (🧬) to come back faster and stronger every time.</div>` +
     `<button class="ovbtn" onclick="hideOverlay();openEvo()">Open Evolution</button><button class="ovbtn" onclick="hideOverlay()">Later</button></div>`;
   showOverlay();
 }
 function openEvo() {
   const can = canMolt(), gain = roeGain();
   let h = `<div class="ov ovwide"><div class="ovt2" style="color:#ff9ec2">🧬 Evolution</div>` +
-    `<div class="ovs">Roe 🥚 ${fmt(S.roe)} · Apex Tier ${S.apexTier} (×${fmt(apexMult())}) · Molts ${S.molts}</div>` +
+    `<div class="ovs">Roe 🥚 ${fmt(S.roe)} · Apex Tier ${S.apexTier} (×${fmt(apexMult())}) · Rebirths ${S.molts}</div>` +
     `<button class="ovbtn ${can ? "" : "dim"}" ${can ? `onclick="doMolt();openEvo()"` : "disabled"} style="border-color:rgba(255,158,194,.5);background:rgba(255,158,194,.14)">` +
-    (can ? `Molt now — gain ${fmt(gain)} Roe 🥚` : `Grow to ${fmt(moltReq())} size to Molt (${fmt(S.size)})`) + `</button>`;
+    (can ? `Rebirth now — gain ${fmt(gain)} Roe 🥚` : `Grow to ${fmt(moltReq())} size to Rebirth (${fmt(S.size)})`) + `</button>`;
   for (const cat of EVO_CATS) {
     h += `<div class="evocat">${cat}</div><div class="shop">`;
     for (const k of EVO_KEYS) { if (EVO[k].cat !== cat) continue; const u = EVO[k], lv = ev(k), maxed = lv >= u.cap, cost = evoCost(k), able = !maxed && S.roe >= cost;
@@ -420,13 +492,19 @@ function openEvo() {
     h += `<div class="evocat">Automation</div><div class="autos">`;
     if (ev("e_autoeat")) h += autoTog("eat", "🐠 Remora auto-eat");
     if (ev("e_autobuy")) h += autoTog("buy", "⚙ Auto-buy orbs");
-    if (ev("e_automolt")) h += autoTog("molt", "♻ Auto-molt") + `<div class="ovs">Auto-molt at ≥ ${S.autoMoltTarget} Roe <button class="mini" onclick="S.autoMoltTarget=Math.max(1,S.autoMoltTarget-1);openEvo()">−</button> <button class="mini" onclick="S.autoMoltTarget+=1;openEvo()">+</button></div>`;
+    if (ev("e_automolt")) h += autoTog("molt", "♻ Auto-Rebirth") + `<div class="ovs">Auto-Rebirth at ≥ ${S.autoMoltTarget} Roe <button class="mini" onclick="S.autoMoltTarget=Math.max(1,S.autoMoltTarget-1);openEvo()">−</button> <button class="mini" onclick="S.autoMoltTarget+=1;openEvo()">+</button></div>`;
     h += `</div>`;
   }
   h += `<button class="ovbtn" onclick="hideOverlay()">Back to the hunt</button></div>`;
   document.getElementById("overlay").innerHTML = h; showOverlay();
 }
 function autoTog(key, label) { const on = !!S.autoOn[key]; return `<button class="atog ${on ? "on" : ""}" onclick="S.autoOn['${key}']=!S.autoOn['${key}'];openEvo()">${label}<span>${on ? "ON" : "OFF"}</span></button>`; }
+function bestiaryHTML() {
+  let rows = "";
+  for (const id in FISH) { const cnt = S.best[id] || 0; let r = 0, nxt = 0; for (const t of BEST_THRESH) { if (cnt >= t) r++; else if (!nxt) nxt = t; }
+    rows += `<div class="bestrow"><span class="bg">${FISH[id].glyph}</span><span class="bn">${id}</span><b>${fmt(cnt)}</b><span class="bm">${"★".repeat(r)}${"☆".repeat(BEST_THRESH.length - r)}${nxt ? " · " + fmt(nxt) : ""}</span></div>`; }
+  return `<div class="ovt2">Bestiary</div><div class="ovs">Devour each species to earn permanent bonuses. Current ×${fmt(bestiaryMult())}.</div><div class="bestiary">${rows}</div>`;
+}
 function showStart() {
   let d = ""; ["relaxed", "diver", "abyssal"].forEach(k => d += `<button class="ovbtn" onclick="pick('${k}')"><b>${k[0].toUpperCase() + k.slice(1)}</b></button>`);
   document.getElementById("overlay").innerHTML =
@@ -445,6 +523,8 @@ function openMenu() {
     `<div class="ov">${hub}<div class="ovt2">Logbook</div>` +
     `<div class="ovs">Eaten ${fmt(S.stats.eaten)} · Salvaged ${fmt(S.stats.salvage)} ⛃ · Played ${fmtTime(S.stats.playtime)}</div>` +
     `<div class="ovs"><b>Oddities ${eggs}/${EGGS.length}</b></div><div class="eggs">${eg}</div>` +
+    bestiaryHTML() +
+    `<div class="ovs"><b>Trophies ${Object.keys(S.trophies).length}/${APEX.length}</b> · apex kills give ×${fmt(trophyMult())} to all gains</div>` +
     `<div class="ovs">Pace: ${["relaxed", "diver", "abyssal"].map(k => `<button class="mini ${S.difficulty === k ? "on" : ""}" onclick="S.difficulty='${k}';openMenu()">${k}</button>`).join(" ")}</div>` +
     `<button class="ovbtn" onclick="hideOverlay()">Back to the deep</button>` +
     `<button class="ovbtn danger" onclick="if(confirm('Erase all progress?')){hardReset();hideOverlay();}">Erase progress</button></div>`;
