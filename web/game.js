@@ -57,6 +57,24 @@ const PERM = {
   pappet: { name: "Deep Hunger",    icon: "🌑", cap: 20, base: 6, growth: 1.5,  desc: "Permanent biomass per fish" }
 };
 const PERM_KEYS = Object.keys(PERM);
+// Evolution tree — permanent, Roe-bought (the prestige shop). cat groups them.
+const EVO = {
+  e_bio:    { cat: "Hunt", name: "Voracity",      icon: "🩸", cap: 30, base: 2, growth: 1.35, desc: "+Biomass per fish — and the bonus self-amplifies every 10 levels." },
+  e_bite:   { cat: "Hunt", name: "Gape",          icon: "😼", cap: 20, base: 3, growth: 1.4,  desc: "+Permanent bite reach." },
+  e_magnet: { cat: "Hunt", name: "Siren Call",    icon: "🧲", cap: 15, base: 6, growth: 1.5,  desc: "Permanent pull on nearby fish." },
+  e_size:   { cat: "Body", name: "Strong Form",   icon: "💪", cap: 25, base: 2, growth: 1.35, desc: "+Size gained from every meal." },
+  e_speed:  { cat: "Body", name: "Streamlined",   icon: "🌊", cap: 25, base: 2, growth: 1.35, desc: "+Permanent swim speed." },
+  e_glow:   { cat: "Body", name: "Inner Light",   icon: "🔆", cap: 20, base: 4, growth: 1.4,  desc: "+Permanent light radius." },
+  e_luck:   { cat: "Senses", name: "Sharp Eyes",  icon: "👁", cap: 20, base: 5, growth: 1.45, desc: "+Rare-fish luck." },
+  e_roe:    { cat: "Senses", name: "Fertility",   icon: "🥚", cap: 25, base: 4, growth: 1.4,  desc: "+Roe gained from every Molt." },
+  e_tier:   { cat: "Senses", name: "Apex Instinct", icon: "👑", cap: 10, base: 12, growth: 1.8, desc: "Each Apex Tier multiplies harder." },
+  e_start:  { cat: "Instinct", name: "Muscle Memory", icon: "🧠", cap: 15, base: 3, growth: 1.5, desc: "Start each dive already part-grown." },
+  e_autoeat:  { cat: "Instinct", name: "Remora",   icon: "🐠", cap: 1, base: 40, growth: 1, desc: "A remora eats nearby fish for you." },
+  e_autobuy:  { cat: "Instinct", name: "Instinct", icon: "⚙", cap: 1, base: 60, growth: 1, desc: "Auto-buys the cheapest orb upgrade." },
+  e_automolt: { cat: "Instinct", name: "Life Cycle", icon: "♻", cap: 1, base: 120, growth: 1, desc: "Molts automatically at your target." }
+};
+const EVO_KEYS = Object.keys(EVO);
+const EVO_CATS = ["Hunt", "Body", "Senses", "Instinct"];
 const EGGS = [
   { g: "🦆", msg: "A rubber duck. It squeaks ominously.", b: 1 }, { g: "🥾", msg: "An old boot. Surprisingly filling.", b: 1 },
   { g: "🍾", msg: "A bottle: ‘keep swimming’.", b: 1 }, { g: "🛟", msg: "A life ring. You won't need it.", b: 1 },
@@ -71,6 +89,7 @@ function newState() {
   return { started: false, difficulty: "diver", biomass: 0, size: 0, relics: 0,
     up: { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0 },
     perm: { pglow: 0, pspeed: 0, pbite: 0, psense: 0, pappet: 0 },
+    roe: 0, molts: 0, apexTier: 0, deepLayer: 0, evo: {}, autoOn: {}, autoMoltTarget: 3, moltSeen: false,
     wreckFound: false, deepest: 0, eggs: {}, stats: { eaten: 0, salvage: 0, playtime: 0 }, lastSave: Date.now() };
 }
 let S = newState();
@@ -81,18 +100,27 @@ const input = { x: 0, y: 0, down: false, keys: {} };
 
 // ---------- derived ----------
 function layerAt(y) { return clamp(Math.floor(y / LH), 0, NL - 1); }
-function maxSpeed() { return FEEL.maxSpeedBase * (1 + 0.05 * S.up.speed + 0.05 * S.perm.pspeed); }
+function ev(k) { return S.evo[k] || 0; }
+function apexMult() { return Math.pow(1.4 + 0.06 * ev("e_tier"), S.apexTier); }
+function voracity() { const l = ev("e_bio"); if (!l) return 1; const per = 0.10 * (1 + 0.5 * Math.floor(l / 10)); return Math.pow(1 + per, l); }
+function maxSpeed() { return FEEL.maxSpeedBase * (1 + 0.05 * S.up.speed + 0.05 * S.perm.pspeed + 0.05 * ev("e_speed")); }
 function accel() { return FEEL.accel * (1 + 0.05 * S.up.agility); }
 function turnRate() { return FEEL.turn * (1 + 0.03 * S.up.agility); }
-function biteRange() { return 6 + 7 * S.up.range + 6 * S.perm.pbite; }
-function magnetR() { return S.up.magnet > 0 ? 50 + 24 * S.up.magnet : 0; }
-function luckChance() { return 0.015 + 0.012 * S.up.luck; }
+function biteRange() { return 6 + 7 * S.up.range + 6 * S.perm.pbite + 6 * ev("e_bite"); }
+function magnetR() { const b = S.up.magnet + ev("e_magnet"); return b > 0 ? 50 + 24 * b : 0; }
+function luckChance() { return 0.015 + 0.012 * S.up.luck + 0.012 * ev("e_luck"); }
 function appetite() { return 1 + 0.22 * S.up.appetite + 0.25 * S.perm.pappet; }
 function depthMult() { return 1 + 0.6 * layerAt(W.creature ? W.creature.y : 0); }
-function gainMult() { return appetite() * depthMult(); }
+function gainMult() { return appetite() * depthMult() * apexMult() * voracity(); }
+function sizeGain(g) { return g * (1 + 0.08 * ev("e_size")); }
 function creatureR() { return clamp(11 + Math.sqrt(S.size) * 1.9, 11, 70); }
 function comboMult() { return 1 + W.combo * 0.12; }
-function glowRadius() { return 150 + 48 * S.up.glow + 34 * S.perm.pglow + creatureR() * 1.5; }
+function glowRadius() { return 150 + 48 * S.up.glow + 34 * S.perm.pglow + 34 * ev("e_glow") + creatureR() * 1.5; }
+function moltReq() { return Math.floor(35 * Math.pow(1.6, S.molts)); }
+function startSize() { return 6 * ev("e_start"); }
+function roeGain() { const dl = layerAt(S.deepest); return Math.floor(Math.pow(Math.max(0, S.size) / 20, 0.6) * (1 + 0.7 * dl) * (1 + 0.1 * ev("e_roe"))); }
+function canMolt() { return S.started && S.size >= moltReq(); }
+function evoCost(k) { const u = EVO[k]; return Math.floor(u.base * Math.pow(u.growth, ev(k))); }
 function upCost(k) { const u = UPS[k]; return Math.floor(u.base * Math.pow(u.growth, S.up[k])); }
 function permCost(k) { const u = PERM[k]; return Math.floor(u.base * Math.pow(u.growth, S.perm[k])); }
 function lightAt(y) { const i = y / LH; const a = clamp(Math.floor(i), 0, NL - 1), b = clamp(a + 1, 0, NL - 1); return lerp(LAYERS[a].light, LAYERS[b].light, clamp(i - a, 0, 1)); }
@@ -226,11 +254,19 @@ function update(dt) {
 
   for (let i = W.parts.length - 1; i >= 0; i--) { const p = W.parts[i]; p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.96; p.vy *= 0.96; if (p.life <= 0) W.parts.splice(i, 1); }
   for (let i = W.floats.length - 1; i >= 0; i--) { const f = W.floats[i]; f.life -= dt; f.y -= 30 * dt; if (f.life <= 0) W.floats.splice(i, 1); }
+
+  // automation (unlocked via Evolution)
+  if (ev("e_autobuy") && S.autoOn.buy) { W.autoBuyT = (W.autoBuyT || 0) + dt; if (W.autoBuyT > 0.5) { W.autoBuyT = 0; autoBuyCheapest(); } }
+  if (ev("e_autoeat") && S.autoOn.eat) { W.autoEatT = (W.autoEatT || 0) + dt; if (W.autoEatT > 0.35) { W.autoEatT = 0; remoraEat(); } }
+  if (ev("e_automolt") && S.autoOn.molt && canMolt() && roeGain() >= S.autoMoltTarget) doMolt();
+  // first Molt becomes available
+  if (canMolt() && !S.moltSeen) { S.moltSeen = true; moltBanner(); }
+
   if (Date.now() - S.lastSave > 5000) save();
 }
 
 function eat(i, f, ft) { W.fish.splice(i, 1); const gain = ft.val * gainMult() * comboMult();
-  S.biomass += gain; S.size += ft.grow; S.stats.eaten++; W.combo = Math.min(12, W.combo + 1); W.comboT = 2;
+  S.biomass = Math.min(1e300, S.biomass + gain); S.size = Math.min(1e300, S.size + sizeGain(ft.grow)); S.stats.eaten++; W.combo = Math.min(12, W.combo + 1); W.comboT = 2;
   W.creature.chomp = 1; W.shake = Math.min(1, W.shake + ft.r / 60); addParts(f.x, f.y, ft.color, Math.min(20, 4 + (ft.r | 0)), 120); addFloat(f.x, f.y, "+" + fmt(gain), ft.color); }
 function eatEgg(e) { const d = e.d, found = !S.eggs[d.g]; S.eggs[d.g] = true; const gain = d.b * 12 * gainMult();
   if (gain > 0) { S.biomass += gain; addFloat(e.x, e.y, "+" + fmt(gain), "#ffd86b"); } W.creature.chomp = 1; W.shake = .6; addParts(e.x, e.y, "#ffd86b", 16, 130); toast((found ? "✦ NEW · " : "") + d.g + "  " + d.msg); }
@@ -244,6 +280,21 @@ function reachWreck() { S.wreckFound = true; S.relics += 50; S.biomass += 500 * 
     '<div class="ovs"><b>Salvage unlocked.</b> Glowing treasure now drifts through the deep — gather it for <b>Relics</b>, and spend them on permanent power in the Wreck Hub (☰).</div>' +
     '<div class="ovs" style="color:#ffd86b">+50 ⛃ Relics</div><button class="ovbtn" onclick="hideOverlay()">Begin salvaging</button></div>';
   showOverlay(); }
+
+function doMolt() {
+  if (!canMolt()) return;
+  S.roe += roeGain(); S.molts++; S.apexTier++;
+  S.size = startSize(); S.biomass = 0;
+  S.up = { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0 };
+  const c = W.creature; c.x = WW / 2; c.y = 200; c.vx = c.vy = 0;
+  W.cam.x = c.x - VW / 2; W.cam.y = c.y - VH / 2;
+  W.fish = []; for (let i = 0; i < 46; i++) spawnFish(true); buildOrbs(); W.shake = 1;
+}
+function buyEvo(k) { const u = EVO[k], cost = evoCost(k); if (ev(k) >= u.cap || S.roe < cost) return; S.roe -= cost; S.evo[k] = ev(k) + 1; openEvo(); }
+function autoBuyCheapest() { let best = null, bc = Infinity; for (const o of W.orbs) { if (S.up[o.k] >= UPS[o.k].cap) continue; const cst = upCost(o.k); if (cst <= S.biomass && cst < bc) { bc = cst; best = o; } } if (best) { S.biomass -= bc; S.up[best.k]++; best.flash = 1; } }
+function remoraEat() { const c = W.creature, R = creatureR() + biteRange() + 90; let bi = -1, bd = R * R;
+  for (let i = 0; i < W.fish.length; i++) { const f = W.fish[i]; if (f.t.needs && creatureR() < f.t.r * 0.82) continue; const d = d2(f.x, f.y, c.x, c.y); if (d < bd) { bd = d; bi = i; } }
+  if (bi >= 0) eat(bi, W.fish[bi], W.fish[bi].t); }
 
 // ---------- render ----------
 function render() {
@@ -281,6 +332,8 @@ function render() {
   for (const e of W.eggs) { glow(e.x, e.y, 22, e.d.spooky ? "#ff5c6a" : "#ffd86b", .25 + .15 * Math.sin(e.ph)); X.font = "26px serif"; X.fillText(e.d.g, e.x, e.y); }
   for (const p of W.parts) glow(p.x, p.y, 4, p.color, .6 * clamp(p.life / p.max, 0, 1));
   drawCreature();
+  if (ev("e_autoeat") && S.autoOn.eat) { const c = W.creature, a = W.t * 2, rr2 = creatureR() + 30, rx = c.x + Math.cos(a) * rr2, ry = c.y + Math.sin(a) * rr2;
+    glow(rx, ry, 12, "#ffd27a", .5); X.font = "16px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText("🐠", rx, ry); }
   for (const f of W.floats) { X.globalAlpha = clamp(f.life / .95, 0, 1); ftxt(f.x, f.y, f.txt, f.color, 16); X.globalAlpha = 1; }
   X.restore();
 
@@ -332,13 +385,48 @@ function ftxt(x, y, t, color, size) { X.font = "700 " + size + "px system-ui"; X
 function hud() {
   const c = W.creature || { y: 0 }, L = LAYERS[layerAt(c.y)], gate = allowedMaxY();
   const prog = gate.y < WORLD.h ? clamp(S.size / gate.req, 0, 1) : 1;
+  const evoUnlocked = S.moltSeen || S.molts > 0 || canMolt();
   document.getElementById("hud").innerHTML =
     `<div class="hchip"><b style="color:${L.accent}">◍ ${fmt(S.biomass)}</b><span>Biomass</span></div>` +
     `<div class="hchip"><b>⬤ ${fmt(S.size)}</b><span>Size</span></div>` +
+    (S.molts > 0 || S.roe > 0 || canMolt() ? `<div class="hchip"><b style="color:#ff9ec2">🥚 ${fmt(S.roe)}</b><span>Roe</span></div>` : "") +
+    (S.apexTier > 0 ? `<div class="hchip"><b style="color:#ffd86b">👑 ×${fmt(apexMult())}</b><span>Apex T${S.apexTier}</span></div>` : "") +
     (S.wreckFound ? `<div class="hchip"><b style="color:#ffd86b">⛃ ${fmt(S.relics)}</b><span>Relics</span></div>` : "") +
     `<div class="hchip hz"><b>${L.name}</b><span>Depth ${layerAt(c.y) + 1}/${NL}${gate.y < WORLD.h ? " · grow to " + fmt(gate.req) : " · the floor"}</span>` +
-    `<div class="bar"><i style="width:${(prog * 100) | 0}%;background:${L.accent}"></i></div></div>`;
+    `<div class="bar"><i style="width:${(prog * 100) | 0}%;background:${L.accent}"></i></div></div>` +
+    (evoUnlocked ? `<button class="hbtn ${canMolt() ? "ready" : ""}" onclick="openEvo()">🧬 Evolve${canMolt() ? " ●" : ""}</button>` : "");
 }
+function moltBanner() {
+  document.getElementById("overlay").innerHTML =
+    `<div class="ov" style="border-color:rgba(255,158,194,.5)"><div class="ovtag" style="color:#ff9ec2">A NEW INSTINCT</div>` +
+    `<div class="ovt2">You can Molt</div><div class="ovs">Shed your form to start the dive over — but keep <b>Roe</b> and rise an <b>Apex Tier</b> (a permanent multiplier on everything). Spend Roe in the <b>Evolution</b> tree (🧬) to come back faster and stronger every time.</div>` +
+    `<button class="ovbtn" onclick="hideOverlay();openEvo()">Open Evolution</button><button class="ovbtn" onclick="hideOverlay()">Later</button></div>`;
+  showOverlay();
+}
+function openEvo() {
+  const can = canMolt(), gain = roeGain();
+  let h = `<div class="ov ovwide"><div class="ovt2" style="color:#ff9ec2">🧬 Evolution</div>` +
+    `<div class="ovs">Roe 🥚 ${fmt(S.roe)} · Apex Tier ${S.apexTier} (×${fmt(apexMult())}) · Molts ${S.molts}</div>` +
+    `<button class="ovbtn ${can ? "" : "dim"}" ${can ? `onclick="doMolt();openEvo()"` : "disabled"} style="border-color:rgba(255,158,194,.5);background:rgba(255,158,194,.14)">` +
+    (can ? `Molt now — gain ${fmt(gain)} Roe 🥚` : `Grow to ${fmt(moltReq())} size to Molt (${fmt(S.size)})`) + `</button>`;
+  for (const cat of EVO_CATS) {
+    h += `<div class="evocat">${cat}</div><div class="shop">`;
+    for (const k of EVO_KEYS) { if (EVO[k].cat !== cat) continue; const u = EVO[k], lv = ev(k), maxed = lv >= u.cap, cost = evoCost(k), able = !maxed && S.roe >= cost;
+      h += `<button class="shopi ${able ? "on" : ""}" ${able ? `onclick="buyEvo('${k}')"` : "disabled"}><span class="si">${u.icon}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc" style="color:#ff9ec2">${maxed ? "MAX" : (u.cap > 1 ? "Lv" + lv + " · " : "") + fmt(cost) + " 🥚"}</span></button>`; }
+    h += `</div>`;
+  }
+  // automation toggles (once unlocked)
+  if (ev("e_autoeat") || ev("e_autobuy") || ev("e_automolt")) {
+    h += `<div class="evocat">Automation</div><div class="autos">`;
+    if (ev("e_autoeat")) h += autoTog("eat", "🐠 Remora auto-eat");
+    if (ev("e_autobuy")) h += autoTog("buy", "⚙ Auto-buy orbs");
+    if (ev("e_automolt")) h += autoTog("molt", "♻ Auto-molt") + `<div class="ovs">Auto-molt at ≥ ${S.autoMoltTarget} Roe <button class="mini" onclick="S.autoMoltTarget=Math.max(1,S.autoMoltTarget-1);openEvo()">−</button> <button class="mini" onclick="S.autoMoltTarget+=1;openEvo()">+</button></div>`;
+    h += `</div>`;
+  }
+  h += `<button class="ovbtn" onclick="hideOverlay()">Back to the hunt</button></div>`;
+  document.getElementById("overlay").innerHTML = h; showOverlay();
+}
+function autoTog(key, label) { const on = !!S.autoOn[key]; return `<button class="atog ${on ? "on" : ""}" onclick="S.autoOn['${key}']=!S.autoOn['${key}'];openEvo()">${label}<span>${on ? "ON" : "OFF"}</span></button>`; }
 function showStart() {
   let d = ""; ["relaxed", "diver", "abyssal"].forEach(k => d += `<button class="ovbtn" onclick="pick('${k}')"><b>${k[0].toUpperCase() + k.slice(1)}</b></button>`);
   document.getElementById("overlay").innerHTML =
