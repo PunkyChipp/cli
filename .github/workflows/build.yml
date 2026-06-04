@@ -9,6 +9,11 @@ on:
     branches:
       - "claude/**"
       - "main"
+    # The project pivoted to a web build (web/). Only run the macOS Swift
+    # compile-check when the legacy Swift app actually changes.
+    paths:
+      - "VerdantVoid.swiftpm/**"
+      - ".github/workflows/build.yml"
   workflow_dispatch:
 
 jobs:
