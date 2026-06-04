@@ -31,7 +31,7 @@ struct GrowView: View {
     }
 }
 
-private struct GeneratorRow: View {
+struct GeneratorRow: View {
     @Environment(GameModel.self) private var model
     let index: Int
 
@@ -40,6 +40,8 @@ private struct GeneratorRow: View {
         let cost = model.effectiveCost(gen)
         let affordable = model.motes >= cost
         let produces = index == 0 ? "Motes" : model.generators[index - 1].name
+        let milestone = model.milestoneMult(gen.bought)
+        let nextAt = model.nextMilestone(gen.bought)
 
         VStack(spacing: 10) {
             HStack(spacing: 12) {
@@ -53,8 +55,13 @@ private struct GeneratorRow: View {
                         Text("×\(fmtCount(gen.count))")
                             .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(.white.opacity(0.6))
+                        if milestone > 1 {
+                            Text("⚡︎×\(fmt(milestone))")
+                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .foregroundStyle(Color(hex: 0xffe27a))
+                        }
                     }
-                    Text("Makes \(produces)  ·  owned bonus active")
+                    Text("Makes \(produces)  ·  ⚡︎ at \(nextAt) bought")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.white.opacity(0.55))
                 }

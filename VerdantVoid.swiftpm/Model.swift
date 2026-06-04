@@ -10,15 +10,24 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
     /// Global speed multiplier applied to all production. Faster = easier.
     var speed: Double {
         switch self {
-        case .easy:   return 2.0
+        case .easy:   return 2.5
         case .medium: return 1.0
         case .hard:   return 0.5
+        }
+    }
+    /// A flat head-start multiplier on early production, biggest on Easy. Decays
+    /// as the run matures so it never trivialises the late game.
+    var earlyBoost: Double {
+        switch self {
+        case .easy:   return 1.6
+        case .medium: return 1.0
+        case .hard:   return 0.8
         }
     }
     var label: String { rawValue.capitalized }
     var blurb: String {
         switch self {
-        case .easy:   return "2x speed. A relaxed climb — great for a first run."
+        case .easy:   return "2.5× speed and a head start. A relaxed climb — great for a first run."
         case .medium: return "Standard pace. The intended balance."
         case .hard:   return "Half speed. Every reset layer matters. For veterans."
         }
@@ -122,6 +131,21 @@ final class GameModel {
     var discovered: Set<String> = []
     /// Transient queue of just-unlocked discoveries, for the toast. Not saved.
     var newlyDiscovered: [String] = []
+    /// The discovery currently shown in the toast, and when it appeared. Driven by
+    /// the game tick (not by view lifecycle) so the banner can never get stuck.
+    var activeToast: String? = nil
+    var toastShownAt: Date = .distantPast
+
+    // --- Collection cards (unlocked at the first Singularity) ---
+    var ownedCards: Set<String> = []
+    var equippedCards: [String] = []
+    var packsPulled: Int = 0
+
+    // --- System-unlock celebration events (gradual onboarding) ---
+    var pendingUnlocks: [String] = []
+    var seenUnlocks: Set<String> = []
+    /// A full-screen world-arrival transition is requested for this world index.
+    var pendingWorldArrival: Int? = nil
 
     // --- Progression ---
     var worldIndex: Int = 0
@@ -157,23 +181,25 @@ final class GameModel {
 
     static func defaultGenerators() -> [Generator] {
         return [
-            Generator(id: 0, name: "Spore",   glyph: "circle.hexagongrid.fill", baseCost: 10,    costGrowth: 1.12, baseProd: 1.0),
-            Generator(id: 1, name: "Sprout",  glyph: "leaf.fill",               baseCost: 120,   costGrowth: 1.14, baseProd: 0.25),
-            Generator(id: 2, name: "Shrub",   glyph: "camera.macro",            baseCost: 1.4e3, costGrowth: 1.16, baseProd: 0.18),
-            Generator(id: 3, name: "Tree",    glyph: "tree.fill",               baseCost: 2.0e4, costGrowth: 1.18, baseProd: 0.14),
-            Generator(id: 4, name: "Grove",   glyph: "leaf.circle.fill",        baseCost: 4.0e5, costGrowth: 1.20, baseProd: 0.11),
-            Generator(id: 5, name: "Ancient", glyph: "laurel.leading",          baseCost: 1.0e7, costGrowth: 1.22, baseProd: 0.09)
+            Generator(id: 0, name: "Spore",   glyph: "circle.hexagongrid.fill", baseCost: 10,    costGrowth: 1.10,  baseProd: 1.0),
+            Generator(id: 1, name: "Sprout",  glyph: "leaf.fill",               baseCost: 110,   costGrowth: 1.12,  baseProd: 0.25),
+            Generator(id: 2, name: "Shrub",   glyph: "camera.macro",            baseCost: 1.3e3, costGrowth: 1.13,  baseProd: 0.18),
+            Generator(id: 3, name: "Tree",    glyph: "tree.fill",               baseCost: 1.7e4, costGrowth: 1.145, baseProd: 0.14),
+            Generator(id: 4, name: "Grove",   glyph: "leaf.circle.fill",        baseCost: 3.0e5, costGrowth: 1.16,  baseProd: 0.11),
+            Generator(id: 5, name: "Ancient", glyph: "laurel.leading",          baseCost: 7.0e6, costGrowth: 1.175, baseProd: 0.09)
         ]
     }
 
     static let upgrades: [UpgradeDef] = [
         // --- Mote upgrades (reset every Bloom) ---
         UpgradeDef(id: "tap1",  name: "Sharper Touch", info: "Doubles the Motes gained per tap.",
-                   currency: .motes, maxLevel: 25, baseCost: 50, growth: 3.4),
-        UpgradeDef(id: "prod1", name: "Fertile Soil",  info: "All production ×1.5.",
-                   currency: .motes, maxLevel: 30, baseCost: 250, growth: 4.6),
+                   currency: .motes, maxLevel: 25, baseCost: 30, growth: 3.0),
+        UpgradeDef(id: "prod1", name: "Fertile Soil",  info: "All production ×1.5 — and every 10 levels the bonus itself grows stronger.",
+                   currency: .motes, maxLevel: 30, baseCost: 220, growth: 4.4),
         UpgradeDef(id: "tier1", name: "Spore Surge",   info: "Spore output ×2.",
                    currency: .motes, maxLevel: 15, baseCost: 600, growth: 5.5),
+        UpgradeDef(id: "m_syn", name: "Mycorrhizal Net", info: "Production rises with the number of distinct lifeforms you own (+15% each, per level).",
+                   currency: .motes, maxLevel: 10, baseCost: 1.5e3, growth: 4.0),
         UpgradeDef(id: "cost1", name: "Lean Roots",    info: "Generator costs ×0.96 (cheaper).",
                    currency: .motes, maxLevel: 12, baseCost: 2.0e3, growth: 7.0),
 
@@ -211,7 +237,15 @@ final class GameModel {
         UpgradeDef(id: "s_autobloom", name: "Eternal Bloom",   info: "Unlocks Auto-Bloom.",
                    currency: .stardust, maxLevel: 1, baseCost: 30, growth: 1),
         UpgradeDef(id: "s_autoterra", name: "Gaia Engine",     info: "Unlocks Auto-Terraform.",
-                   currency: .stardust, maxLevel: 1, baseCost: 75, growth: 1)
+                   currency: .stardust, maxLevel: 1, baseCost: 75, growth: 1),
+
+        // --- Sap upgrades (spent in the Root Web; persist until a Singularity) ---
+        UpgradeDef(id: "sap_budget", name: "Deep Aquifer",   info: "+3 to your Water budget. Room for thirstier webs.",
+                   currency: .sap, maxLevel: 25, baseCost: 18, growth: 1.55),
+        UpgradeDef(id: "sap_out",    name: "Rich Loam",      info: "Root Web output ×1.25.",
+                   currency: .sap, maxLevel: 25, baseCost: 30, growth: 1.7),
+        UpgradeDef(id: "sap_rate",   name: "Living Sapwells", info: "All Sap gain ×1.3.",
+                   currency: .sap, maxLevel: 20, baseCost: 25, growth: 1.65)
     ]
 
     static func upgrade(_ id: String) -> UpgradeDef {
@@ -265,6 +299,33 @@ final class GameModel {
         return currentWorld.prodMult * worldStep * terraformer
     }
 
+    /// How many distinct lifeforms (generators) you currently own at least one of.
+    var distinctLifeforms: Int { generators.filter { $0.count >= 1 }.count }
+
+    /// Mycorrhizal Net: production scales with build breadth.
+    var synergyMult: Double { 1.0 + 0.15 * L("m_syn") * Double(distinctLifeforms) }
+
+    /// Fertile Soil, compounding: the per-level effect itself steps up every 10 levels (GCI-style).
+    var fertileSoilMult: Double {
+        let lvl = L("prod1")
+        let perLevel = 0.5 * (1.0 + 0.5 * floor(lvl / 10.0))
+        return pow(1.0 + perLevel, lvl)
+    }
+
+    /// A decaying head-start so Easy feels snappy without breaking the late game.
+    /// Full strength until the first Bloom, then fades over the next few worlds.
+    var earlyBoostMult: Double {
+        let decay = pow(0.6, Double(blooms) + Double(worldIndex) * 0.5)
+        return 1.0 + (difficulty.earlyBoost - 1.0) * decay
+    }
+
+    /// Every 25 *purchased* of a single lifeform doubles that lifeform's output
+    /// (GCI milestones). Based on `bought` (not `count`, which auto-inflates) and
+    /// capped so it can never overflow to infinity.
+    func milestoneMult(_ bought: Int) -> Double { pow(2.0, min(floor(Double(bought) / 25.0), 40)) }
+    /// Purchases remaining until this lifeform's next milestone.
+    func nextMilestone(_ bought: Int) -> Int { (bought / 25 + 1) * 25 }
+
     /// The single multiplier applied to all passive production.
     var globalMult: Double {
         var m = effectiveSpeed
@@ -272,8 +333,11 @@ final class GameModel {
         m *= biomassMult
         m *= stardustMult
         m *= worldMult
-        m *= pow(1.5, L("prod1")) * pow(2.0, L("p_prod"))
+        m *= fertileSoilMult * pow(2.0, L("p_prod"))
+        m *= synergyMult       // Mycorrhizal Net (build-breadth synergy)
+        m *= earlyBoostMult    // Difficulty head-start (decays)
         m *= rootWebMult       // The Root Web (spatial puzzle layer)
+        m *= cardMult          // Equipped collection cards
         m *= journalMult       // Field Journal discoveries
         m *= seasonProdMult    // Day-phase photosynthesis bonus
         return m
@@ -283,23 +347,23 @@ final class GameModel {
 
     var clickValue: Double {
         let base = pow(2.0, L("tap1")) * pow(3.0, L("p_click"))
-        return base * max(1.0, globalMult) * seasonTapMult
+        return base * max(1.0, globalMult) * seasonTapMult * cardTapMult
     }
 
     func effectiveCost(_ g: Generator) -> Double {
         let costReduce = pow(0.96, L("cost1"))
         let baseReduce = pow(0.85, L("b_cheap"))
-        return g.rawCost * costReduce * baseReduce
+        return g.rawCost * costReduce * baseReduce * cardCostMult
     }
 
     /// Motes produced per second by Spores (the only generator feeding Motes directly).
     var motesPerSecond: Double {
-        var v = generators[0].count * generators[0].baseProd * tier0Mult * globalMult
+        var v = generators[0].count * generators[0].baseProd * milestoneMult(generators[0].bought) * tier0Mult * globalMult
         if autoTap && unlocked("s_autotap") { v += clickValue }
         return v
     }
 
-    var offlineCapSeconds: Double { 14_400.0 + L("b_off") * 7_200.0 }
+    var offlineCapSeconds: Double { 14_400.0 + L("b_off") * 7_200.0 + cardOfflineBonus }
 
     // MARK: Actions
 
@@ -364,6 +428,8 @@ final class GameModel {
         guard canBloom else { return }
         pollen += pollenGain
         blooms += 1
+        // Seed Sap so the Root Web is reachable from the very first Bloom.
+        sap += (5.0 + 2.0 * Double(blooms)) * seasonSapMult
         resetMoteLayer()
     }
 
@@ -394,6 +460,7 @@ final class GameModel {
         biomass += biomassGain
         terraforms += 1
         worldIndex += 1
+        pendingWorldArrival = worldIndex   // trigger the arrival "journey" transition
         // Reset everything in the Mote + Pollen layers.
         pollen = 0
         for def in GameModel.upgrades where def.currency == .pollen {
@@ -407,7 +474,8 @@ final class GameModel {
     var singularityReq: Double { 60.0 }
     var stardustGain: Double {
         guard biomass >= singularityReq else { return 0 }
-        return max(1, (pow(biomass, 0.4) + Double(worldIndex)).rounded(.down))
+        // +singularities is a floor term (EUT): every collapse out-earns the last.
+        return max(1, (pow(biomass, 0.4) + Double(worldIndex) + Double(singularities)).rounded(.down))
     }
     var canSingularity: Bool { biomass >= singularityReq }
 
@@ -416,9 +484,10 @@ final class GameModel {
         stardust += stardustGain
         singularities += 1
         worldIndex = 0
+        pendingWorldArrival = 0
         pollen = 0
         biomass = 0
-        for def in GameModel.upgrades where def.currency == .pollen || def.currency == .biomass {
+        for def in GameModel.upgrades where def.currency == .pollen || def.currency == .biomass || def.currency == .sap {
             upgradeLevels[def.id] = 0
         }
         resetMoteLayer()
@@ -440,12 +509,12 @@ final class GameModel {
         // Each higher tier produces units of the tier directly below it.
         if generators.count >= 2 {
             for i in stride(from: generators.count - 1, through: 1, by: -1) {
-                let add = generators[i].count * generators[i].baseProd * m * dt
+                let add = generators[i].count * generators[i].baseProd * milestoneMult(generators[i].bought) * m * dt
                 generators[i - 1].count = clampBig(generators[i - 1].count + add)
             }
         }
         // Spores (tier 0) produce Motes.
-        let moteAdd = generators[0].count * generators[0].baseProd * tier0Mult * m * dt
+        let moteAdd = generators[0].count * generators[0].baseProd * milestoneMult(generators[0].bought) * tier0Mult * m * dt
         motes = clampBig(motes + moteAdd)
         motesEarnedThisBloom = clampBig(motesEarnedThisBloom + moteAdd)
 
@@ -475,9 +544,39 @@ final class GameModel {
         accrueSap(dt)
         runAutomation()
         checkDiscoveries()
+        checkUnlocks()
+        updateToast(now)
 
         // Persist a few times a minute.
         if now.timeIntervalSince(lastSave) > 5 { save() }
+    }
+
+    /// Advances the discovery toast on the game clock: shows the next queued
+    /// discovery and retires it after a few seconds. Immune to view-lifecycle bugs.
+    private func updateToast(_ now: Date) {
+        if activeToast != nil, now.timeIntervalSince(toastShownAt) >= 2.8 {
+            activeToast = nil
+        }
+        if activeToast == nil, !newlyDiscovered.isEmpty {
+            activeToast = newlyDiscovered.removeFirst()
+            toastShownAt = now
+        }
+    }
+
+    /// Detects the first time each major system becomes available and queues a
+    /// one-shot celebratory banner (gradual onboarding).
+    private func checkUnlocks() {
+        func fire(_ id: String, _ condition: Bool) {
+            if condition && !seenUnlocks.contains(id) {
+                seenUnlocks.insert(id)
+                pendingUnlocks.append(id)
+            }
+        }
+        fire("ascend", canBloom)
+        fire("roots", rootWebUnlocked)
+        fire("terraform", canTerraform)
+        fire("cosmos", singularities >= 1 || stardust > 0)
+        fire("cards", cardsUnlocked)
     }
 
     private func runAutomation() {
@@ -552,6 +651,10 @@ final class GameModel {
         var rootKinds: [String] = []
         var yearPhase: Double = 0
         var discovered: [String] = []
+        var ownedCards: [String] = []
+        var equippedCards: [String] = []
+        var packsPulled: Int = 0
+        var seenUnlocks: [String] = []
         var worldIndex: Int
         var difficulty: Difficulty
         var motesEarnedThisBloom: Double
@@ -575,6 +678,10 @@ final class GameModel {
             rootKinds: kinds,
             yearPhase: yearPhase,
             discovered: Array(discovered),
+            ownedCards: Array(ownedCards),
+            equippedCards: equippedCards,
+            packsPulled: packsPulled,
+            seenUnlocks: Array(seenUnlocks),
             worldIndex: worldIndex,
             difficulty: difficulty,
             motesEarnedThisBloom: motesEarnedThisBloom,
@@ -605,6 +712,10 @@ final class GameModel {
         }
         yearPhase = s.yearPhase
         discovered = Set(s.discovered)
+        ownedCards = Set(s.ownedCards)
+        equippedCards = s.equippedCards.filter { ownedCards.contains($0) }
+        packsPulled = s.packsPulled
+        seenUnlocks = Set(s.seenUnlocks)
         worldIndex = s.worldIndex
         difficulty = s.difficulty
         motesEarnedThisBloom = s.motesEarnedThisBloom
@@ -623,6 +734,13 @@ final class GameModel {
         yearPhase = 0
         discovered = []
         newlyDiscovered = []
+        activeToast = nil
+        ownedCards = []
+        equippedCards = []
+        packsPulled = 0
+        seenUnlocks = []
+        pendingUnlocks = []
+        pendingWorldArrival = nil
         worldIndex = 0
         motesEarnedThisBloom = 0
         totalTaps = 0; blooms = 0; terraforms = 0; singularities = 0

@@ -15,8 +15,7 @@ extension GameModel {
 
     func accrueSap(_ dt: Double) {
         guard rootWebUnlocked else { return }
-        let rate = evaluateRootWeb().sapPerSec * seasonSapMult
-        sap = min(1e300, sap + rate * dt)
+        sap = min(1e300, sap + sapPerSecond * dt)
     }
 
     var seasonIndex: Int { min(3, max(0, Int(yearPhase * 4))) }

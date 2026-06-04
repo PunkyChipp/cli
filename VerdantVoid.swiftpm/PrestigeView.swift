@@ -12,11 +12,19 @@ struct PrestigeView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     bloomCard
+                    if model.pollen > 0 || model.blooms > 0 {
+                        SectionTitle(text: "Pollen Upgrades", glyph: "circle.grid.cross.fill")
+                        ForEach(model.upgrades(for: .pollen)) { def in UpgradeRow(def: def) }
+                    }
                     if model.blooms > 0 || model.terraforms > 0 || model.biomass > 0 {
                         terraformCard
                     }
                     if model.terraforms > 0 || model.singularities > 0 || model.stardust > 0 {
                         singularityCard
+                    }
+                    if model.biomass > 0 || model.terraforms > 0 {
+                        SectionTitle(text: "Biomass Upgrades", glyph: "leaf.circle.fill")
+                        ForEach(model.upgrades(for: .biomass)) { def in UpgradeRow(def: def) }
                     }
                 }
                 .padding(16)

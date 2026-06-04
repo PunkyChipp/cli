@@ -17,6 +17,7 @@ struct RootWebView: View {
                     board
                     palette
                     info
+                    sapShop
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 20)
@@ -234,6 +235,16 @@ struct RootWebView: View {
             Spacer()
         }
         .card(accent: color)
+    }
+
+    // MARK: Sap shop
+
+    private var sapShop: some View {
+        VStack(spacing: 12) {
+            SectionTitle(text: "Sap Upgrades", glyph: "drop.fill")
+            ForEach(model.upgrades(for: .sap)) { def in UpgradeRow(def: def) }
+        }
+        .padding(.top, 4)
     }
 
     // MARK: Interaction
