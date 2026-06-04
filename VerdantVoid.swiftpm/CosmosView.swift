@@ -21,35 +21,30 @@ struct CosmosView: View {
             if section == 1 && model.cardsUnlocked {
                 CardCodexView()
             } else {
-                techScroll
-            }
-        }
-    }
+                ScrollView {
+                    VStack(spacing: 14) {
+                        if model.stardust <= 0 && model.singularities == 0 {
+                            lockedNotice
+                        }
 
-    private var techScroll: some View {
-        @Bindable var model = model
-        return ScrollView {
-            VStack(spacing: 14) {
-                if model.stardust <= 0 && model.singularities == 0 {
-                    lockedNotice
+                        SectionTitle(text: "Cosmos Tech", glyph: "star.fill")
+                        ForEach(model.upgrades(for: .stardust)) { def in
+                            UpgradeRow(def: def)
+                        }
+
+                        SectionTitle(text: "Automation", glyph: "gearshape.2.fill")
+                        automationToggle(title: "Auto-Tap", info: "Gathers Motes for you continuously.",
+                                         unlockId: "s_autotap", isOn: $model.autoTap)
+                        automationToggle(title: "Auto-Buy Generators", info: "Spends spare Motes on the cheapest lifeforms.",
+                                         unlockId: "s_autogen", isOn: $model.autoBuyGens)
+                        automationToggle(title: "Auto-Bloom", info: "Blooms automatically once it's worth 5+ Pollen.",
+                                         unlockId: "s_autobloom", isOn: $model.autoBloom)
+                        automationToggle(title: "Auto-Terraform", info: "Terraforms to the next world as soon as possible.",
+                                         unlockId: "s_autoterra", isOn: $model.autoTerraform)
+                    }
+                    .padding(16)
                 }
-
-                SectionTitle(text: "Cosmos Tech", glyph: "star.fill")
-                ForEach(model.upgrades(for: .stardust)) { def in
-                    UpgradeRow(def: def)
-                }
-
-                SectionTitle(text: "Automation", glyph: "gearshape.2.fill")
-                automationToggle(title: "Auto-Tap", info: "Gathers Motes for you continuously.",
-                                 unlockId: "s_autotap", isOn: $model.autoTap)
-                automationToggle(title: "Auto-Buy Generators", info: "Spends spare Motes on the cheapest lifeforms.",
-                                 unlockId: "s_autogen", isOn: $model.autoBuyGens)
-                automationToggle(title: "Auto-Bloom", info: "Blooms automatically once it's worth 5+ Pollen.",
-                                 unlockId: "s_autobloom", isOn: $model.autoBloom)
-                automationToggle(title: "Auto-Terraform", info: "Terraforms to the next world as soon as possible.",
-                                 unlockId: "s_autoterra", isOn: $model.autoTerraform)
             }
-            .padding(16)
         }
     }
 
