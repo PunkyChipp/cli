@@ -144,8 +144,8 @@ function fmtTime(s) { s = Math.floor(s); const m = (s / 60) | 0, h = (m / 60) | 
 // ---------- world layout ----------
 const WW = 1500, LH = 1500;
 const LAYERS = [
-  { name: "Sunlit Shallows", col: "#1aa6c8", accent: "#8ff0ff", light: 1.00, req: 0,   fish: ["shimmer", "school"], ups: ["speed", "appetite"] },
-  { name: "Kelp Forest",     col: "#0d6f86", accent: "#6fe0c0", light: 0.78, req: 8,   fish: ["school", "darter"],  ups: ["agility", "range"] },
+  { name: "Sunlit Shallows", col: "#1aa6c8", accent: "#8ff0ff", light: 1.00, req: 0,   fish: ["shimmer", "school"], ups: ["speed", "appetite", "school"] },
+  { name: "Kelp Forest",     col: "#0d6f86", accent: "#6fe0c0", light: 0.78, req: 8,   fish: ["school", "darter"],  ups: ["agility", "range", "bloom"] },
   { name: "Twilight Reach",  col: "#0a3b6e", accent: "#6fa8ff", light: 0.46, req: 32,  fish: ["darter", "fat"],     ups: ["magnet", "luck"] },
   { name: "The Midnight",    col: "#0a0a24", accent: "#b46fff", light: 0.20, req: 90,  fish: ["fat", "glow"],       ups: ["glow", "appetite"] },
   { name: "The Trench",      col: "#04060f", accent: "#4ff0e0", light: 0.07,  req: 200,  fish: ["glow", "whale"],     ups: ["speed", "glow"] },
@@ -176,7 +176,9 @@ const UPS = {
   magnet:   { name: "Lure Glow",    icon: "🧲", color: "#c08bff", cap: 30, base: 30, growth: 1.28, desc: "Pull fish toward you" },
   luck:     { name: "Keen Senses",  icon: "🍀", color: "#7affc0", cap: 30, base: 40, growth: 1.30, desc: "Rare-fish luck" },
   appetite: { name: "Big Appetite", icon: "🍽", color: "#ff8ad0", cap: 60, base: 20, growth: 1.18, desc: "Biomass per fish" },
-  glow:     { name: "Anglerlight",  icon: "🔦", color: "#fff2a6", cap: 40, base: 26, growth: 1.22, desc: "See further in the dark" }
+  glow:     { name: "Anglerlight",  icon: "🔦", color: "#fff2a6", cap: 40, base: 26, growth: 1.22, desc: "See further in the dark" },
+  school:   { name: "Shoaling",     icon: "🐟", color: "#9ee7c8", cap: 40, base: 15, growth: 1.20, desc: "+Fish that can gather at once" },
+  bloom:    { name: "Plankton Bloom", icon: "🌱", color: "#7affc0", cap: 40, base: 18, growth: 1.22, desc: "Fish return faster after eaten" }
 };
 const PERM = {
   pglow:  { name: "Eternal Glow",   icon: "🔆", cap: 15, base: 3, growth: 1.55, desc: "Permanent light radius" },
@@ -286,7 +288,7 @@ const ACH = [
 // ---------- state ----------
 function newState() {
   return { started: false, difficulty: "diver", biomass: 0, size: 0, relics: 0,
-    up: { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0 },
+    up: { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0, school: 0, bloom: 0 },
     perm: { pglow: 0, pspeed: 0, pbite: 0, psense: 0, pappet: 0 },
     roe: 0, molts: 0, apexTier: 0, deepLayer: 0, evo: {}, autoOn: {}, autoMoltTarget: 3, moltSeen: false,
     lineage: 0, migrations: 0, migTier: 0, bl: {}, migSeen: false, bestAwake: false,
@@ -298,7 +300,7 @@ let S = newState();
 const W = { creature: null, fish: [], orbs: [], eggs: [], treas: [], parts: [], floats: [],
   cam: { x: 0, y: 0 }, shake: 0, combo: 0, comboT: 0, eggTimer: 9, treasTimer: 10, t: 0, barrier: null, hintT: 0,
   boss: null, bossCD: 20, frenzy: null, frenzyTimer: 80, autoBuyT: 0, autoEatT: 0, warnT: 0 };
-let CV, X, VW = 800, VH = 600, RES = 1;
+let CV, X, VW = 800, VH = 600, RES = 1, RES_CAP = 1;
 const input = { x: 0, y: 0, ox: 0, oy: 0, down: false, keys: {} };
 
 // ---------- derived ----------
@@ -337,7 +339,8 @@ function armorMult() { return Math.max(0.15, 1 - 0.03 * bl("bl_armor")); }
 function regenRate() { return 2 + 2 * bl("bl_regen"); }
 function knockMult() { return Math.max(0.2, 1 - 0.04 * bl("bl_knock")); }
 function salvageMult() { return (1 + 0.5 * S.perm.psense) * (1 + 0.2 * bl("bl_salvage")); }
-function fishTarget() { return 34 + 4 * bl("bl_density"); }
+function fishCap() { return 26 + 5 * (S.up.school || 0) + 4 * bl("bl_density"); }
+function spawnRate() { return 5 + 2 * (S.up.bloom || 0) + 0.5 * bl("bl_density"); }
 function frenzyPower() { return 3 + 0.5 * bl("bl_frenzy"); }
 function frenzyTime() { return 12 + 1.5 * bl("bl_frenzy"); }
 function frenzyEvery() { return [Math.max(20, 70 - 2 * bl("bl_frenzy")), Math.max(40, 130 - 3 * bl("bl_frenzy"))]; }
@@ -371,15 +374,17 @@ function init() {
   W.creature = { x: WW / 2, y: 200, vx: 0, vy: 0, ang: 1.57, chomp: 0 };
   W.cam.x = W.creature.x - VW / 2; W.cam.y = W.creature.y - VH / 2;
   buildOrbs();
-  for (let i = 0; i < fishTarget(); i++) spawnFish(true);
+  for (let i = 0; i < fishCap(); i++) spawnFish(true);
   bindInput(); requestAnimationFrame(loop); setInterval(hud, 160);
   if (!S.started) showStart(); else hideOverlay();
 }
-function resize() { VW = window.innerWidth; VH = window.innerHeight; RES = Math.min(1, 1080 / Math.max(1, VW)); if (CV) { CV.width = Math.round(VW * RES); CV.height = Math.round(VH * RES); } }
+function applyRes() { if (CV) { CV.width = Math.max(1, Math.round(VW * RES)); CV.height = Math.max(1, Math.round(VH * RES)); } }
+function resize() { VW = window.innerWidth; VH = window.innerHeight; RES_CAP = Math.min(1, 1180 / Math.max(1, VW)); RES = Math.min(RES, RES_CAP); applyRes(); }
+function adaptRes() { const ms = W.fms || 16; if (ms > 22 && RES > 0.55) { RES = Math.max(0.55, RES - 0.08); applyRes(); } else if (ms < 13.5 && RES < RES_CAP) { RES = Math.min(RES_CAP, RES + 0.05); applyRes(); } }
 const KEY = "abyss.deep.v1";
 function save() { S.lastSave = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 function load() { try { const r = localStorage.getItem(KEY); if (r) S = Object.assign(newState(), JSON.parse(r)); } catch (e) {} }
-function hardReset() { try { localStorage.removeItem(KEY); } catch (e) {} S = newState(); S.started = true; W.fish = []; W.treas = []; for (let i = 0; i < fishTarget(); i++) spawnFish(true); buildOrbs(); }
+function hardReset() { try { localStorage.removeItem(KEY); } catch (e) {} S = newState(); S.started = true; W.fish = []; W.treas = []; for (let i = 0; i < fishCap(); i++) spawnFish(true); buildOrbs(); }
 
 // ---------- spawning ----------
 function buildOrbs() {
@@ -439,7 +444,10 @@ function steer() {
 }
 
 // ---------- loop ----------
-function loop(ts) { const now = ts / 1000; let dt = now - (W.t || now); W.t = now; if (dt > 0.05) dt = 0.05; if (S.started) update(dt); render(); requestAnimationFrame(loop); }
+function loop(ts) { const now = ts / 1000; let dt = now - (W.t || now); W.t = now; if (dt > 0.05) dt = 0.05; if (dt < 0) dt = 0;
+  W.fms = W.fms ? W.fms * 0.9 + dt * 1000 * 0.1 : dt * 1000;
+  if ((W.fc = (W.fc || 0) + 1) % 36 === 0) adaptRes();
+  if (S.started) update(dt); render(); requestAnimationFrame(loop); }
 function update(dt) {
   S.stats.playtime += dt;
   const c = W.creature, [sx, sy] = steer();
@@ -495,7 +503,11 @@ function update(dt) {
     const edible = !ft.needs || cr >= ft.r * 0.82;
     if (edible && dd < br + ft.r) eat(i, f, ft);
   }
-  while (W.fish.length < fishTarget()) spawnFish(false);
+  // timed respawn up to the cap (Shoaling raises the cap, Plankton Bloom the rate)
+  W.spawnAcc = (W.spawnAcc || 0) + spawnRate() * dt;
+  const cap = fishCap();
+  while (W.spawnAcc >= 1 && W.fish.length < cap) { spawnFish(false); W.spawnAcc -= 1; }
+  if (W.spawnAcc > 4) W.spawnAcc = 4;
 
   // orbs
   for (const o of W.orbs) { o.ph += dt * 2; o.flash = Math.max(0, o.flash - dt * 3);
@@ -555,16 +567,16 @@ function doMolt() {
   if (!canMolt()) return;
   S.roe += roeGain(); S.molts++; S.apexTier++;
   S.size = startSize(); S.biomass = 0;
-  S.up = { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0 };
+  S.up = { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0, school: 0, bloom: 0 };
   const c = W.creature; c.x = WW / 2; c.y = 200; c.vx = c.vy = 0;
   W.cam.x = c.x - VW / 2; W.cam.y = c.y - VH / 2;
-  W.fish = []; for (let i = 0; i < fishTarget(); i++) spawnFish(true); buildOrbs(); W.hp = maxHP(); W.boss = null; W.shake = 1;
+  W.fish = []; for (let i = 0; i < fishCap(); i++) spawnFish(true); buildOrbs(); W.hp = maxHP(); W.boss = null; W.shake = 1;
 }
 function resetDive() {
   S.size = startSize(); S.biomass = 0;
-  S.up = { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0 };
+  S.up = { speed: 0, agility: 0, range: 0, magnet: 0, luck: 0, appetite: 0, glow: 0, school: 0, bloom: 0 };
   const c = W.creature; c.x = WW / 2; c.y = 200; c.vx = c.vy = 0; W.cam.x = c.x - VW / 2; W.cam.y = c.y - VH / 2;
-  W.fish = []; for (let i = 0; i < fishTarget(); i++) spawnFish(true); buildOrbs(); W.hp = maxHP(); W.boss = null; W.shake = 1;
+  W.fish = []; for (let i = 0; i < fishCap(); i++) spawnFish(true); buildOrbs(); W.hp = maxHP(); W.boss = null; W.shake = 1;
 }
 function doMigrate() { if (!canMigrate()) return; S.lineage += lineageGain(); S.migrations++; S.migTier++; S.bestAwake = true; S.roe = 0; S.evo = {}; S.apexTier = 0; S.molts = 0; S.moltSeen = false; resetDive(); }
 function doAscend() { if (!canAscend()) return; S.spirit += spiritGain(); S.ascensions++; S.ascTier++; S.lineage = 0; S.bl = {}; S.migTier = 0; S.migrations = 0; S.roe = 0; S.evo = {}; S.apexTier = 0; S.molts = 0; resetDive(); }
@@ -727,6 +739,9 @@ function apexSprite(id) {
   SPR["a" + id] = cv; return cv;
 }
 
+function darkSprite() { if (SPR.dark) return SPR.dark; const sz = 256, c = sz / 2; const cv = sprC(sz, sz), x = cv.getContext("2d");
+  const g = x.createRadialGradient(c, c, sz * 0.18, c, c, sz * 0.5); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,1)"); x.fillStyle = g; x.fillRect(0, 0, sz, sz); SPR.dark = cv; return cv; }
+
 // ---------- render ----------
 function render() {
   X.setTransform(RES, 0, 0, RES, 0, 0);   // render at a capped internal resolution (perf)
@@ -781,11 +796,20 @@ function render() {
   for (const f of W.floats) { X.globalAlpha = clamp(f.life / .95, 0, 1); ftxt(f.x, f.y, f.txt, f.color, 16); X.globalAlpha = 1; }
   X.restore();
 
-  // darkness / light bubble
+  // darkness / light bubble — baked vignette blit (cheap) + solid fill outside it
   const dark = clamp(1 - lightAt(W.creature.y), 0, 1) * 0.92;
-  if (dark > 0.02) { const cs = { x: W.creature.x - W.cam.x + shx, y: W.creature.y - W.cam.y + shy }, gr = glowRadius();
-    const lg = X.createRadialGradient(cs.x, cs.y, gr * 0.35, cs.x, cs.y, gr * 1.8);
-    lg.addColorStop(0, "rgba(0,0,0,0)"); lg.addColorStop(1, "rgba(0,0,0," + dark + ")"); X.fillStyle = lg; X.fillRect(0, 0, VW, VH); }
+  if (dark > 0.02) {
+    const csx = W.creature.x - W.cam.x + shx, csy = W.creature.y - W.cam.y + shy, gr = glowRadius();
+    const ds = darkSprite(), w = gr * 5.2, L = csx - w / 2, R = csx + w / 2, T = csy - w / 2, B = csy + w / 2;
+    X.save(); X.globalAlpha = dark; X.fillStyle = "#000";
+    X.drawImage(ds, L, T, w, w);
+    if (T > 0) X.fillRect(0, 0, VW, T);
+    if (B < VH) X.fillRect(0, B, VW, VH - B);
+    const yt = Math.max(0, T), yb = Math.min(VH, B);
+    if (L > 0) X.fillRect(0, yt, L, yb - yt);
+    if (R < VW) X.fillRect(R, yt, VW - R, yb - yt);
+    X.globalAlpha = 1; X.restore();
+  }
 
   if (W.combo > 1) { X.textAlign = "center"; X.fillStyle = accentAt(W.creature.y); X.font = "700 22px system-ui"; X.fillText("×" + comboMult().toFixed(1) + " combo", VW / 2, 96); }
   if (W.frenzy && W.frenzy.t > 0) { X.textAlign = "center"; X.fillStyle = "#ffd86b"; X.font = "800 26px system-ui"; X.globalAlpha = clamp(W.frenzy.t, 0, 1); X.fillText("🌀 FEEDING FRENZY ×" + W.frenzy.mult.toFixed(1), VW / 2, 130); X.globalAlpha = 1; }
