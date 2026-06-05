@@ -177,7 +177,7 @@ let S = newState();
 const W = { creature: null, fish: [], orbs: [], eggs: [], treas: [], parts: [], floats: [],
   cam: { x: 0, y: 0 }, shake: 0, combo: 0, comboT: 0, eggTimer: 9, treasTimer: 10, t: 0, barrier: null, hintT: 0,
   boss: null, bossCD: 20, frenzy: null, frenzyTimer: 80, autoBuyT: 0, autoEatT: 0, warnT: 0 };
-let CV, X, VW = 800, VH = 600;
+let CV, X, VW = 800, VH = 600, RES = 1;
 const input = { x: 0, y: 0, ox: 0, oy: 0, down: false, keys: {} };
 
 // ---------- derived ----------
@@ -216,7 +216,7 @@ function armorMult() { return Math.max(0.15, 1 - 0.03 * bl("bl_armor")); }
 function regenRate() { return 2 + 2 * bl("bl_regen"); }
 function knockMult() { return Math.max(0.2, 1 - 0.04 * bl("bl_knock")); }
 function salvageMult() { return (1 + 0.5 * S.perm.psense) * (1 + 0.2 * bl("bl_salvage")); }
-function fishTarget() { return 46 + 4 * bl("bl_density"); }
+function fishTarget() { return 34 + 4 * bl("bl_density"); }
 function frenzyPower() { return 3 + 0.5 * bl("bl_frenzy"); }
 function frenzyTime() { return 12 + 1.5 * bl("bl_frenzy"); }
 function frenzyEvery() { return [Math.max(20, 70 - 2 * bl("bl_frenzy")), Math.max(40, 130 - 3 * bl("bl_frenzy"))]; }
@@ -254,7 +254,7 @@ function init() {
   bindInput(); requestAnimationFrame(loop); setInterval(hud, 160);
   if (!S.started) showStart(); else hideOverlay();
 }
-function resize() { VW = window.innerWidth; VH = window.innerHeight; if (CV) { CV.width = VW; CV.height = VH; } }
+function resize() { VW = window.innerWidth; VH = window.innerHeight; RES = Math.min(1, 1080 / Math.max(1, VW)); if (CV) { CV.width = Math.round(VW * RES); CV.height = Math.round(VH * RES); } }
 const KEY = "abyss.deep.v1";
 function save() { S.lastSave = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 function load() { try { const r = localStorage.getItem(KEY); if (r) S = Object.assign(newState(), JSON.parse(r)); } catch (e) {} }
@@ -305,10 +305,10 @@ function bindInput() {
 const JOY_R = 78;   // how far you push for full thrust
 function steer() {
   let dx = 0, dy = 0;
-  if (input.down) {  // dynamic floating joystick — base trails the thumb for 1:1 steering
+  if (input.down) {  // fixed-base floating joystick: stays where you pressed; only drifts if you wander far
     let jx = input.x - input.ox, jy = input.y - input.oy, m = Math.hypot(jx, jy);
-    if (m > JOY_R) { input.ox = input.x - jx / m * JOY_R; input.oy = input.y - jy / m * JOY_R; jx = input.x - input.ox; jy = input.y - input.oy; m = JOY_R; }
-    if (m > 5) { const mag = m / JOY_R; dx = jx / m * mag; dy = jy / m * mag; }
+    if (m > JOY_R * 1.8) { const over = m - JOY_R * 1.8; input.ox += jx / m * over; input.oy += jy / m * over; jx = input.x - input.ox; jy = input.y - input.oy; m = Math.hypot(jx, jy); }
+    if (m > 4) { const mag = Math.min(1, m / JOY_R); dx = jx / m * mag; dy = jy / m * mag; }
   }
   const k = input.keys; let kx = 0, ky = 0;
   if (k.w || k.arrowup) ky -= 1; if (k.s || k.arrowdown) ky += 1; if (k.a || k.arrowleft) kx -= 1; if (k.d || k.arrowright) kx += 1;
@@ -522,24 +522,93 @@ function startFrenzy() {
   toast("🌀 FEEDING FRENZY ×" + frenzyPower().toFixed(1) + " — eat fast!");
 }
 
-// ---------- sprite cache (perf: bake glow+emoji once, then drawImage) ----------
+// ---------- sprite cache (vector art baked once, then drawImage) ----------
 const SPR = {};
-function sprCanvas(sz) { const cv = document.createElement("canvas"); cv.width = sz; cv.height = sz; return cv; }
-function discGlow(cx, c, r, color, a) { const g = cx.createRadialGradient(c, c, 0, c, c, r); g.addColorStop(0, rgba(color, a)); g.addColorStop(1, rgba(color, 0)); cx.fillStyle = g; cx.beginPath(); cx.arc(c, c, r, 0, 6.283); cx.fill(); }
-function emojiSprite(key, glyph, color, glowR, fontPx, alpha) {
-  let s = SPR[key]; if (s) return s;
-  const sz = Math.ceil((glowR + 6) * 2), c = sz / 2; const cv = sprCanvas(sz), cx = cv.getContext("2d");
-  discGlow(cx, c, glowR, color, alpha); cx.font = fontPx + "px serif"; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillText(glyph, c, c);
+function sprC(w, h) { const cv = document.createElement("canvas"); cv.width = w; cv.height = h; return cv; }
+function shade(h, f) { const c = hexRgb(h); const q = v => Math.max(0, Math.min(255, Math.round(v)));
+  return f >= 0 ? "rgb(" + q(c[0] + (255 - c[0]) * f) + "," + q(c[1] + (255 - c[1]) * f) + "," + q(c[2] + (255 - c[2]) * f) + ")"
+                : "rgb(" + q(c[0] * (1 + f)) + "," + q(c[1] * (1 + f)) + "," + q(c[2] * (1 + f)) + ")"; }
+function discAt(x, X0, Y0, r, color, a) { const g = x.createRadialGradient(X0, Y0, 0, X0, Y0, r); g.addColorStop(0, rgba(color, a)); g.addColorStop(1, rgba(color, 0)); x.fillStyle = g; x.beginPath(); x.arc(X0, Y0, r, 0, 6.283); x.fill(); }
+
+function fishSprite(id) {
+  let s = SPR["f" + id]; if (s) return s; const ft = FISH[id], R = ft.r;
+  const w = Math.ceil(R * 3.8), h = Math.ceil(R * 2.6), c = w / 2, m = h / 2; const cv = sprC(w, h), x = cv.getContext("2d");
+  discAt(x, c, m, R + 5, ft.color, .20);
+  x.fillStyle = shade(ft.color, -.45); x.beginPath(); x.moveTo(c - R * .55, m); x.lineTo(c - R * 1.7, m - R * .8); x.lineTo(c - R * 1.3, m); x.lineTo(c - R * 1.7, m + R * .8); x.closePath(); x.fill();
+  x.fillStyle = shade(ft.color, -.2); x.beginPath(); x.moveTo(c - R * .3, m - R * .5); x.quadraticCurveTo(c, m - R * 1.2, c + R * .55, m - R * .5); x.closePath(); x.fill();
+  const g = x.createLinearGradient(0, m - R * .7, 0, m + R * .7); g.addColorStop(0, shade(ft.color, .4)); g.addColorStop(.55, ft.color); g.addColorStop(1, shade(ft.color, -.45));
+  x.fillStyle = g; x.beginPath(); x.ellipse(c, m, R * 1.15, R * .64, 0, 0, 6.283); x.fill();
+  x.fillStyle = "rgba(255,255,255,.16)"; x.beginPath(); x.ellipse(c + R * .15, m - R * .14, R * .72, R * .3, 0, 0, 6.283); x.fill();
+  x.strokeStyle = shade(ft.color, .55); x.lineWidth = Math.max(1, R * .05); x.beginPath(); x.ellipse(c, m, R * 1.15, R * .64, 0, 0, 6.283); x.stroke();
+  x.fillStyle = shade(ft.color, .65); for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(c - R * .3 + i * R * .42, m - R * .26, R * .08, 0, 6.283); x.fill(); }
+  x.fillStyle = "#0a0e14"; x.beginPath(); x.arc(c + R * .72, m - R * .08, R * .15, 0, 6.283); x.fill();
+  x.fillStyle = "#fff"; x.beginPath(); x.arc(c + R * .77, m - R * .13, R * .055, 0, 6.283); x.fill();
+  SPR["f" + id] = cv; return cv;
+}
+function gemSprite(key, color, glowR, R) {
+  let s = SPR[key]; if (s) return s; const sz = Math.ceil((glowR + 4) * 2), c = sz / 2; const cv = sprC(sz, sz), x = cv.getContext("2d");
+  discAt(x, c, c, glowR, color, .5);
+  const g = x.createLinearGradient(c, c - R, c, c + R); g.addColorStop(0, shade(color, .6)); g.addColorStop(1, shade(color, -.3));
+  x.fillStyle = g; x.beginPath(); x.moveTo(c, c - R); x.lineTo(c + R * .86, c - R * .2); x.lineTo(c + R * .55, c + R); x.lineTo(c - R * .55, c + R); x.lineTo(c - R * .86, c - R * .2); x.closePath(); x.fill();
+  x.strokeStyle = shade(color, .75); x.lineWidth = 1.5; x.stroke();
+  x.strokeStyle = "rgba(255,255,255,.45)"; x.lineWidth = 1; x.beginPath(); x.moveTo(c - R * .86, c - R * .2); x.lineTo(c, c - R * .02); x.lineTo(c + R * .86, c - R * .2); x.moveTo(c, c - R * .02); x.lineTo(c, c + R); x.stroke();
+  x.fillStyle = "rgba(255,255,255,.85)"; x.beginPath(); x.arc(c - R * .28, c - R * .4, R * .15, 0, 6.283); x.fill();
   SPR[key] = cv; return cv;
 }
-function fishSprite(id) { const ft = FISH[id]; return emojiSprite("f" + id, ft.glyph, ft.color, ft.r + 4, ft.r * 1.7 | 0, .30); }
-function eggSprite(d) { return emojiSprite("e" + d.g, d.g, d.spooky ? "#ff5c6a" : "#ffd86b", 22, 26, .35); }
-function treasSprite(g) { return emojiSprite("t" + g, g, "#ffd86b", 20, 24, .34); }
-function orbSprite(k) { const u = UPS[k]; return emojiSprite("o" + k, u.icon, u.color, 38, 22, .4); }
-function apexSprite(id) { const a = APEX.find(x => x.id === id); return emojiSprite("a" + id, a.glyph, a.color, a.r + 22, a.r * 1.9 | 0, .35); }
+function orbSprite(k) { const u = UPS[k]; return gemSprite("o" + k, u.color, 40, 16); }
+function treasSprite() { return gemSprite("treas", "#ffd86b", 24, 13); }
+function eggSprite(d) {
+  const key = "e" + (d.spooky ? 1 : 0); let s = SPR[key]; if (s) return s; const col = d.spooky ? "#ff7a86" : "#ffe08a", sz = 54, c = sz / 2;
+  const cv = sprC(sz, sz), x = cv.getContext("2d"); discAt(x, c, c, 22, col, .45);
+  const g = x.createRadialGradient(c - 4, c - 4, 1, c, c, 13); g.addColorStop(0, "#ffffff"); g.addColorStop(1, col); x.fillStyle = g; x.beginPath(); x.arc(c, c, 13, 0, 6.283); x.fill();
+  SPR[key] = cv; return cv;
+}
+function apexShape(id) { return ({ squid: "squid", devil: "angler", meg: "shark", guardian: "octopus", hadalisk: "eel", bonelord: "skull" })[id] || "shark"; }
+function apexSprite(id) {
+  let s = SPR["a" + id]; if (s) return s; const a = APEX.find(z => z.id === id), R = a.r, shp = apexShape(id);
+  const sz = Math.ceil((R + 28) * 2), c = sz / 2; const cv = sprC(sz, sz), x = cv.getContext("2d");
+  const body = shade(a.color, -.5), edge = a.color, eye = shp === "skull" ? "#ff5c6a" : a.color;
+  discAt(x, c, c, R + 24, a.color, .28); x.lineJoin = "round"; x.lineCap = "round";
+  function eyes(ex, ey, er) { x.fillStyle = "#06090e"; x.beginPath(); x.arc(c - ex, c + ey, er, 0, 6.283); x.arc(c + ex, c + ey, er, 0, 6.283); x.fill(); discAt(x, c - ex, c + ey, er * 1.8, eye, .9); discAt(x, c + ex, c + ey, er * 1.8, eye, .9); x.fillStyle = eye; x.beginPath(); x.arc(c - ex, c + ey, er * .5, 0, 6.283); x.arc(c + ex, c + ey, er * .5, 0, 6.283); x.fill(); }
+  x.fillStyle = body; x.strokeStyle = edge; x.lineWidth = Math.max(2, R * .05);
+  if (shp === "shark") {
+    x.beginPath(); x.moveTo(c + R, c); x.quadraticCurveTo(c + R * .2, c - R * .62, c - R * .7, c - R * .4); x.quadraticCurveTo(c - R * 1.1, c - R * .3, c - R * 1.15, c); x.quadraticCurveTo(c - R * 1.1, c + R * .3, c - R * .7, c + R * .45); x.quadraticCurveTo(c + R * .2, c + R * .62, c + R, c); x.closePath(); x.fill(); x.stroke();
+    x.beginPath(); x.moveTo(c - R * .1, c - R * .55); x.lineTo(c - R * .35, c - R * 1.15); x.lineTo(c - R * .55, c - R * .5); x.closePath(); x.fill();
+    x.beginPath(); x.moveTo(c - R * 1.0, c); x.lineTo(c - R * 1.5, c - R * .6); x.lineTo(c - R * 1.25, c); x.lineTo(c - R * 1.5, c + R * .6); x.closePath(); x.fill();
+    x.strokeStyle = "#06090e"; x.lineWidth = Math.max(2, R * .04); x.beginPath(); x.moveTo(c + R * .95, c + R * .08); x.quadraticCurveTo(c + R * .5, c + R * .28, c + R * .2, c + R * .2); x.stroke();
+    eyes(R * .45, -R * .12, R * .1);
+  } else if (shp === "squid") {
+    x.beginPath(); x.moveTo(c, c - R * 1.1); x.quadraticCurveTo(c + R * .6, c - R * .4, c + R * .45, c + R * .2); x.lineTo(c - R * .45, c + R * .2); x.quadraticCurveTo(c - R * .6, c - R * .4, c, c - R * 1.1); x.closePath(); x.fill(); x.stroke();
+    x.strokeStyle = body; x.lineWidth = R * .16; for (let i = -3; i <= 3; i++) { x.beginPath(); x.moveTo(c + i * R * .13, c + R * .1); x.quadraticCurveTo(c + i * R * .3, c + R * .7, c + i * R * .18, c + R * 1.15); x.stroke(); }
+    eyes(R * .28, -R * .2, R * .13);
+  } else if (shp === "angler") {
+    x.beginPath(); x.arc(c, c, R * .95, 0, 6.283); x.fill(); x.stroke();
+    x.fillStyle = "#06090e"; x.beginPath(); x.arc(c, c + R * .15, R * .8, .15, Math.PI - .15); x.closePath(); x.fill();
+    x.fillStyle = "#fff"; for (let i = 0; i < 7; i++) { const tx = c - R * .6 + i * R * .2; x.beginPath(); x.moveTo(tx, c + R * .35); x.lineTo(tx + R * .06, c + R * .6); x.lineTo(tx + R * .12, c + R * .35); x.closePath(); x.fill(); }
+    x.strokeStyle = edge; x.lineWidth = R * .05; x.beginPath(); x.moveTo(c, c - R * .9); x.quadraticCurveTo(c + R * .5, c - R * 1.4, c + R * .7, c - R * 1.0); x.stroke(); discAt(x, c + R * .7, c - R * 1.0, R * .4, edge, .9); x.fillStyle = "#fff"; x.beginPath(); x.arc(c + R * .7, c - R * 1.0, R * .12, 0, 6.283); x.fill();
+    eyes(R * .32, -R * .25, R * .12);
+  } else if (shp === "octopus") {
+    x.beginPath(); x.arc(c, c - R * .15, R * .85, Math.PI, 0); x.lineTo(c + R * .7, c + R * .2); x.lineTo(c - R * .7, c + R * .2); x.closePath(); x.fill(); x.stroke();
+    x.strokeStyle = body; x.lineWidth = R * .14; for (let i = -3; i <= 3; i++) { x.beginPath(); x.moveTo(c + i * R * .2, c + R * .15); x.quadraticCurveTo(c + i * R * .4, c + R * .8, c + i * R * .2 + (i % 2 ? R * .2 : -R * .2), c + R * 1.2); x.stroke(); }
+    eyes(R * .34, -R * .25, R * .14);
+  } else if (shp === "eel") {
+    x.strokeStyle = body; x.lineWidth = R * .5; x.beginPath(); x.moveTo(c - R * 1.1, c - R * .5); x.quadraticCurveTo(c - R * .3, c + R * .4, c + R * .4, c - R * .3); x.quadraticCurveTo(c + R * .9, c - R * .7, c + R * 1.0, c - R * .1); x.stroke();
+    x.fillStyle = body; x.beginPath(); x.arc(c + R * 1.0, c - R * .1, R * .42, 0, 6.283); x.fill(); x.strokeStyle = edge; x.lineWidth = Math.max(2, R * .05); x.stroke();
+    x.fillStyle = "#fff"; for (let i = 0; i < 5; i++) { const tx = c + R * .75 + i * R * .12; x.beginPath(); x.moveTo(tx, c + R * .1); x.lineTo(tx + R * .05, c + R * .3); x.lineTo(tx + R * .1, c + R * .1); x.closePath(); x.fill(); }
+    x.fillStyle = "#06090e"; x.beginPath(); x.arc(c + R * 1.12, c - R * .22, R * .09, 0, 6.283); x.fill(); discAt(x, c + R * 1.12, c - R * .22, R * .22, eye, .9);
+  } else {
+    x.fillStyle = "#e8e6d8"; x.beginPath(); x.arc(c, c - R * .1, R * .8, 0, 6.283); x.fill();
+    x.fillStyle = "#0a0a0a"; x.beginPath(); x.arc(c - R * .32, c - R * .2, R * .2, 0, 6.283); x.arc(c + R * .32, c - R * .2, R * .2, 0, 6.283); x.fill();
+    discAt(x, c - R * .32, c - R * .2, R * .34, "#ff5c6a", .9); discAt(x, c + R * .32, c - R * .2, R * .34, "#ff5c6a", .9);
+    x.fillStyle = "#e8e6d8"; x.beginPath(); x.moveTo(c - R * .4, c + R * .5); x.lineTo(c + R * .4, c + R * .5); x.lineTo(c + R * .25, c + R * .95); x.lineTo(c - R * .25, c + R * .95); x.closePath(); x.fill();
+    x.strokeStyle = "#0a0a0a"; x.lineWidth = 2; for (let i = 0; i < 4; i++) { x.beginPath(); x.moveTo(c - R * .3 + i * R * .2, c + R * .5); x.lineTo(c - R * .3 + i * R * .2, c + R * .95); x.stroke(); }
+  }
+  SPR["a" + id] = cv; return cv;
+}
 
 // ---------- render ----------
 function render() {
+  X.setTransform(RES, 0, 0, RES, 0, 0);   // render at a capped internal resolution (perf)
   const shx = (Math.random() - 0.5) * W.shake * 14, shy = (Math.random() - 0.5) * W.shake * 14;
   const topC = colAt(W.cam.y), botC = colAt(W.cam.y + VH);
   const g = X.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, topC); g.addColorStop(1, botC); X.fillStyle = g; X.fillRect(0, 0, VW, VH);
@@ -571,10 +640,12 @@ function render() {
     ftxt(o.x, o.y - 42, u.name + " Lv" + S.up[o.k], u.color, 12); ftxt(o.x, o.y + 42, maxed ? "MAX" : fmt(cost) + " ◍", maxed ? "#fff" : (S.biomass >= cost ? "#9be7a6" : "#ff8a94"), 12); }
 
   // treasure
-  for (const tr of W.treas) { const s = treasSprite(tr.g); X.drawImage(s, tr.x - s.width / 2, tr.y - s.height / 2); }
+  for (const tr of W.treas) { const s = treasSprite(); X.drawImage(s, tr.x - s.width / 2, tr.y - s.height / 2); }
 
-  // fish (sprite-cached)
-  for (const f of W.fish) { const s = fishSprite(f.id); X.drawImage(s, f.x - s.width / 2, f.y + f.wob - s.height / 2); }
+  // fish (vector sprites, flipped to face swim direction)
+  for (const f of W.fish) { const s = fishSprite(f.id), hw = s.width / 2, hh = s.height / 2; const y = f.y + f.wob;
+    if (f.vx < -2) { X.save(); X.translate(f.x, y); X.scale(-1, 1); X.drawImage(s, -hw, -hh); X.restore(); }
+    else X.drawImage(s, f.x - hw, y - hh); }
 
   // eggs
   for (const e of W.eggs) { const s = eggSprite(e.d); X.drawImage(s, e.x - s.width / 2, e.y - s.height / 2); }
@@ -651,34 +722,42 @@ function drawCreature() {
   // dorsal fin
   X.fillStyle = rgba(gl, .8); X.beginPath(); X.moveTo(r * .1, -r * .6); X.quadraticCurveTo(-r * .2, -r * 1.5, -r * .6, -r * .6); X.closePath(); X.fill();
   // body
-  X.fillStyle = rgba(body, .94); X.beginPath(); X.ellipse(0, 0, r * 1.15, r * .72, 0, 0, 6.283); X.fill();
-  X.fillStyle = "rgba(255,255,255,.85)"; X.beginPath(); X.ellipse(r * .2, 0, r * .7, r * .5, 0, 0, 6.283); X.fill();
-  X.fillStyle = "#08121a"; X.beginPath(); X.moveTo(r * .7, 0); X.arc(r * .55, 0, r * .55, -.5 - c.chomp * .6, .5 + c.chomp * .6); X.closePath(); X.fill();
-  X.fillStyle = "#04121a"; X.beginPath(); X.arc(r * .45, -r * .28, r * .13, 0, 6.283); X.fill();
-  X.fillStyle = rgba(ac, .9); const dots = 3 + Math.min(9, (S.size / 12) | 0); for (let i = 0; i < dots; i++) { const dx = -r * .5 + i * (r * 1.3 / dots); X.beginPath(); X.arc(dx, -r * .5, r * .08, 0, 6.283); X.fill(); }
+  const bg = X.createLinearGradient(0, -r * .72, 0, r * .72); bg.addColorStop(0, shade(body, .38)); bg.addColorStop(.55, body); bg.addColorStop(1, shade(body, -.42));
+  X.fillStyle = bg; X.beginPath(); X.ellipse(0, 0, r * 1.15, r * .72, 0, 0, 6.283); X.fill();
+  X.strokeStyle = rgba(shade(body, .5), .85); X.lineWidth = Math.max(1, r * .05); X.stroke();
+  X.fillStyle = "rgba(255,255,255,.20)"; X.beginPath(); X.ellipse(r * .15, -r * .14, r * .72, r * .3, 0, 0, 6.283); X.fill();
+  X.fillStyle = "#06101a"; X.beginPath(); X.moveTo(r * .7, 0); X.arc(r * .55, 0, r * .55, -.5 - c.chomp * .6, .5 + c.chomp * .6); X.closePath(); X.fill();
+  X.fillStyle = "#04121a"; X.beginPath(); X.arc(r * .45, -r * .28, r * .14, 0, 6.283); X.fill();
+  X.fillStyle = "#fff"; X.beginPath(); X.arc(r * .49, -r * .33, r * .05, 0, 6.283); X.fill();
+  X.fillStyle = shade(gl, .6); const dots = 3 + Math.min(9, (S.size / 12) | 0); for (let i = 0; i < dots; i++) { const dx = -r * .5 + i * (r * 1.3 / dots); X.beginPath(); X.arc(dx, -r * .5, r * .085, 0, 6.283); X.fill(); }
   X.restore();
   if (input.down) { X.strokeStyle = rgba(ac, .12); X.lineWidth = 1; X.beginPath(); X.arc(c.x, c.y, r + biteRange(), 0, 6.283); X.stroke(); }
 }
 function glow(x, y, r, color, a) { const g = X.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(color, a)); g.addColorStop(1, rgba(color, 0)); X.fillStyle = g; X.beginPath(); X.arc(x, y, r, 0, 6.283); X.fill(); }
 function ftxt(x, y, t, color, size) { X.font = "700 " + size + "px system-ui"; X.textAlign = "center"; X.fillStyle = color; X.fillText(t, x, y); }
 
+// ---------- UI icon helpers (no emoji) ----------
+function cdot(color) { return `<span class="cdot" style="--c:${color}"></span>`; }
+function gemI(color) { return `<span class="gem" style="--c:${color}"></span>`; }
+
 // ---------- HUD + overlays ----------
 function hud() {
   const c = W.creature || { y: 0 }, L = LAYERS[layerAt(c.y)], gate = allowedMaxY();
   const prog = gate.y < WORLD.h ? clamp(S.size / gate.req, 0, 1) : 1;
   const evoUnlocked = S.moltSeen || S.molts > 0 || canMolt();
+  const chip = (color, val, label) => `<div class="hchip">${cdot(color)}<div class="hcv"><b style="color:${color}">${val}</b><span>${label}</span></div></div>`;
   document.getElementById("hud").innerHTML =
-    `<div class="hchip"><b style="color:${L.accent}">◍ ${fmt(S.biomass)}</b><span>Biomass</span></div>` +
-    `<div class="hchip"><b>⬤ ${fmt(S.size)}</b><span>Size</span></div>` +
-    (S.molts > 0 || S.roe > 0 || canMolt() ? `<div class="hchip"><b style="color:#ff9ec2">🥚 ${fmt(S.roe)}</b><span>Roe${S.apexTier ? " ·T" + S.apexTier : ""}</span></div>` : "") +
-    (S.migrations > 0 || S.lineage > 0 ? `<div class="hchip"><b style="color:#ff6fd0">🩸 ${fmt(S.lineage)}</b><span>Lineage${S.migTier ? " ·T" + S.migTier : ""}</span></div>` : "") +
-    (S.ascensions > 0 || S.spirit > 0 ? `<div class="hchip"><b style="color:#8ff0ff">✦ ${fmt(S.spirit)}</b><span>Spirit</span></div>` : "") +
-    (S.wreckFound ? `<div class="hchip"><b style="color:#ffd86b">⛃ ${fmt(S.relics)}</b><span>Relics</span></div>` : "") +
-    `<div class="hchip hz"><b>${L.name}</b><span>Depth ${layerAt(c.y) + 1}/${NL}${gate.y < WORLD.h ? " · grow to " + fmt(gate.req) : " · the floor"}</span>` +
-    `<div class="bar"><i style="width:${(prog * 100) | 0}%;background:${L.accent}"></i></div></div>` +
-    (evoUnlocked ? `<button class="hbtn ${canMolt() ? "ready" : ""}" onclick="openEvo()">🧬 Evolve${canMolt() ? " ●" : ""}</button>` : "") +
-    (migUnlocked() ? `<button class="hbtn ${canMigrate() ? "ready" : ""}" style="border-color:rgba(255,111,208,.4);background:rgba(255,111,208,.12)" onclick="openBloodline()">🩸 Bloodline${canMigrate() ? " ●" : ""}</button>` : "") +
-    (ascUnlocked() ? `<button class="hbtn ${canAscend() ? "ready" : ""}" style="border-color:rgba(143,240,255,.4);background:rgba(143,240,255,.12)" onclick="openAscension()">✦ Primordial${canAscend() ? " ●" : ""}</button>` : "");
+    chip(L.accent, fmt(S.biomass), "Biomass") +
+    chip("#cfe3ff", fmt(S.size), "Size") +
+    (S.molts > 0 || S.roe > 0 || canMolt() ? chip("#ff9ec2", fmt(S.roe), "Roe" + (S.apexTier ? " · T" + S.apexTier : "")) : "") +
+    (S.migrations > 0 || S.lineage > 0 ? chip("#ff6fd0", fmt(S.lineage), "Lineage" + (S.migTier ? " · T" + S.migTier : "")) : "") +
+    (S.ascensions > 0 || S.spirit > 0 ? chip("#8ff0ff", fmt(S.spirit), "Spirit") : "") +
+    (S.wreckFound ? chip("#ffd86b", fmt(S.relics), "Relics") : "") +
+    `<div class="hchip hz"><div class="hcv"><b>${L.name}</b><span>Depth ${layerAt(c.y) + 1}/${NL}${gate.y < WORLD.h ? " · grow to " + fmt(gate.req) : " · the floor"}</span>` +
+    `<div class="bar"><i style="width:${(prog * 100) | 0}%;background:linear-gradient(90deg,${shade(L.accent, -.2)},${L.accent})"></i></div></div></div>` +
+    (evoUnlocked ? `<button class="hbtn ${canMolt() ? "ready" : ""}" onclick="openEvo()">${gemI("#ff9ec2")}Evolve</button>` : "") +
+    (migUnlocked() ? `<button class="hbtn mag ${canMigrate() ? "ready" : ""}" onclick="openBloodline()">${gemI("#ff6fd0")}Bloodline</button>` : "") +
+    (ascUnlocked() ? `<button class="hbtn cy ${canAscend() ? "ready" : ""}" onclick="openAscension()">${gemI("#8ff0ff")}Primordial</button>` : "");
 }
 function moltBanner() {
   document.getElementById("overlay").innerHTML =
@@ -696,7 +775,7 @@ function openEvo() {
   for (const cat of EVO_CATS) {
     h += `<div class="evocat">${cat}</div><div class="shop">`;
     for (const k of EVO_KEYS) { if (EVO[k].cat !== cat) continue; const u = EVO[k], lv = ev(k), maxed = lv >= u.cap, cost = evoCost(k), able = !maxed && S.roe >= cost;
-      h += `<button class="shopi ${able ? "on" : ""}" ${able ? `onclick="buyEvo('${k}')"` : "disabled"}><span class="si">${u.icon}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc" style="color:#ff9ec2">${maxed ? "MAX" : (u.cap > 1 ? "Lv" + lv + " · " : "") + fmt(cost) + " 🥚"}</span></button>`; }
+      h += `<button class="shopi ${able ? "on" : ""}" ${able ? `onclick="buyEvo('${k}')"` : "disabled"}><span class="si">${gemI("#ff9ec2")}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc" style="color:#ff9ec2">${maxed ? "MAX" : (u.cap > 1 ? "Lv" + lv + " · " : "") + fmt(cost) + " " + cdot("#ff9ec2")}</span></button>`; }
     h += `</div>`;
   }
   // automation toggles (once unlocked)
@@ -717,7 +796,7 @@ function shopGrid(defs, keys, cats, lvFn, costFn, have, curIcon, buyFn, color) {
     if (cat) h += `<div class="evocat">${cat}</div>`;
     h += `<div class="shop">`;
     for (const k of keys) { if (cat && defs[k].cat !== cat) continue; const u = defs[k], lv = lvFn(k), maxed = lv >= u.cap, cost = costFn(k), able = !maxed && have >= cost;
-      h += `<button class="shopi ${able ? "on" : ""}" ${able ? `onclick="${buyFn}('${k}')"` : "disabled"}><span class="si">${u.icon}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc" style="color:${color}">${maxed ? "MAX" : (u.cap > 1 ? "Lv" + lv + " · " : "") + fmt(cost) + " " + curIcon}</span></button>`; }
+      h += `<button class="shopi ${able ? "on" : ""}" ${able ? `onclick="${buyFn}('${k}')"` : "disabled"}><span class="si">${gemI(color)}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc" style="color:${color}">${maxed ? "MAX" : (u.cap > 1 ? "Lv" + lv + " · " : "") + fmt(cost) + " " + cdot(color)}</span></button>`; }
     h += `</div>`;
   }
   return h;
@@ -762,14 +841,14 @@ function ascBanner() {
 function autoTog(key, label) { const on = !!S.autoOn[key]; return `<button class="atog ${on ? "on" : ""}" onclick="S.autoOn['${key}']=!S.autoOn['${key}'];openEvo()">${label}<span>${on ? "ON" : "OFF"}</span></button>`; }
 function achHTML() {
   const done = Object.keys(S.ach).length; let rows = "";
-  for (const a of ACH) { const u = !!S.ach[a.id]; rows += `<div class="achrow ${u ? "on" : ""}"><span class="ac">${u ? "🏅" : "🔒"}</span><div class="acd"><b>${u ? a.name : "???"}</b><span>${a.desc}</span></div></div>`; }
+  for (const a of ACH) { const u = !!S.ach[a.id]; rows += `<div class="achrow ${u ? "on" : ""}"><span class="ac"></span><div class="acd"><b>${u ? a.name : "???"}</b><span>${a.desc}</span></div></div>`; }
   return `<div class="ovt2" style="color:#ffd86b">Achievements — ${done}/${ACH.length}</div><div class="ovs">Each grants +6% to all gains. Current ×${fmt(achMult())}.</div><div class="achgrid">${rows}</div>`;
 }
 function bestiaryHTML() {
   if (!S.bestAwake) return "";
   let rows = "";
   for (const id in FISH) { const cnt = S.best[id] || 0; let r = 0, nxt = 0; for (const t of BEST_THRESH) { if (cnt >= t) r++; else if (!nxt) nxt = t; }
-    rows += `<div class="bestrow"><span class="bg">${FISH[id].glyph}</span><span class="bn">${id}</span><b>${fmt(cnt)}</b><span class="bm">${"★".repeat(r)}${"☆".repeat(BEST_THRESH.length - r)}${nxt ? " · " + fmt(nxt) : ""}</span></div>`; }
+    rows += `<div class="bestrow"><span class="bg">${cdot(FISH[id].color)}</span><span class="bn">${id}</span><b>${fmt(cnt)}</b><span class="bm">${"★".repeat(r)}${"☆".repeat(BEST_THRESH.length - r)}${nxt ? " · " + fmt(nxt) : ""}</span></div>`; }
   return `<div class="ovt2" style="color:#9be7a6">Bestiary — ${bestiaryStars()}★</div><div class="ovs">Each ★ boosts Biomass (×${fmt(bestiaryMult())}), <b>Lineage gain</b>, and unlocks <b>Ascension</b>. Devour every species to master the deep.</div><div class="bestiary">${rows}</div>`;
 }
 function showStart() {
@@ -784,7 +863,7 @@ function openMenu() {
   let hub = "";
   if (S.wreckFound) { hub = `<div class="ovt2" style="color:#ffd86b">⚓ Wreck Hub</div><div class="ovs">Spend Relics ⛃ ${fmt(S.relics)} on permanent power.</div><div class="shop">`;
     for (const k of PERM_KEYS) { const u = PERM[k], lv = S.perm[k], maxed = lv >= u.cap, cost = permCost(k), can = !maxed && S.relics >= cost;
-      hub += `<button class="shopi ${can ? "on" : ""}" ${can ? `onclick="buyPerm('${k}')"` : "disabled"}><span class="si">${u.icon}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc">${maxed ? "MAX" : "Lv" + lv + " · " + fmt(cost) + " ⛃"}</span></button>`; }
+      hub += `<button class="shopi ${can ? "on" : ""}" ${can ? `onclick="buyPerm('${k}')"` : "disabled"}><span class="si">${gemI("#ffd86b")}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc">${maxed ? "MAX" : "Lv" + lv + " · " + fmt(cost) + " " + cdot("#ffd86b")}</span></button>`; }
     hub += `</div>`; }
   document.getElementById("overlay").innerHTML =
     `<div class="ov ovwide">${hub}<div class="ovt2">Logbook</div>` +
