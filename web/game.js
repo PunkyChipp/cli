@@ -178,7 +178,7 @@ const W = { creature: null, fish: [], orbs: [], eggs: [], treas: [], parts: [], 
   cam: { x: 0, y: 0 }, shake: 0, combo: 0, comboT: 0, eggTimer: 9, treasTimer: 10, t: 0, barrier: null, hintT: 0,
   boss: null, bossCD: 20, frenzy: null, frenzyTimer: 80, autoBuyT: 0, autoEatT: 0, warnT: 0 };
 let CV, X, VW = 800, VH = 600;
-const input = { x: 0, y: 0, down: false, keys: {} };
+const input = { x: 0, y: 0, ox: 0, oy: 0, down: false, keys: {} };
 
 // ---------- derived ----------
 function layerAt(y) { return clamp(Math.floor(y / LH), 0, NL - 1); }
@@ -293,16 +293,28 @@ function addFloat(x, y, txt, color) { W.floats.push({ x, y, txt, color, life: 0.
 // ---------- input ----------
 function bindInput() {
   const setp = e => { const r = CV.getBoundingClientRect(); input.x = e.clientX - r.left; input.y = e.clientY - r.top; };
-  CV.addEventListener("pointerdown", e => { input.down = true; setp(e); CV.setPointerCapture && CV.setPointerCapture(e.pointerId); });
-  CV.addEventListener("pointermove", setp);
+  CV.addEventListener("pointerdown", e => { setp(e); input.ox = input.x; input.oy = input.y; input.down = true; if (CV.setPointerCapture) CV.setPointerCapture(e.pointerId); e.preventDefault(); }, { passive: false });
+  CV.addEventListener("pointermove", e => { setp(e); if (input.down) e.preventDefault(); }, { passive: false });
   window.addEventListener("pointerup", () => input.down = false);
-  window.addEventListener("keydown", e => input.keys[e.key.toLowerCase()] = true);
-  window.addEventListener("keyup", e => input.keys[e.key.toLowerCase()] = false);
+  window.addEventListener("pointercancel", () => input.down = false);
+  const kd = e => { input.keys[(e.key || "").toLowerCase()] = true; };
+  const ku = e => { input.keys[(e.key || "").toLowerCase()] = false; };
+  window.addEventListener("keydown", kd); window.addEventListener("keyup", ku);
+  document.addEventListener("keydown", kd); document.addEventListener("keyup", ku);
 }
-function steer() { let dx = 0, dy = 0;
-  if (input.down) { dx = input.x - VW / 2; dy = input.y - VH / 2; const m = Math.hypot(dx, dy); if (m > 12) { dx /= m; dy /= m; } else dx = dy = 0; }
-  const k = input.keys; if (k.w || k.arrowup) dy -= 1; if (k.s || k.arrowdown) dy += 1; if (k.a || k.arrowleft) dx -= 1; if (k.d || k.arrowright) dx += 1;
-  const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; } return [dx, dy]; }
+const JOY_R = 64;   // how far you push for full thrust
+function steer() {
+  let dx = 0, dy = 0;
+  if (input.down) {  // floating analog joystick relative to where you pressed
+    const jx = input.x - input.ox, jy = input.y - input.oy, m = Math.hypot(jx, jy);
+    if (m > 9) { const mag = Math.min(1, m / JOY_R); dx = jx / m * mag; dy = jy / m * mag; }
+  }
+  const k = input.keys; let kx = 0, ky = 0;
+  if (k.w || k.arrowup) ky -= 1; if (k.s || k.arrowdown) ky += 1; if (k.a || k.arrowleft) kx -= 1; if (k.d || k.arrowright) kx += 1;
+  if (kx || ky) { const m = Math.hypot(kx, ky); dx += kx / m; dy += ky / m; }
+  const mm = Math.hypot(dx, dy); if (mm > 1) { dx /= mm; dy /= mm; }
+  return [dx, dy];
+}
 
 // ---------- loop ----------
 function loop(ts) { const now = ts / 1000; let dt = now - (W.t || now); W.t = now; if (dt > 0.05) dt = 0.05; if (S.started) update(dt); render(); requestAnimationFrame(loop); }
@@ -588,6 +600,15 @@ function render() {
   if (W.layerTitleT > 0 && W.layerTitle) { const a = clamp(W.layerTitleT, 0, 1); X.globalAlpha = a; X.textAlign = "center";
     X.fillStyle = accentAt(W.creature.y); X.font = "700 12px system-ui"; X.fillText("DEPTH " + (layerAt(W.creature.y) + 1) + " / " + NL, VW / 2, VH * 0.38 - 30);
     X.fillStyle = "#fff"; X.font = "300 40px system-ui"; X.fillText(W.layerTitle, VW / 2, VH * 0.38); X.globalAlpha = 1; }
+  // virtual joystick (touch / hold)
+  if (input.down) {
+    const ox = input.ox, oy = input.oy; const ac = accentAt(W.creature.y);
+    let jx = input.x - ox, jy = input.y - oy; const m = Math.hypot(jx, jy); if (m > JOY_R) { jx = jx / m * JOY_R; jy = jy / m * JOY_R; }
+    X.strokeStyle = rgba(ac, .35); X.lineWidth = 3; X.beginPath(); X.arc(ox, oy, JOY_R, 0, 6.283); X.stroke();
+    X.fillStyle = "rgba(0,0,0,.25)"; X.beginPath(); X.arc(ox, oy, JOY_R, 0, 6.283); X.fill();
+    X.fillStyle = rgba(ac, .55); X.beginPath(); X.arc(ox + jx, oy + jy, 26, 0, 6.283); X.fill();
+    X.fillStyle = "rgba(255,255,255,.85)"; X.beginPath(); X.arc(ox + jx, oy + jy, 9, 0, 6.283); X.fill();
+  }
 }
 function drawWreck() {
   const wy = WRECK_LAYER * LH + 300, wx = WW / 2;
