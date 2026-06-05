@@ -179,7 +179,7 @@ let S = newState();
 const W = { creature: null, fish: [], orbs: [], eggs: [], treas: [], parts: [], floats: [],
   cam: { x: 0, y: 0 }, shake: 0, combo: 0, comboT: 0, eggTimer: 9, treasTimer: 10, t: 0, barrier: null, hintT: 0,
   boss: null, bossCD: 20, frenzy: null, frenzyTimer: 80, autoBuyT: 0, autoEatT: 0, warnT: 0 };
-let CV, X, VW = 800, VH = 600, RES = 1, RES_CAP = 1;
+let CV, X, VW = 800, VH = 600, RES = 0.85, RES_CAP = 1;
 const input = { x: 0, y: 0, ox: 0, oy: 0, down: false, keys: {} };
 
 // ---------- derived ----------
@@ -258,7 +258,7 @@ function init() {
   if (!S.started) showStart(); else hideOverlay();
 }
 function applyRes() { if (CV) { CV.width = Math.max(1, Math.round(VW * RES)); CV.height = Math.max(1, Math.round(VH * RES)); } }
-function resize() { VW = window.innerWidth; VH = window.innerHeight; RES_CAP = Math.min(1, 1180 / Math.max(1, VW)); RES = Math.min(RES, RES_CAP); applyRes(); }
+function resize() { VW = window.innerWidth; VH = window.innerHeight; RES_CAP = 1; RES = Math.min(RES, RES_CAP); applyRes(); }
 function adaptRes() { const ms = W.fms || 16; if (ms > 22 && RES > 0.55) { RES = Math.max(0.55, RES - 0.08); applyRes(); } else if (ms < 13.5 && RES < RES_CAP) { RES = Math.min(RES_CAP, RES + 0.05); applyRes(); } }
 const KEY = "abyss.deep.v1";
 function save() { S.lastSave = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
