@@ -1,26 +1,25 @@
 // swift-tools-version: 5.9
 
-// WARNING: This is a Swift Playgrounds App project.
-// Open the enclosing "VerdantVoid.swiftpm" folder with Swift Playgrounds on iPad (iOS 26)
-// or with Xcode on a Mac. Editing this file outside those tools is not recommended.
+// Swift Playgrounds App. Open the enclosing "Abyss.swiftpm" folder with Swift
+// Playgrounds on iPad (iOS 17+) or with Xcode on a Mac.
 
 import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "Verdant Void",
+    name: "Abyss",
     platforms: [
         .iOS("17.0")
     ],
     products: [
         .iOSApplication(
-            name: "Verdant Void",
+            name: "Abyss",
             targets: ["AppModule"],
-            bundleIdentifier: "com.verdantvoid.game",
+            bundleIdentifier: "com.abyss.deep",
             teamIdentifier: "",
             displayVersion: "1.0",
             bundleVersion: "1",
-            accentColor: .presetColor(.green),
+            accentColor: .presetColor(.cyan),
             supportedDeviceFamilies: [
                 .pad,
                 .phone
