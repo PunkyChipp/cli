@@ -591,6 +591,22 @@ function startFrenzy() {
   toast("🌀 FEEDING FRENZY ×" + frenzyPower().toFixed(1) + " — eat fast!");
 }
 
+// ---------- sprite cache (perf: bake glow+emoji once, then drawImage) ----------
+const SPR = {};
+function sprCanvas(sz) { const cv = document.createElement("canvas"); cv.width = sz; cv.height = sz; return cv; }
+function discGlow(cx, c, r, color, a) { const g = cx.createRadialGradient(c, c, 0, c, c, r); g.addColorStop(0, rgba(color, a)); g.addColorStop(1, rgba(color, 0)); cx.fillStyle = g; cx.beginPath(); cx.arc(c, c, r, 0, 6.283); cx.fill(); }
+function emojiSprite(key, glyph, color, glowR, fontPx, alpha) {
+  let s = SPR[key]; if (s) return s;
+  const sz = Math.ceil((glowR + 6) * 2), c = sz / 2; const cv = sprCanvas(sz), cx = cv.getContext("2d");
+  discGlow(cx, c, glowR, color, alpha); cx.font = fontPx + "px serif"; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillText(glyph, c, c);
+  SPR[key] = cv; return cv;
+}
+function fishSprite(id) { const ft = FISH[id]; return emojiSprite("f" + id, ft.glyph, ft.color, ft.r + 4, ft.r * 1.7 | 0, .30); }
+function eggSprite(d) { return emojiSprite("e" + d.g, d.g, d.spooky ? "#ff5c6a" : "#ffd86b", 22, 26, .35); }
+function treasSprite(g) { return emojiSprite("t" + g, g, "#ffd86b", 20, 24, .34); }
+function orbSprite(k) { const u = UPS[k]; return emojiSprite("o" + k, u.icon, u.color, 38, 22, .4); }
+function apexSprite(id) { const a = APEX.find(x => x.id === id); return emojiSprite("a" + id, a.glyph, a.color, a.r + 22, a.r * 1.9 | 0, .35); }
+
 // ---------- render ----------
 function render() {
   const shx = (Math.random() - 0.5) * W.shake * 14, shy = (Math.random() - 0.5) * W.shake * 14;
@@ -618,21 +634,20 @@ function render() {
   drawWreck();
 
   // orbs
-  for (const o of W.orbs) { const u = UPS[o.k], cost = upCost(o.k), maxed = S.up[o.k] >= u.cap, pr = 24 + Math.sin(o.ph) * 2 + o.flash * 10;
-    glow(o.x, o.y, pr + 14, u.color, .3 + o.flash * .4); X.font = "22px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText(u.icon, o.x, o.y);
-    ftxt(o.x, o.y - pr - 8, u.name + " Lv" + S.up[o.k], u.color, 12); ftxt(o.x, o.y + pr + 10, maxed ? "MAX" : fmt(cost) + " ◍", maxed ? "#fff" : (S.biomass >= cost ? "#9be7a6" : "#ff8a94"), 12); }
+  for (const o of W.orbs) { const u = UPS[o.k], cost = upCost(o.k), maxed = S.up[o.k] >= u.cap; const sc = 1 + .05 * Math.sin(o.ph) + o.flash * .25; const s = orbSprite(o.k), w = s.width * sc;
+    X.drawImage(s, o.x - w / 2, o.y - w / 2, w, w);
+    ftxt(o.x, o.y - 42, u.name + " Lv" + S.up[o.k], u.color, 12); ftxt(o.x, o.y + 42, maxed ? "MAX" : fmt(cost) + " ◍", maxed ? "#fff" : (S.biomass >= cost ? "#9be7a6" : "#ff8a94"), 12); }
 
   // treasure
-  for (const tr of W.treas) { glow(tr.x, tr.y, 20, "#ffd86b", .28 + .15 * Math.sin(tr.ph)); X.font = "24px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText(tr.g, tr.x, tr.y); }
+  for (const tr of W.treas) { const s = treasSprite(tr.g); X.drawImage(s, tr.x - s.width / 2, tr.y - s.height / 2); }
 
-  // fish
-  X.textAlign = "center"; X.textBaseline = "middle";
-  for (const f of W.fish) { glow(f.x, f.y + f.wob, f.t.r + 4, f.t.color, .25); X.font = (f.t.r * 1.7 | 0) + "px serif"; X.fillText(f.t.glyph, f.x, f.y + f.wob); }
+  // fish (sprite-cached)
+  for (const f of W.fish) { const s = fishSprite(f.id); X.drawImage(s, f.x - s.width / 2, f.y + f.wob - s.height / 2); }
 
   // eggs
-  for (const e of W.eggs) { glow(e.x, e.y, 22, e.d.spooky ? "#ff5c6a" : "#ffd86b", .25 + .15 * Math.sin(e.ph)); X.font = "26px serif"; X.fillText(e.d.g, e.x, e.y); }
-  for (const p of W.parts) glow(p.x, p.y, 4, p.color, .6 * clamp(p.life / p.max, 0, 1));
-  if (W.boss) { const b = W.boss, a = b.a; glow(b.x, b.y, a.r + 22, a.color, .3 + .12 * Math.sin(b.ph)); X.font = (a.r * 1.9 | 0) + "px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText(a.glyph, b.x, b.y);
+  for (const e of W.eggs) { const s = eggSprite(e.d); X.drawImage(s, e.x - s.width / 2, e.y - s.height / 2); }
+  for (const p of W.parts) { X.fillStyle = rgba(p.color, .7 * clamp(p.life / p.max, 0, 1)); X.beginPath(); X.arc(p.x, p.y, 3, 0, 6.283); X.fill(); }
+  if (W.boss) { const b = W.boss, a = b.a; const bs = apexSprite(a.id); X.drawImage(bs, b.x - bs.width / 2, b.y - bs.height / 2); X.textAlign = "center"; X.textBaseline = "middle";
     const bw = a.r * 2, hpf = clamp(b.hp / b.max, 0, 1); X.fillStyle = "rgba(0,0,0,.5)"; X.fillRect(b.x - bw / 2, b.y - a.r - 24, bw, 8); X.fillStyle = a.color; X.fillRect(b.x - bw / 2, b.y - a.r - 24, bw * hpf, 8);
     ftxt(b.x, b.y - a.r - 34, a.name + (S.size >= a.sizeReq ? "  (ram it!)" : "  · grow to " + fmt(a.sizeReq)), a.color, 13);
     if (a.dmg > 0 && (Math.abs(b.lungeVX || 0) + Math.abs(b.lungeVY || 0) > 80 || b.lungeCD < 0.4)) { X.strokeStyle = rgba("#ff5c6a", 0.4 + 0.3 * Math.abs(Math.sin(W.t * 18))); X.lineWidth = 3; X.beginPath(); X.arc(b.x, b.y, a.r + 13, 0, 6.283); X.stroke(); } }
