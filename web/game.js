@@ -762,5 +762,11 @@ function toast(msg) { const t = document.getElementById("toast"); t.textContent 
 function showOverlay() { document.getElementById("overlay").style.display = "flex"; }
 function hideOverlay() { const o = document.getElementById("overlay"); o.style.display = "none"; o.innerHTML = ""; }
 
-if (typeof window !== "undefined") window.addEventListener("load", init);
+// Start as soon as the DOM is ready. Some offline viewers (Documents, Quick Look)
+// never fire window 'load', so don't wait on it — the script is at end of <body>.
+function boot() { try { init(); } catch (e) { try { document.getElementById("toast").textContent = "Error: " + e.message; document.getElementById("toast").className = "show"; } catch (_) {} } }
+if (typeof window !== "undefined") {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+}
 if (typeof module !== "undefined" && module.exports) module.exports = { newState, get S() { return S; }, set S(v) { S = v; } };
