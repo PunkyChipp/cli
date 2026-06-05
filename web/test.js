@@ -38,7 +38,14 @@ step("boss spawn", () => { S.size = 300; const c = W.creature; c.y = 2 * LH + 20
 step("boss kill + trophy", () => { const c = W.creature, b = W.boss; b.x = c.x; b.y = c.y; b.hp = 1; b.hitCD = 0; c.vx = 200; c.vy = 0; S.size = Math.max(S.size, b.a.sizeReq + 1); const tr = Object.keys(S.trophies).length; updateBoss(0.016); if (W.boss) throw new Error("not killed"); if (Object.keys(S.trophies).length <= tr) throw new Error("no trophy"); });
 step("deep boss damages + flee", () => { const c = W.creature; const meg = APEX.find(a => a.id === "meg"); S.size = meg.sizeReq + 20; c.y = 4 * LH + 300; W.boss = { a: meg, x: c.x, y: c.y, hp: 1e9, max: 1e9, hitCD: 0, lungeCD: 9, ph: 0 }; W.hp = 1; W.invuln = 0; S.biomass = 1000; c.vx = 0; c.vy = 0; update(0.4); if (W.hp >= maxHP() && S.biomass === 1000) throw new Error("no damage/flee occurred"); });
 step("hp regen", () => { W.boss = null; W.hp = 5; const c = W.creature; c.y = 200; for (let i = 0; i < 20; i++) update(0.1); if (!(W.hp > 5)) throw new Error("no regen"); });
-step("render deep + overlays", () => { for (const y of [200, 2 * LH, 5 * LH + 200, 7 * LH + 200]) { W.creature.y = y; W.cam.y = y - 300; W.t = 1; render(); } openEvo(); hideOverlay(); openBloodline(); hideOverlay(); openAscension(); hideOverlay(); openMenu(); hideOverlay(); migBanner(); ascBanner(); hideOverlay(); hud(); });
+step("new deep fish", () => { if (!FISH.lobster || !FISH.viper || !FISH.gulper) throw new Error("missing new fish"); });
+step("achievements + mult", () => { S.ach = {}; S.stats.eaten = 100; const g0 = gainMult(); checkAch(); if (!S.ach.a_eat100) throw new Error("ach not unlocked"); if (!(achMult() > 1)) throw new Error("achMult not applied"); if (!(gainMult() > g0)) throw new Error("ach gain not applied"); });
+step("render deep + polish + overlays", () => {
+  W.hurt = 0.4; W.layerTitle = "The Trench"; W.layerTitleT = 2;
+  W.boss = { a: APEX.find(a => a.id === "meg"), x: W.creature.x, y: W.creature.y - 150, hp: 50, max: 100, hitCD: 0, lungeCD: 0.2, lungeVX: 200, lungeVY: 0, ph: 0 };
+  for (const y of [200, 2 * LH, 5 * LH + 200, 7 * LH + 200]) { W.creature.y = y; W.cam.y = y - 300; W.t = 1; render(); }
+  W.boss = null;
+  openEvo(); hideOverlay(); openBloodline(); hideOverlay(); openAscension(); hideOverlay(); openMenu(); hideOverlay(); migBanner(); ascBanner(); hideOverlay(); hud(); });
 step("save/load", () => { save(); const s = JSON.parse(store["abyss.deep.v1"]); if (s.migrations !== S.migrations) throw new Error("save mismatch"); });
 
 console.log(fails === 0 ? "\nSMOKE: ALL PASS" : "\nSMOKE: " + fails + " FAIL");

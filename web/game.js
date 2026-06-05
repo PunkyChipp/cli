@@ -28,9 +28,9 @@ const LAYERS = [
   { name: "Twilight Reach",  col: "#0a3b6e", accent: "#6fa8ff", light: 0.46, req: 32,  fish: ["darter", "fat"],     ups: ["magnet", "luck"] },
   { name: "The Midnight",    col: "#0a0a24", accent: "#b46fff", light: 0.20, req: 90,  fish: ["fat", "glow"],       ups: ["glow", "appetite"] },
   { name: "The Trench",      col: "#04060f", accent: "#4ff0e0", light: 0.07,  req: 200,  fish: ["glow", "whale"],     ups: ["speed", "glow"] },
-  { name: "Hadal Deep",      col: "#02100a", accent: "#7affc0", light: 0.05,  req: 480,  fish: ["glow", "whale"],     ups: ["range", "appetite"] },
-  { name: "The Sunless",     col: "#0a0210", accent: "#ff6fd0", light: 0.035, req: 1100, fish: ["whale", "glow"],     ups: ["luck", "magnet"] },
-  { name: "The Bonefields",  col: "#0c0608", accent: "#ffd86b", light: 0.02,  req: 2600, fish: ["whale", "fat"],      ups: ["glow", "speed"] }
+  { name: "Hadal Deep",      col: "#02100a", accent: "#7affc0", light: 0.05,  req: 480,  fish: ["lobster", "glow", "whale"], ups: ["range", "appetite"] },
+  { name: "The Sunless",     col: "#0a0210", accent: "#ff6fd0", light: 0.035, req: 1100, fish: ["viper", "gulper", "glow"],  ups: ["luck", "magnet"] },
+  { name: "The Bonefields",  col: "#0c0608", accent: "#ffd86b", light: 0.02,  req: 2600, fish: ["gulper", "whale", "viper"], ups: ["glow", "speed"] }
 ];
 const NL = LAYERS.length;
 const WRECK_LAYER = 5;          // the Wreck guards the gateway to the truly deep
@@ -43,7 +43,10 @@ const FISH = {
   darter:  { r: 10, val: 6,   grow: 1.2, spd: 96, flee: 1, glyph: "🐡", color: "#ffd27a" },
   fat:     { r: 18, val: 16,  grow: 3.5, spd: 16, flee: 0, glyph: "🐟", color: "#ff9ec2", needs: 10 },
   glow:    { r: 13, val: 60,  grow: 5.0, spd: 70, flee: 1, glyph: "🪼", color: "#a6fff0" },
-  whale:   { r: 42, val: 300, grow: 18,  spd: 22, flee: 0, glyph: "🐋", color: "#9fb6ff", needs: 90 }
+  whale:   { r: 42, val: 300, grow: 18,  spd: 22, flee: 0, glyph: "🐋", color: "#9fb6ff", needs: 90 },
+  lobster: { r: 16, val: 48,  grow: 5.0, spd: 18, flee: 0, glyph: "🦞", color: "#ff9e7a", needs: 24 },
+  viper:   { r: 11, val: 95,  grow: 4.5, spd: 112, flee: 1, glyph: "🐊", color: "#caff7a" },
+  gulper:  { r: 34, val: 260, grow: 16,  spd: 20, flee: 0, glyph: "🐳", color: "#9fd0ff", needs: 110 }
 };
 const UPS = {
   speed:    { name: "Swift Fins",   icon: "💨", color: "#8ff0ff", cap: 40, base: 12, growth: 1.20, desc: "Top swim speed" },
@@ -139,6 +142,25 @@ const APEX = [
 ];
 function apexFor(layerIdx) { return APEX.find(a => a.layer === layerIdx) || null; }
 const BEST_THRESH = [20, 100, 500, 2500, 12000];
+// Achievements — long-tail goals; each grants a permanent +6% to all gains.
+const ACH = [
+  { id: "a_eat100",  name: "Hungry",        desc: "Eat 100 fish.",                 cond: s => s.stats.eaten >= 100 },
+  { id: "a_eat10k",  name: "Insatiable",    desc: "Eat 10,000 fish.",              cond: s => s.stats.eaten >= 10000 },
+  { id: "a_layer3",  name: "Into the Blue", desc: "Reach the Twilight Reach.",     cond: s => layerAt(s.deepest) >= 2 },
+  { id: "a_layer5",  name: "Pressure Diver",desc: "Reach the Hadal Deep.",         cond: s => layerAt(s.deepest) >= 5 },
+  { id: "a_layer7",  name: "Bonepicker",    desc: "Reach the Bonefields.",         cond: s => layerAt(s.deepest) >= 7 },
+  { id: "a_size",    name: "Colossus",      desc: "Reach size 1,000.",             cond: s => s.size >= 1000 },
+  { id: "a_rebirth", name: "Reborn",        desc: "Rebirth for the first time.",   cond: s => s.molts >= 1 || s.migrations > 0 },
+  { id: "a_apex5",   name: "Tiered",        desc: "Reach Apex Tier 5.",            cond: s => s.apexTier >= 5 },
+  { id: "a_mig1",    name: "Migrant",       desc: "Migrate for the first time.",   cond: s => s.migrations >= 1 },
+  { id: "a_asc1",    name: "Ancient",       desc: "Ascend for the first time.",    cond: s => s.ascensions >= 1 },
+  { id: "a_boss1",   name: "Giant Killer",  desc: "Slay an Apex Predator.",        cond: s => Object.keys(s.bossKills).length >= 1 },
+  { id: "a_boss4",   name: "Apex of Apexes",desc: "Slay 4 kinds of Apex.",         cond: s => Object.keys(s.bossKills).length >= 4 },
+  { id: "a_salvage", name: "Wrecker",       desc: "Salvage 1,000 Relics.",         cond: s => s.stats.salvage >= 1000 },
+  { id: "a_eggs",    name: "Beachcomber",   desc: "Find every oddity.",            cond: s => Object.keys(s.eggs).length >= EGGS.length },
+  { id: "a_best",    name: "Naturalist",    desc: "Earn 12 Bestiary stars.",       cond: s => bestiaryStars() >= 12 },
+  { id: "a_full",    name: "King of the Deep", desc: "Unlock every other achievement.", cond: s => Object.keys(s.ach).length >= 15 }
+];
 
 // ---------- state ----------
 function newState() {
@@ -148,7 +170,7 @@ function newState() {
     roe: 0, molts: 0, apexTier: 0, deepLayer: 0, evo: {}, autoOn: {}, autoMoltTarget: 3, moltSeen: false,
     lineage: 0, migrations: 0, migTier: 0, bl: {}, migSeen: false, bestAwake: false,
     spirit: 0, ascensions: 0, ascTier: 0, prim: {}, ascSeen: false,
-    wreckFound: false, deepest: 0, eggs: {}, best: {}, trophies: {}, bossKills: {},
+    wreckFound: false, deepest: 0, eggs: {}, best: {}, trophies: {}, bossKills: {}, ach: {},
     stats: { eaten: 0, salvage: 0, playtime: 0 }, lastSave: Date.now() };
 }
 let S = newState();
@@ -181,7 +203,8 @@ function bestiaryMult() { let m = 1; for (const id in S.best) { let r = 0; for (
 function trophyMult() { return Math.pow(1.15, Object.keys(S.trophies).length); }
 function frenzyMult() { return (W.frenzy && W.frenzy.t > 0) ? W.frenzy.mult : 1; }
 function bitePower() { return (4 + creatureR() * 0.25 + S.apexTier * 2 + 2 * ev("e_bite")) * (1 + 0.25 * bl("bl_might")); }
-function gainMult() { return appetite() * depthMult() * apexMult() * migTierMult() * ascTierMult() * voracity() * bestiaryMult() * trophyMult() * frenzyMult() * primAll(); }
+function achMult() { return Math.pow(1.06, Object.keys(S.ach).length); }
+function gainMult() { return appetite() * depthMult() * apexMult() * migTierMult() * ascTierMult() * voracity() * bestiaryMult() * trophyMult() * frenzyMult() * primAll() * achMult(); }
 function sizeGain(g) { return g * (1 + 0.08 * ev("e_size") + 0.06 * bl("bl_size")); }
 function creatureR() { return clamp(11 + Math.sqrt(S.size) * 1.9, 11, 70); }
 function comboCap() { return 12 + 2 * bl("bl_combocap"); }
@@ -300,6 +323,11 @@ function update(dt) {
   c.chomp = Math.max(0, c.chomp - dt * 4);
   if (sp > ms * 0.5 && Math.random() < 0.4) addParts(c.x - Math.cos(c.ang) * creatureR(), c.y - Math.sin(c.ang) * creatureR(), "#bfe9ff", 1, 20);
   if (c.y > S.deepest) S.deepest = c.y;
+  // depth title on entering a new, deeper layer
+  const _cl = layerAt(c.y);
+  if (_cl !== W.lastLayer) { if (W.lastLayer != null && _cl > W.lastLayer) { W.layerTitle = LAYERS[_cl].name; W.layerTitleT = 2.6; } W.lastLayer = _cl; }
+  if (W.layerTitleT > 0) W.layerTitleT -= dt;
+  if (W.hurt > 0) W.hurt -= dt;
 
   // camera
   W.cam.x = lerp(W.cam.x, clamp(c.x - VW / 2, 0, Math.max(0, WW - VW)), clamp(FEEL.camLerp * dt, 0, 1));
@@ -360,8 +388,12 @@ function update(dt) {
   if (canMolt() && !S.moltSeen) { S.moltSeen = true; moltBanner(); }
   if (migUnlocked() && !S.migSeen) { S.migSeen = true; migBanner(); }
   if (ascUnlocked() && !S.ascSeen) { S.ascSeen = true; ascBanner(); }
+  checkAch();
 
   if (Date.now() - S.lastSave > 5000) save();
+}
+function checkAch() {
+  for (const a of ACH) { if (!S.ach[a.id] && a.cond(S)) { S.ach[a.id] = true; toast("🏅 " + a.name + " — " + a.desc); W.shake = Math.min(1, W.shake + 0.3); } }
 }
 
 function eat(i, f, ft) { W.fish.splice(i, 1); const gain = ft.val * gainMult() * comboMult();
@@ -439,7 +471,7 @@ function updateBoss(dt) {
 function damagePlayer(amt) {
   if (W.invuln > 0) return;
   if (W.hp == null) W.hp = maxHP();
-  W.hp -= amt * armorMult(); W.shake = Math.min(1, W.shake + 0.2);
+  W.hp -= amt * armorMult(); W.shake = Math.min(1, W.shake + 0.2); W.hurt = 0.4;
   if (W.hp <= 0) fleeSurface();
 }
 function fleeSurface() {
@@ -482,6 +514,12 @@ function render() {
   // marine snow (parallax)
   X.fillStyle = "rgba(255,255,255,.13)";
   for (let i = 0; i < 90; i++) { const px = ((i * 137.5 - W.cam.x * 0.5) % (VW + 40) + VW + 40) % (VW + 40) - 20; const py = ((i * 91.3 + W.t * 12 - W.cam.y * 0.5) % (VH + 40) + VH + 40) % (VH + 40) - 20; X.fillRect(px, py, 2, 2); }
+  // rising bubbles (tinted by the current layer)
+  const bubC = accentAt(W.creature ? W.creature.y : 0);
+  X.strokeStyle = rgba(bubC, 0.18); X.lineWidth = 1;
+  for (let i = 0; i < 34; i++) { const bx = ((i * 211.3 - W.cam.x * 0.6) % (VW + 30) + VW + 30) % (VW + 30) - 15;
+    const by = ((VH - (i * 53.7 + W.t * 26) % (VH + 30)) - W.cam.y * 0.6 % 1); const sz = 1.5 + (i % 4);
+    X.beginPath(); X.arc(bx, ((by % (VH + 30)) + VH + 30) % (VH + 30) - 15, sz, 0, 6.283); X.stroke(); }
 
   X.save(); X.translate(-W.cam.x + shx, -W.cam.y + shy);
 
@@ -511,7 +549,8 @@ function render() {
   for (const p of W.parts) glow(p.x, p.y, 4, p.color, .6 * clamp(p.life / p.max, 0, 1));
   if (W.boss) { const b = W.boss, a = b.a; glow(b.x, b.y, a.r + 22, a.color, .3 + .12 * Math.sin(b.ph)); X.font = (a.r * 1.9 | 0) + "px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText(a.glyph, b.x, b.y);
     const bw = a.r * 2, hpf = clamp(b.hp / b.max, 0, 1); X.fillStyle = "rgba(0,0,0,.5)"; X.fillRect(b.x - bw / 2, b.y - a.r - 24, bw, 8); X.fillStyle = a.color; X.fillRect(b.x - bw / 2, b.y - a.r - 24, bw * hpf, 8);
-    ftxt(b.x, b.y - a.r - 34, a.name + (S.size >= a.sizeReq ? "  (ram it!)" : "  · grow to " + fmt(a.sizeReq)), a.color, 13); }
+    ftxt(b.x, b.y - a.r - 34, a.name + (S.size >= a.sizeReq ? "  (ram it!)" : "  · grow to " + fmt(a.sizeReq)), a.color, 13);
+    if (a.dmg > 0 && (Math.abs(b.lungeVX || 0) + Math.abs(b.lungeVY || 0) > 80 || b.lungeCD < 0.4)) { X.strokeStyle = rgba("#ff5c6a", 0.4 + 0.3 * Math.abs(Math.sin(W.t * 18))); X.lineWidth = 3; X.beginPath(); X.arc(b.x, b.y, a.r + 13, 0, 6.283); X.stroke(); } }
   drawCreature();
   if (ev("e_autoeat") && S.autoOn.eat) { const c = W.creature, a = W.t * 2, rr2 = creatureR() + 30, rx = c.x + Math.cos(a) * rr2, ry = c.y + Math.sin(a) * rr2;
     glow(rx, ry, 12, "#ffd27a", .5); X.font = "16px serif"; X.textAlign = "center"; X.textBaseline = "middle"; X.fillText("🐠", rx, ry); }
@@ -527,6 +566,12 @@ function render() {
   if (W.combo > 1) { X.textAlign = "center"; X.fillStyle = accentAt(W.creature.y); X.font = "700 22px system-ui"; X.fillText("×" + comboMult().toFixed(1) + " combo", VW / 2, 96); }
   if (W.frenzy && W.frenzy.t > 0) { X.textAlign = "center"; X.fillStyle = "#ffd86b"; X.font = "800 26px system-ui"; X.globalAlpha = clamp(W.frenzy.t, 0, 1); X.fillText("🌀 FEEDING FRENZY ×" + W.frenzy.mult.toFixed(1), VW / 2, 130); X.globalAlpha = 1; }
   if (W.hp != null && W.hp < maxHP() - 0.5) { const hpf = clamp(W.hp / maxHP(), 0, 1); X.fillStyle = "rgba(0,0,0,.5)"; X.fillRect(VW / 2 - 110, 150, 220, 13); X.fillStyle = hpf > 0.3 ? "#7affc0" : "#ff5c6a"; X.fillRect(VW / 2 - 110, 150, 220 * hpf, 13); ftxt(VW / 2, 160, "♥ " + Math.ceil(W.hp) + " / " + Math.ceil(maxHP()), "#fff", 11); }
+  // damage vignette
+  if (W.hurt > 0) { const a = clamp(W.hurt, 0, 1) * 0.5; const vg = X.createRadialGradient(VW / 2, VH / 2, VH * 0.2, VW / 2, VH / 2, VH * 0.78); vg.addColorStop(0, "rgba(255,40,40,0)"); vg.addColorStop(1, "rgba(255,30,30," + a + ")"); X.fillStyle = vg; X.fillRect(0, 0, VW, VH); }
+  // depth title on entering a new layer
+  if (W.layerTitleT > 0 && W.layerTitle) { const a = clamp(W.layerTitleT, 0, 1); X.globalAlpha = a; X.textAlign = "center";
+    X.fillStyle = accentAt(W.creature.y); X.font = "700 12px system-ui"; X.fillText("DEPTH " + (layerAt(W.creature.y) + 1) + " / " + NL, VW / 2, VH * 0.38 - 30);
+    X.fillStyle = "#fff"; X.font = "300 40px system-ui"; X.fillText(W.layerTitle, VW / 2, VH * 0.38); X.globalAlpha = 1; }
 }
 function drawWreck() {
   const wy = WRECK_LAYER * LH + 300, wx = WW / 2;
@@ -549,12 +594,24 @@ function drawWreck() {
 }
 function drawCreature() {
   const c = W.creature, ac = accentAt(c.y), gl = LAYERS[layerAt(c.y)].accent, r = creatureR() * (1 + c.chomp * .12);
+  const body = (W.hurt > 0 && Math.sin(W.t * 30) > 0) ? "#ff6a6a" : gl;
   X.save(); X.translate(c.x, c.y); X.rotate(c.ang);
-  const wig = Math.sin(W.t * 8) * FEEL.wiggle * (.3 + Math.min(1, Math.hypot(c.vx, c.vy) / maxSpeed()));
+  const moveF = Math.min(1, Math.hypot(c.vx, c.vy) / maxSpeed());
+  const wig = Math.sin(W.t * 8) * FEEL.wiggle * (.3 + moveF);
+  // tail fin
   X.strokeStyle = rgba(ac, .8); X.lineWidth = r * .5; X.lineCap = "round"; X.beginPath(); X.moveTo(-r * .6, 0); X.quadraticCurveTo(-r * 1.2, wig, -r * 1.7, wig * 1.6); X.stroke();
+  X.fillStyle = rgba(ac, .55); X.beginPath(); X.moveTo(-r * 1.4, wig); X.lineTo(-r * 2.0, wig * 1.6 - r * .5); X.lineTo(-r * 2.0, wig * 1.6 + r * .5); X.closePath(); X.fill();
   glow(0, 0, r * 1.8, ac, .25);
-  X.fillStyle = rgba(gl, .92); X.beginPath(); X.ellipse(0, 0, r * 1.15, r * .72, 0, 0, 6.283); X.fill();
-  X.fillStyle = "#fff"; X.beginPath(); X.ellipse(r * .2, 0, r * .7, r * .5, 0, 0, 6.283); X.fill();
+  // pectoral fins (flap with motion)
+  const flap = Math.sin(W.t * 9) * .25 * (.4 + moveF);
+  X.fillStyle = rgba(ac, .5);
+  X.beginPath(); X.ellipse(-r * .1, r * .75, r * .55, r * .26, .5 + flap, 0, 6.283); X.fill();
+  X.beginPath(); X.ellipse(-r * .1, -r * .75, r * .55, r * .26, -.5 - flap, 0, 6.283); X.fill();
+  // dorsal fin
+  X.fillStyle = rgba(gl, .8); X.beginPath(); X.moveTo(r * .1, -r * .6); X.quadraticCurveTo(-r * .2, -r * 1.5, -r * .6, -r * .6); X.closePath(); X.fill();
+  // body
+  X.fillStyle = rgba(body, .94); X.beginPath(); X.ellipse(0, 0, r * 1.15, r * .72, 0, 0, 6.283); X.fill();
+  X.fillStyle = "rgba(255,255,255,.85)"; X.beginPath(); X.ellipse(r * .2, 0, r * .7, r * .5, 0, 0, 6.283); X.fill();
   X.fillStyle = "#08121a"; X.beginPath(); X.moveTo(r * .7, 0); X.arc(r * .55, 0, r * .55, -.5 - c.chomp * .6, .5 + c.chomp * .6); X.closePath(); X.fill();
   X.fillStyle = "#04121a"; X.beginPath(); X.arc(r * .45, -r * .28, r * .13, 0, 6.283); X.fill();
   X.fillStyle = rgba(ac, .9); const dots = 3 + Math.min(9, (S.size / 12) | 0); for (let i = 0; i < dots; i++) { const dx = -r * .5 + i * (r * 1.3 / dots); X.beginPath(); X.arc(dx, -r * .5, r * .08, 0, 6.283); X.fill(); }
@@ -662,6 +719,11 @@ function ascBanner() {
   showOverlay();
 }
 function autoTog(key, label) { const on = !!S.autoOn[key]; return `<button class="atog ${on ? "on" : ""}" onclick="S.autoOn['${key}']=!S.autoOn['${key}'];openEvo()">${label}<span>${on ? "ON" : "OFF"}</span></button>`; }
+function achHTML() {
+  const done = Object.keys(S.ach).length; let rows = "";
+  for (const a of ACH) { const u = !!S.ach[a.id]; rows += `<div class="achrow ${u ? "on" : ""}"><span class="ac">${u ? "🏅" : "🔒"}</span><div class="acd"><b>${u ? a.name : "???"}</b><span>${a.desc}</span></div></div>`; }
+  return `<div class="ovt2" style="color:#ffd86b">Achievements — ${done}/${ACH.length}</div><div class="ovs">Each grants +6% to all gains. Current ×${fmt(achMult())}.</div><div class="achgrid">${rows}</div>`;
+}
 function bestiaryHTML() {
   if (!S.bestAwake) return "";
   let rows = "";
@@ -684,8 +746,9 @@ function openMenu() {
       hub += `<button class="shopi ${can ? "on" : ""}" ${can ? `onclick="buyPerm('${k}')"` : "disabled"}><span class="si">${u.icon}</span><b>${u.name}</b><span class="sd">${u.desc}</span><span class="sc">${maxed ? "MAX" : "Lv" + lv + " · " + fmt(cost) + " ⛃"}</span></button>`; }
     hub += `</div>`; }
   document.getElementById("overlay").innerHTML =
-    `<div class="ov">${hub}<div class="ovt2">Logbook</div>` +
+    `<div class="ov ovwide">${hub}<div class="ovt2">Logbook</div>` +
     `<div class="ovs">Eaten ${fmt(S.stats.eaten)} · Salvaged ${fmt(S.stats.salvage)} ⛃ · Played ${fmtTime(S.stats.playtime)}</div>` +
+    achHTML() +
     `<div class="ovs"><b>Oddities ${eggs}/${EGGS.length}</b></div><div class="eggs">${eg}</div>` +
     bestiaryHTML() +
     `<div class="ovs"><b>Trophies ${Object.keys(S.trophies).length}/${APEX.length}</b> · apex kills give ×${fmt(trophyMult())} to all gains</div>` +
