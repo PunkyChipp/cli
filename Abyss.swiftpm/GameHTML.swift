@@ -158,16 +158,28 @@ const WRECK_LAYER = 5;          // the Wreck guards the gateway to the truly dee
 const WRECK_REQ = 480;          // == LAYERS[WRECK_LAYER].req
 const WORLD = { w: WW, h: NL * LH };
 const FLOOR_COL = "#01030a";
+// Fish are drawn from a weighted loot table. weight=base rarity, depth=ideal layer,
+// spread=how wide across depths it appears. rare fish are boosted by Keen Senses (luck).
 const FISH = {
-  shimmer: { r: 9,  val: 1,   grow: 0.5, spd: 26, flee: 0, glyph: "🐟", color: "#bfe9ff" },
-  school:  { r: 7,  val: 2,   grow: 0.5, spd: 34, flee: 0, glyph: "🐠", color: "#9ee7c8" },
-  darter:  { r: 10, val: 6,   grow: 1.2, spd: 96, flee: 1, glyph: "🐡", color: "#ffd27a" },
-  fat:     { r: 18, val: 16,  grow: 3.5, spd: 16, flee: 0, glyph: "🐟", color: "#ff9ec2", needs: 10 },
-  glow:    { r: 13, val: 60,  grow: 5.0, spd: 70, flee: 1, glyph: "🪼", color: "#a6fff0" },
-  whale:   { r: 42, val: 300, grow: 18,  spd: 22, flee: 0, glyph: "🐋", color: "#9fb6ff", needs: 90 },
-  lobster: { r: 16, val: 48,  grow: 5.0, spd: 18, flee: 0, glyph: "🦞", color: "#ff9e7a", needs: 24 },
-  viper:   { r: 11, val: 95,  grow: 4.5, spd: 112, flee: 1, glyph: "🐊", color: "#caff7a" },
-  gulper:  { r: 34, val: 260, grow: 16,  spd: 20, flee: 0, glyph: "🐳", color: "#9fd0ff", needs: 110 }
+  minnow:  { r: 6,  val: 1,    grow: 0.4, spd: 40, flee: 0, color: "#d8f3ff", weight: 13, depth: 0, spread: 3.0 },
+  shimmer: { r: 9,  val: 1,    grow: 0.5, spd: 26, flee: 0, color: "#bfe9ff", weight: 11, depth: 0, spread: 2.8 },
+  shrimp:  { r: 8,  val: 4,    grow: 1.0, spd: 24, flee: 0, color: "#ffb0c0", weight: 7,  depth: 1, spread: 3.0 },
+  school:  { r: 7,  val: 2,    grow: 0.6, spd: 34, flee: 0, color: "#9ee7c8", weight: 9,  depth: 1, spread: 2.8 },
+  jelly:   { r: 12, val: 11,   grow: 1.6, spd: 28, flee: 0, color: "#c9a6ff", weight: 5,  depth: 1, spread: 3.2 },
+  darter:  { r: 10, val: 7,    grow: 1.2, spd: 96, flee: 1, color: "#ffd27a", weight: 5,  depth: 2, spread: 2.6 },
+  puffer:  { r: 14, val: 22,   grow: 3.0, spd: 20, flee: 0, color: "#ffc46b", weight: 4,  depth: 2, spread: 2.4, needs: 8 },
+  hatchet: { r: 9,  val: 16,   grow: 1.6, spd: 84, flee: 1, color: "#cfe6ff", weight: 4,  depth: 3, spread: 3.0 },
+  fat:     { r: 18, val: 30,   grow: 3.6, spd: 16, flee: 0, color: "#ff9ec2", weight: 3.5, depth: 3, spread: 2.4, needs: 12 },
+  ray:     { r: 22, val: 48,   grow: 4.0, spd: 28, flee: 0, color: "#8fb0c8", weight: 2.6, depth: 3, spread: 2.6, needs: 18 },
+  glow:    { r: 13, val: 75,   grow: 5.0, spd: 70, flee: 1, color: "#a6fff0", weight: 3,  depth: 4, spread: 2.8, rare: 1 },
+  eelfish: { r: 12, val: 90,   grow: 3.5, spd: 92, flee: 1, color: "#9affc0", weight: 2.6, depth: 4, spread: 2.6 },
+  lobster: { r: 16, val: 120,  grow: 5.0, spd: 18, flee: 0, color: "#ff9e7a", weight: 3,  depth: 5, spread: 2.4, needs: 30 },
+  coelac:  { r: 20, val: 200,  grow: 6.0, spd: 30, flee: 0, color: "#7ad0b0", weight: 2.2, depth: 5, spread: 2.6, needs: 60 },
+  anglerf: { r: 13, val: 150,  grow: 4.0, spd: 26, flee: 0, color: "#ffe27a", weight: 2.4, depth: 5, spread: 2.6, needs: 40, rare: 1 },
+  viper:   { r: 11, val: 220,  grow: 4.5, spd: 112, flee: 1, color: "#caff7a", weight: 2.2, depth: 6, spread: 2.4, rare: 1 },
+  gulper:  { r: 34, val: 420,  grow: 16,  spd: 20, flee: 0, color: "#9fd0ff", weight: 1.8, depth: 6, spread: 2.6, needs: 110 },
+  whale:   { r: 42, val: 600,  grow: 18,  spd: 22, flee: 0, color: "#9fb6ff", weight: 1.4, depth: 7, spread: 2.8, needs: 90 },
+  colossus:{ r: 50, val: 1500, grow: 26,  spd: 18, flee: 0, color: "#aab8ff", weight: 0.9, depth: 7, spread: 2.2, needs: 260, rare: 1 }
 };
 const UPS = {
   speed:    { name: "Swift Fins",   icon: "💨", color: "#8ff0ff", cap: 40, base: 12, growth: 1.20, desc: "Top swim speed" },
@@ -349,11 +361,11 @@ function autoSpeedMult() { return 1 + 0.3 * pr("pr_auto"); }
 function moltReq() { return Math.floor(35 * Math.pow(1.6, S.molts)); }
 function startSize() { return 6 * ev("e_start") + 16 * pr("pr_start"); }
 function roeGain() { const dl = layerAt(S.deepest); return Math.floor(Math.pow(Math.max(0, S.size) / 20, 0.6) * (1 + 0.7 * dl) * (1 + 0.1 * ev("e_roe")) * (1 + 0.06 * bl("bl_roe")) * Math.pow(1.25, pr("pr_roe"))); }
-function migUnlocked() { return S.migrations > 0 || (S.molts >= 4 && layerAt(S.deepest) >= 4); }
+function migUnlocked() { return S.migrations > 0 || (S.molts >= 3 && layerAt(S.deepest) >= 3); }
 function migReq() { return Math.floor(8 * Math.pow(1.7, S.migrations)); }
 function lineageGain() { return Math.floor(Math.pow(Math.max(0, S.roe) / 6, 0.55) * (1 + 0.5 * S.apexTier) * (1 + 0.06 * bl("bl_lineage")) * (1 + 0.04 * bestiaryStars()) * Math.pow(1.25, pr("pr_lineage"))); }
 function canMigrate() { return migUnlocked() && S.roe >= migReq() && lineageGain() >= 1; }
-function ascUnlocked() { return S.ascensions > 0 || (S.migrations >= 2 && bestiaryStars() >= 8); }
+function ascUnlocked() { return S.ascensions > 0 || (S.migrations >= 2 && bestiaryStars() >= 6); }
 function spiritGain() { return Math.floor(Math.pow(Math.max(0, S.lineage) / 10, 0.5) * (1 + 0.3 * S.migTier) * (1 + 0.03 * bestiaryStars())); }
 function canAscend() { return ascUnlocked() && spiritGain() >= 1; }
 function blCost(k) { const u = BL[k]; return Math.floor(u.base * Math.pow(u.growth, bl(k))); }
@@ -400,11 +412,17 @@ function spawnFish(anywhere) {
   else { const e = Math.floor(Math.random() * 4);
     x = clamp(c.x + (e === 0 ? -VW / 2 - 40 : e === 1 ? VW / 2 + 40 : rr(-VW / 2, VW / 2)), 20, WW - 20);
     y = clamp(c.y + (e === 2 ? -VH / 2 - 40 : e === 3 ? VH / 2 + 40 : rr(-VH / 2, VH / 2)), 20, WORLD.h - 20); }
-  const L = LAYERS[layerAt(y)];
-  let id = L.fish[Math.floor(Math.random() * L.fish.length)];
-  const ft = FISH[id];
-  if (ft.needs && S.size < ft.needs * 0.6 && Math.random() > 0.3) id = L.fish[0];
-  if ((id === "glow" || id === "darter") && Math.random() > luckChance() + 0.3 && Math.random() > 0.5) { /* keep some rarity */ }
+  const ly = layerAt(y), luck = luckChance();
+  // weighted loot table: every species can appear, biased by depth + luck + your size
+  let tot = 0; const pool = [];
+  for (const fid in FISH) { const f = FISH[fid];
+    let wgt = f.weight * Math.exp(-Math.pow(ly - f.depth, 2) / (2 * f.spread * f.spread));
+    if (f.rare) wgt *= 1 + luck * 9;
+    if (f.needs && S.size < f.needs * 0.5) wgt *= 0.12;
+    if (wgt > 1e-4) { pool.push([fid, wgt]); tot += wgt; }
+  }
+  let r = Math.random() * tot, id = pool[0][0];
+  for (const p of pool) { r -= p[1]; if (r <= 0) { id = p[0]; break; } }
   const a = Math.random() * 6.28, f = FISH[id];
   W.fish.push({ id, t: f, x, y, vx: Math.cos(a) * f.spd, vy: Math.sin(a) * f.spd, ph: rr(0, 6.28), wob: 0 });
 }
@@ -748,6 +766,13 @@ function render() {
   const shx = (Math.random() - 0.5) * W.shake * 14, shy = (Math.random() - 0.5) * W.shake * 14;
   const topC = colAt(W.cam.y), botC = colAt(W.cam.y + VH);
   const g = X.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, topC); g.addColorStop(1, botC); X.fillStyle = g; X.fillRect(0, 0, VW, VH);
+  // sunlight shafts near the surface
+  const surf = lightAt(W.cam.y);
+  if (surf > 0.22) { for (let i = 0; i < 5; i++) {
+    const bx = ((i * 380 - W.cam.x * 0.22) % (VW + 560) + VW + 560) % (VW + 560) - 280 + Math.sin(W.t * 0.14 + i) * 22;
+    const lg = X.createLinearGradient(0, 0, 0, VH); lg.addColorStop(0, rgba("#cdf2ff", 0.11 * surf)); lg.addColorStop(1, "rgba(0,0,0,0)");
+    X.fillStyle = lg; X.beginPath(); X.moveTo(bx, -20); X.lineTo(bx + 64, -20); X.lineTo(bx + 200, VH); X.lineTo(bx + 36, VH); X.closePath(); X.fill();
+  } }
   // marine snow (parallax)
   X.fillStyle = "rgba(255,255,255,.13)";
   for (let i = 0; i < 55; i++) { const px = ((i * 137.5 - W.cam.x * 0.5) % (VW + 40) + VW + 40) % (VW + 40) - 20; const py = ((i * 91.3 + W.t * 12 - W.cam.y * 0.5) % (VH + 40) + VH + 40) % (VH + 40) - 20; X.fillRect(px, py, 2, 2); }
@@ -820,6 +845,10 @@ function render() {
   if (W.layerTitleT > 0 && W.layerTitle) { const a = clamp(W.layerTitleT, 0, 1); X.globalAlpha = a; X.textAlign = "center";
     X.fillStyle = accentAt(W.creature.y); X.font = "700 12px system-ui"; X.fillText("DEPTH " + (layerAt(W.creature.y) + 1) + " / " + NL, VW / 2, VH * 0.38 - 30);
     X.fillStyle = "#fff"; X.font = "300 40px system-ui"; X.fillText(W.layerTitle, VW / 2, VH * 0.38); X.globalAlpha = 1; }
+  // objective hint (next goal)
+  if (W.layerTitleT <= 0) { const ob = objective(); if (ob) { X.font = "600 13px system-ui"; X.textAlign = "center"; const tw = X.measureText(ob).width;
+    X.fillStyle = "rgba(4,12,22,.55)"; const bx = VW / 2 - tw / 2 - 13; if (X.roundRect) { X.beginPath(); X.roundRect(bx, 16, tw + 26, 26, 13); X.fill(); } else X.fillRect(bx, 16, tw + 26, 26);
+    X.fillStyle = "rgba(220,238,255,.9)"; X.fillText(ob, VW / 2, 33); } }
   // virtual joystick (touch / hold)
   if (input.down) {
     const ox = input.ox, oy = input.oy; const ac = accentAt(W.creature.y);
@@ -886,6 +915,18 @@ function cdot(color) { return `<span class="cdot" style="--c:${color}"></span>`;
 function gemI(color) { return `<span class="gem" style="--c:${color}"></span>`; }
 
 // ---------- HUD + overlays ----------
+function objective() {
+  if (!S.started) return "";
+  const gate = allowedMaxY();
+  if (S.molts === 0 && canMolt()) return "Tap EVOLVE (top-left) to Rebirth for permanent power";
+  if (gate.y < WORLD.h && S.size < gate.req) return "Grow to " + fmt(gate.req) + " size to dive deeper";
+  if (!S.wreckFound) return "Keep diving — reach the Wreck at Depth " + (WRECK_LAYER + 1);
+  if (!migUnlocked()) return "Rebirth " + Math.max(0, 3 - S.molts) + "× more & reach Depth 4 to unlock Migration";
+  if (S.migrations === 0) return "Open BLOODLINE (top-left) and Migrate";
+  if (!ascUnlocked()) return "Migrate again + earn " + Math.max(0, 6 - bestiaryStars()) + " Bestiary stars for Ascension";
+  if (S.ascensions === 0) return "Open PRIMORDIAL (top-left) and Ascend";
+  return "Hunt deeper, slay Apex Predators, complete the Bestiary";
+}
 function hud() {
   const c = W.creature || { y: 0 }, L = LAYERS[layerAt(c.y)], gate = allowedMaxY();
   const prog = gate.y < WORLD.h ? clamp(S.size / gate.req, 0, 1) : 1;
