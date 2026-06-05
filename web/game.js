@@ -4,7 +4,7 @@
    The Wreck — salvage it for Relics and permanent power.
    Single-file canvas game. Tunable FEEL block up top.
    ===================================================================== */
-const FEEL = { accel: 1500, maxSpeedBase: 250, drag: 1.8, turn: 9, camLerp: 4, wiggle: 7 };
+const FEEL = { maxSpeedBase: 285, resp: 8.5, turn: 12, camLerp: 5, wiggle: 7, accel: 1500, drag: 1.8 };
 
 // ---------- helpers ----------
 function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -302,12 +302,13 @@ function bindInput() {
   window.addEventListener("keydown", kd); window.addEventListener("keyup", ku);
   document.addEventListener("keydown", kd); document.addEventListener("keyup", ku);
 }
-const JOY_R = 64;   // how far you push for full thrust
+const JOY_R = 78;   // how far you push for full thrust
 function steer() {
   let dx = 0, dy = 0;
-  if (input.down) {  // floating analog joystick relative to where you pressed
-    const jx = input.x - input.ox, jy = input.y - input.oy, m = Math.hypot(jx, jy);
-    if (m > 9) { const mag = Math.min(1, m / JOY_R); dx = jx / m * mag; dy = jy / m * mag; }
+  if (input.down) {  // dynamic floating joystick — base trails the thumb for 1:1 steering
+    let jx = input.x - input.ox, jy = input.y - input.oy, m = Math.hypot(jx, jy);
+    if (m > JOY_R) { input.ox = input.x - jx / m * JOY_R; input.oy = input.y - jy / m * JOY_R; jx = input.x - input.ox; jy = input.y - input.oy; m = JOY_R; }
+    if (m > 5) { const mag = m / JOY_R; dx = jx / m * mag; dy = jy / m * mag; }
   }
   const k = input.keys; let kx = 0, ky = 0;
   if (k.w || k.arrowup) ky -= 1; if (k.s || k.arrowdown) ky += 1; if (k.a || k.arrowleft) kx -= 1; if (k.d || k.arrowright) kx += 1;
@@ -321,9 +322,12 @@ function loop(ts) { const now = ts / 1000; let dt = now - (W.t || now); W.t = no
 function update(dt) {
   S.stats.playtime += dt;
   const c = W.creature, [sx, sy] = steer();
-  c.vx += sx * accel() * dt; c.vy += sy * accel() * dt;
-  const dr = Math.exp(-FEEL.drag * dt); c.vx *= dr; c.vy *= dr;
-  const sp = Math.hypot(c.vx, c.vy), ms = maxSpeed(); if (sp > ms) { c.vx = c.vx / sp * ms; c.vy = c.vy / sp * ms; }
+  // Smooth velocity-seek: glide toward the joystick's target velocity (frame-rate independent).
+  const ms = maxSpeed();
+  const resp = FEEL.resp * (1 + 0.04 * (S.up.agility + bl("bl_agility")));
+  const k = 1 - Math.exp(-resp * dt);
+  c.vx += (sx * ms - c.vx) * k; c.vy += (sy * ms - c.vy) * k;
+  const sp = Math.hypot(c.vx, c.vy);
   c.x = clamp(c.x + c.vx * dt, 20, WW - 20);
   c.y += c.vy * dt;
   // vertical gating
