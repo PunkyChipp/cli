@@ -614,18 +614,19 @@ function render() {
   const g = X.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, topC); g.addColorStop(1, botC); X.fillStyle = g; X.fillRect(0, 0, VW, VH);
   // marine snow (parallax)
   X.fillStyle = "rgba(255,255,255,.13)";
-  for (let i = 0; i < 90; i++) { const px = ((i * 137.5 - W.cam.x * 0.5) % (VW + 40) + VW + 40) % (VW + 40) - 20; const py = ((i * 91.3 + W.t * 12 - W.cam.y * 0.5) % (VH + 40) + VH + 40) % (VH + 40) - 20; X.fillRect(px, py, 2, 2); }
-  // rising bubbles (tinted by the current layer)
+  for (let i = 0; i < 55; i++) { const px = ((i * 137.5 - W.cam.x * 0.5) % (VW + 40) + VW + 40) % (VW + 40) - 20; const py = ((i * 91.3 + W.t * 12 - W.cam.y * 0.5) % (VH + 40) + VH + 40) % (VH + 40) - 20; X.fillRect(px, py, 2, 2); }
+  // rising bubbles (tinted by the current layer) — batched into one path
   const bubC = accentAt(W.creature ? W.creature.y : 0);
-  X.strokeStyle = rgba(bubC, 0.18); X.lineWidth = 1;
-  for (let i = 0; i < 34; i++) { const bx = ((i * 211.3 - W.cam.x * 0.6) % (VW + 30) + VW + 30) % (VW + 30) - 15;
-    const by = ((VH - (i * 53.7 + W.t * 26) % (VH + 30)) - W.cam.y * 0.6 % 1); const sz = 1.5 + (i % 4);
-    X.beginPath(); X.arc(bx, ((by % (VH + 30)) + VH + 30) % (VH + 30) - 15, sz, 0, 6.283); X.stroke(); }
+  X.strokeStyle = rgba(bubC, 0.18); X.lineWidth = 1; X.beginPath();
+  for (let i = 0; i < 20; i++) { const bx = ((i * 211.3 - W.cam.x * 0.6) % (VW + 30) + VW + 30) % (VW + 30) - 15;
+    const by = ((VH - (i * 53.7 + W.t * 26) % (VH + 30)) - W.cam.y * 0.6 % 1); const sz = 1.5 + (i % 4); const yy = ((by % (VH + 30)) + VH + 30) % (VH + 30) - 15;
+    X.moveTo(bx + sz, yy); X.arc(bx, yy, sz, 0, 6.283); }
+  X.stroke();
 
   X.save(); X.translate(-W.cam.x + shx, -W.cam.y + shy);
 
-  // layer labels + barriers
-  for (let i = 0; i < NL; i++) { const yy = i * LH; ftxt(WW / 2, yy + 40, LAYERS[i].name.toUpperCase(), rgba(LAYERS[i].accent, .5), 13); }
+  // layer labels + barriers (only the visible band)
+  for (let i = 0; i < NL; i++) { const yy = i * LH + 40; if (yy < W.cam.y - 40 || yy > W.cam.y + VH + 40) continue; ftxt(WW / 2, yy, LAYERS[i].name.toUpperCase(), rgba(LAYERS[i].accent, .5), 13); }
   if (W.barrier) { const by = W.barrier.y, ac = accentAt(by - 10); X.strokeStyle = rgba("#ff8a94", .5); X.lineWidth = 3; X.setLineDash([16, 14]);
     X.beginPath(); X.moveTo(0, by); X.lineTo(WW, by); X.stroke(); X.setLineDash([]);
     ftxt(WW / 2, by - 14, "▼ grow to " + fmt(W.barrier.req) + " to descend", "#ffb0b8", 14); }
@@ -634,7 +635,7 @@ function render() {
   drawWreck();
 
   // orbs
-  for (const o of W.orbs) { const u = UPS[o.k], cost = upCost(o.k), maxed = S.up[o.k] >= u.cap; const sc = 1 + .05 * Math.sin(o.ph) + o.flash * .25; const s = orbSprite(o.k), w = s.width * sc;
+  for (const o of W.orbs) { if (o.y < W.cam.y - 90 || o.y > W.cam.y + VH + 90 || o.x < W.cam.x - 90 || o.x > W.cam.x + VW + 90) continue; const u = UPS[o.k], cost = upCost(o.k), maxed = S.up[o.k] >= u.cap; const sc = 1 + .05 * Math.sin(o.ph) + o.flash * .25; const s = orbSprite(o.k), w = s.width * sc;
     X.drawImage(s, o.x - w / 2, o.y - w / 2, w, w);
     ftxt(o.x, o.y - 42, u.name + " Lv" + S.up[o.k], u.color, 12); ftxt(o.x, o.y + 42, maxed ? "MAX" : fmt(cost) + " ◍", maxed ? "#fff" : (S.biomass >= cost ? "#9be7a6" : "#ff8a94"), 12); }
 
