@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spring g — sample data generator</title>
+<style>
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; padding:18px; background:#f3f5f8; color:#1e293b;
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;}
+  h1{font-size:1.3rem; margin:0 0 4px;}
+  p.sub{color:#64748b; font-size:.9rem; max-width:48em; margin:0 0 14px;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  button,select{font:inherit; font-size:16px; padding:11px 16px; border-radius:10px;
+    border:1px solid #dfe4ea; background:#fff; min-height:44px;}
+  button.primary{background:#1d6f8c; color:#fff; border-color:#1d6f8c; font-weight:600;}
+  button:active{transform:scale(.98);}
+  table{border-collapse:collapse; width:100%; max-width:640px; background:#fff;
+    border-radius:10px; overflow:hidden; font-size:.92rem;}
+  th,td{padding:8px 10px; text-align:right; border-bottom:1px solid #eef1f4; font-family:ui-monospace,Menlo,monospace;}
+  th:first-child,td:first-child{text-align:left; font-family:inherit; font-weight:600;}
+  thead th{background:#eef2f5;}
+  #summary{margin-top:14px; padding:12px 14px; background:#fff; border-radius:10px;
+    max-width:640px; font-size:.94rem; line-height:1.5;}
+  #summary b{font-family:ui-monospace,Menlo,monospace; color:#1d6f8c;}
+</style>
+</head>
+<body>
+
+<h1>Spring &amp; mass: sample data for measuring g</h1>
+<p class="sub">Click to generate a fake-but-realistic dataset for the spring extension/period method
+  (T² = 4π²x/g). Each click is a "different spring" with its own ruler and stopwatch error baked in,
+  so the numbers won't be suspiciously perfect.</p>
+
+<div class="row">
+  <button id="regen" class="primary">🎲 Regenerate data</button>
+  <button id="copy">Copy as CSV</button>
+  <label>oscillations timed (n):
+    <select id="nSel">
+      <option>5</option><option selected>10</option><option>15</option><option>20</option>
+    </select>
+  </label>
+</div>
+
+<table>
+  <thead><tr><th>Mass (g)</th><th>x (mm)</th><th>t for n osc (s)</th><th>n</th><th>T (s)</th><th>T² (s²)</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<div id="summary"></div>
+
+<script>
+(function(){
+  "use strict";
+  const ACCEPTED_G = 9.81;
+  const MASSES_G = [50,100,150,200,250,300,350,400];
+
+  function gauss(sigma){
+    const u = Math.random() || 1e-9, v = Math.random();
+    return sigma * Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  }
+  const rand = (a,b) => a + Math.random()*(b-a);
+
+  let session = {};
+  function newSession(){
+    session.k = rand(18,32);
+    session.springMassKg = rand(0.006,0.016);
+    session.rulerBiasM = gauss(0.0008);
+    session.timeBiasS = gauss(0.06);
+  }
+
+  function makeTrial(massG, n){
+    const m = massG/1000;
+    const xIdeal = m*ACCEPTED_G/session.k;
+    const T2Ideal = 4*Math.PI*Math.PI*(m + session.springMassKg/3)/session.k;
+    const Tideal = Math.sqrt(T2Ideal);
+
+    let x = xIdeal + session.rulerBiasM + gauss(0.0005);
+    x = Math.max(x, 0.001);
+
+    const totalIdeal = Tideal*n;
+    let total = totalIdeal + session.timeBiasS + gauss(0.07*Math.SQRT2);
+    total = Math.max(total, 0.05);
+    const T = total/n;
+
+    return {massG, x, n, total, T, T2:T*T};
+  }
+
+  function linreg(pts){
+    const N = pts.length;
+    let sx=0,sy=0; for(const p of pts){sx+=p.x; sy+=p.y;}
+    const mx=sx/N, my=sy/N;
+    let sxx=0,sxy=0,syy=0;
+    for(const p of pts){sxx+=(p.x-mx)**2; sxy+=(p.x-mx)*(p.y-my); syy+=(p.y-my)**2;}
+    const slope = sxy/sxx, intercept = my-slope*mx;
+    let ssres=0; for(const p of pts){const pred=slope*p.x+intercept; ssres+=(p.y-pred)**2;}
+    const dof = N-2;
+    const slopeSE = dof>0 ? Math.sqrt((ssres/dof)/sxx) : 0;
+    return {slope, intercept, slopeSE};
+  }
+
+  const tbody = document.getElementById('tbody');
+  const summary = document.getElementById('summary');
+  const nSel = document.getElementById('nSel');
+  let rows = [];
+
+  function fmtMM(m){ return (m*1000).toFixed(1); }
+
+  function generate(){
+    newSession();
+    const n = Number(nSel.value);
+    rows = MASSES_G.map(g => makeTrial(g, n));
+    render();
+  }
+
+  function render(){
+    tbody.innerHTML = rows.map(t => `<tr>
+      <td>${t.massG}</td><td>${fmtMM(t.x)}</td><td>${t.total.toFixed(2)}</td>
+      <td>${t.n}</td><td>${t.T.toFixed(3)}</td><td>${t.T2.toFixed(4)}</td>
+    </tr>`).join('');
+
+    const fit = linreg(rows.map(t => ({x:t.x, y:t.T2})));
+    const g = 4*Math.PI*Math.PI/fit.slope;
+    const gErr = Math.abs(g*(fit.slopeSE/fit.slope));
+    const pct = (g-ACCEPTED_G)/ACCEPTED_G*100;
+    summary.innerHTML = `Best-fit slope of T² vs x: <b>${fit.slope.toFixed(3)} s²/m</b><br>
+      Implied <b>g = ${g.toFixed(2)} ± ${gErr.toFixed(2)} m/s²</b>
+      (${pct>=0?'+':''}${pct.toFixed(1)}% from accepted 9.81 m/s²)`;
+  }
+
+  function copyCsv(){
+    const lines = ['Mass (g),Extension x (mm),Time for n osc (s),n,Period T (s),T^2 (s^2)'];
+    for(const t of rows) lines.push(`${t.massG},${fmtMM(t.x)},${t.total.toFixed(3)},${t.n},${t.T.toFixed(4)},${t.T2.toFixed(5)}`);
+    const csv = lines.join('\n');
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(csv).catch(()=>fallbackCopy(csv));
+    } else fallbackCopy(csv);
+  }
+  function fallbackCopy(csv){
+    const ta = document.createElement('textarea');
+    ta.value = csv; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  document.getElementById('regen').onclick = generate;
+  document.getElementById('copy').onclick = copyCsv;
+  nSel.onchange = generate;
+
+  generate();
+})();
+</script>
+</body>
+</html>
