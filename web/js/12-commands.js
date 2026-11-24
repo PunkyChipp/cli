@@ -213,6 +213,8 @@ function doCd(args) {
   }
   if (path === S.cwd) { print("{dim:you're already here.}"); return true; }
   const fromRoom = roomName();
+  // a cat who's decided about you follows you about. that's how you know.
+  const catFollows = S.cat.room === fromRoom && fromRoom !== "elsewhere" && S.cat.mood > 70 && chance(0.35);
   S.prevCwd = S.cwd; S.cwd = path;
   const toRoom = roomName();
   if (toRoom !== fromRoom) {
@@ -229,7 +231,11 @@ function doCd(args) {
       if (node.room && !isDark(path)) print("{dim:doors:} " + doorsOf(toRoom).map(x => '<span class="cmd" data-c="cd ' + x + '">' + x + "</span>").join("{dim: · }"));
       S.flags["seen" + toRoom] = true;
     }
-    if (catHere()) print("{dim:" + catLine() + "}");
+    if (catFollows && roomName() !== fromRoom && !["roof", "dock"].includes(toRoom) || catFollows && toRoom === "dock" && !weatherNow().rain) {
+      S.cat.room = toRoom;
+      print("{dim:" + pick(["Biscuit follows you in.", "Biscuit has come with you.", "You hear Biscuit behind you on the stairs. She's followed you.", "Biscuit trots in after you and sits down like it was her idea."]) + "}");
+      if (!S.flags.catFollowed) { S.flags.catFollowed = true; remember("Biscuit followed me from room to room today."); }
+    } else if (catHere()) print("{dim:" + catLine() + "}");
     if (toRoom === "garden" && (isNight() || isEvening()) && chance(0.6)) print("{dim:(a fox is sitting at the edge of the long grass, watching you. {cmd:cat fox})}");
     if (isDark(path)) print("{dim:(you'll want some light. {cmd:cd ..} back down.)}");
   } else if (!S.flags["seen:" + path]) {

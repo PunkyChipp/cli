@@ -51,3 +51,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 10 — coming back
 - Reopening the game used to greet you with a status dump ("Sam, 6:19am, Wednesday October 12. drizzly. you're in the kitchen."). Now it puts you back in the room: the time, where you are, what's outside, the last couple of things you did ("last thing you remember: made black tea. fed Biscuit."), or last night's journal line if it's a new morning, plus the cat if she's there.
+
+## 11 — Biscuit decides about you
+- Once Biscuit trusts you (the same trust that eventually gets you the trunk key), she sometimes follows you from room to room: "Biscuit follows you in." / "You hear Biscuit behind you on the stairs." It's the game's way of showing her trust without a meter, and a sign the key isn't far off. She won't follow you onto the roof, or down the dock in the rain.
