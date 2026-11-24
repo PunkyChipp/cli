@@ -399,7 +399,7 @@ function doLook(args) {
   const places = Object.entries(kids).filter(([, n]) => n.kind === "dir");
   if (things.length) print("{dim:here:} " + things.map(([n, x]) => "{" + (x.item ? "acc" : "hi") + ":" + '<span class="cmd" data-c="cat ' + esc(n) + '">' + esc(n) + "</span>}").join("{dim:,} "));
   const node2 = nodeAt(S.cwd);
-  const inside = places.map(([n]) => "{cmd:cd " + esc(n) + "}");
+  const inside = places.filter(([, n]) => !n.room).map(([n]) => "{cmd:cd " + esc(n) + "}");
   if (inside.length) print("{dim:in here:} " + inside.join("  "));
   if (node2.room || S.cwd === HOME) print("{dim:doors:} " + doorsOf(roomName()).map(d => '<span class="cmd" data-c="cd ' + (d === "hall" ? "~" : d) + '">' + d + "</span>").join("{dim: · }"));
   else print("{dim:back:} {cmd:cd ..}");
@@ -429,7 +429,7 @@ function doMap() {
     " {dim:|} " + r("greenhouse", 10) + " {dim:|--|} " + r("garden", 7) + " {dim:|--|} " + r("dock", 7) + " {dim:|}{sky:~~~~~}",
     " {dim:'------------'  '---------'  '---------'}{sky:~ lake ~}",
     "",
-    "  {acc:you are in the " + here + ".}  {ok:Biscuit is in the " + S.cat.room + ".}  {dim:(tap a room to go there)}"
+    "  {acc:you're " + (["dock", "roof"].includes(here) ? "on the " : "in the ") + here + ".}  {ok:Biscuit is in the " + S.cat.room + ".}  {dim:(tap a room to go there)}"
   ];
   for (const l of m) print(l);
 }
@@ -612,7 +612,7 @@ async function doInsert(a) {
   if (T.skip) bar.innerHTML = fmt("{dim:installing}  [{acc:####################}] 100%");
   S.disks[id] = true;
   const msgs = {
-    radio: "{ok:RADIO installed.} The old valve radio on the shelf crackles, hums, and warms up like it's clearing its throat. {cmd:radio}",
+    radio: "{ok:RADIO installed.} On the shelf, the old radio clicks and starts to warm up. {cmd:radio}",
     sky: "{ok:SKY installed.} Up on the roof, faintly, you hear the telescope motor whirr awake. {dim:(on clear nights: {cmd:cd roof}, {cmd:sky})}",
     lantern: "{ok:LANTERN installed.} Nothing happens. Then — down at the dock, through the window — the lantern's little brass shutter clicks open and shut, once, like a wink.",
     pip: "{ok:PIP.DSK installed.} The screen fills with a pixel cat that waves and says HI FROM PIP!!! — then vanishes. {dim:(new command: {cmd:catsay hello})}"
@@ -673,7 +673,7 @@ async function doSit() {
     "You don't think about much.",
     "You listen to the house. Under everything, the hum.",
     "You think about Wren, somewhere north, on a boat probably.",
-    r === "dock" ? "Water against the posts. The cable going down into it." : skyLine(),
+    r === "dock" ? "Water against the posts. The cable going down into it." : "You watch the window. " + skyLine(),
     fireLit() && r === "parlour" ? "You watch the stove until you forget what you came in for." : "You notice you've stopped hurrying."
   ];
   await type(pick(thoughts), 45);

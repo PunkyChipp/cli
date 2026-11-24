@@ -11,3 +11,11 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Looking at something that's in another room tells you where it is ("there's one in the kitchen") instead of a file error.
 - Opening a shed, drawer or tin describes it and shows what's inside.
 - Typo suggestions no longer offer secret commands ("check" used to suggest "hack").
+
+## 3 — rough edges from a slow first morning
+- The hall's `look` no longer lists every room in the house as "in here". It just shows its real doors.
+- Sitting down gives a proper line ("You watch the window. A thin drizzle.") instead of a bare weather fragment.
+- The study's corkboard reads naturally ("empty" / "with a few things pinned to it now").
+- Ottoline no longer says "welcome" twice in a row on air.
+- The map says "on the dock" / "on the roof".
+- The radio-install line is plainer.

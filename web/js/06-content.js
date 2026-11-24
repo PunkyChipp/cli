@@ -273,7 +273,7 @@ function buildTree() {
           Object.fromEntries(Object.entries(BOOKS).map(([n, t]) => [n, F(t, { onRead: () => { checkBooks(); if (n.startsWith("wrens_almanac")) clue("cable"); if (n.startsWith("hearth_80")) clue("cable"); } })])))
       }, { room: true }),
 
-      study: D(() => "The study. HEARTH on the desk, the screen you're looking at. A disk drive. A corkboard on the wall with nothing pinned to it" + (Object.keys(S.clues || {}).length ? " — well, not much." : ".") + " A window over the lake.", {
+      study: D(() => "The study. HEARTH on the desk, the screen you're looking at. A disk drive. A corkboard on the wall" + (Object.keys(S.clues || {}).length ? ", with a few things pinned to it now." : ", empty.") + " A window over the lake.", {
         "note.txt": F(NOTE, { owner: "wren", onRead: f => f && remember("found Wren's note on the screen.") }),
         "hearth.manual": F(HEARTH_MANUAL),
         corkboard: F(() => "Cork, drawing pins, a reel of red wool. {cmd:board}"),

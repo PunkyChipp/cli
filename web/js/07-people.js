@@ -383,7 +383,7 @@ function radioOut(st) {
       for (const l of ottoMorning()) lines.push("{acc:OTTOLINE:} " + l);
       if (S.quests.otto_radio !== "done") {
         S.quests.otto_radio = "done"; befriend("ottoline", 2); give("seed:chamomile", 2);
-        lines.push("{acc:OTTOLINE:} Oh — Pip's just put her head round the door to say the cottage radio's on. Hello, cottage. There's chamomile seed in your box. Welcome.");
+        lines.push("{acc:OTTOLINE:} Oh, Pip's just put her head round the door. She says the cottage radio's on. Hello, cottage. I've left chamomile seed in your box.");
         lines.push("{ok:(2 chamomile seeds)}");
         remember("got the radio going. Ottoline said hello on air.");
       }
