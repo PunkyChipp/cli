@@ -32,6 +32,7 @@ npm run build     # updates docs/index.html (the playable single file)
 | `13-devtoys.js` | grep/head/wc, sudo, ps/kill, man pages, themes, easter eggs |
 | `14-story.js` | mornings, the sticky note, status card, keycaps, **Lantern Night** |
 | `15-scene.js` | the pixel-art window |
+| `16-mystery.js` | **spoilers.** the corkboard, the receiver, the log, the true ending |
 | `99-boot.js` | the BIOS screen, login, main loop |
 
 ## Markup
@@ -112,6 +113,17 @@ fenn_rain: { from: "fenn", day: 6, subject: "Rain.", text: () => `${NAME()}.\n\n
 
 What people *say back* when you send them things lives in `reply()` in the
 same file.
+
+### A new clue for the corkboard
+
+Add a card to `CLUES` in `16-mystery.js` with a `thread`, a `title`, a `text`
+(what the player now knows, written as plain fact) and a `hint` (what shows as
+a `?` when a linked card is found but this one isn't). `links` says which cards
+it hangs off. Then call `clue("your_id")` wherever the player would learn it:
+an `onRead` on a file, a radio line, a letter's `onOpen`.
+
+Good clues can be found more than one way, and never tell the player what to
+type. The board shows what they know. Working out what to do with it is theirs.
 
 ### A new keepsake (achievement)
 

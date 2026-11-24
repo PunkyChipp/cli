@@ -87,6 +87,7 @@ function worldTick() {
     catWander();
     maybeCatKeyboard();
     idleMoment();
+    if (typeof maybeVisit === "function") maybeVisit();
   }
 }
 
@@ -99,22 +100,23 @@ function idleMoment() {
   lastIdle = Date.now();
   const r = roomName(), w = weatherNow(), m = S.min;
   const pool = [
-    "the house ticks and settles, like an old dog turning round before it lies down.",
-    "somewhere upstairs, a floorboard creaks on its own. it does that.",
-    "the mantel clock chimes " + (Math.floor(m / 60) % 12 || 12) + ", slightly late, as if it had to think about it."
+    "a floorboard upstairs.",
+    "the mantel clock chimes " + (Math.floor(m / 60) % 12 || 12) + ", a bit late.",
+    "under the floor, the hum dips, and comes back.",
+    "the hum. you'd stopped hearing it. now you can't stop."
   ];
-  if (w.rain) pool.push("the rain changes gear — heavier for a moment, then soft again.", "a drip has found its way into the gutter and is practising the same note.");
-  if (w.wind > 0.6) pool.push("the wind gets into the chimney and hums one long low note.");
-  if (w.fog > 0.5) pool.push("a foghorn, very far away, says something to nobody.");
-  if (isNight()) pool.push("an owl, close by. then another, further off, answering.", "a car on the far road sweeps its headlights across the lake and is gone.");
-  else pool.push("a blackbird lands on the windowsill, looks in at you, and leaves, unimpressed.", "across the lake, someone is chopping wood. the sound arrives a second after the axe.");
+  if (w.rain) pool.push("the rain gets heavier for a minute, then eases.", "a drip in the gutter, the same note over and over.");
+  if (w.wind > 0.6) pool.push("wind in the chimney.");
+  if (w.fog > 0.5) pool.push("a foghorn, a long way off.");
+  if (isNight()) pool.push("an owl. another, further off.", "headlights on the far road, sweeping across the lake.");
+  else pool.push("a blackbird on the sill. it looks in, and goes.", "someone across the lake chopping wood. the sound comes a second late.");
   if (teaWarm()) pool.push("the teapot ticks as it cools.");
-  if (fireLit()) pool.push("a log shifts in the stove and sends up a little fountain of sparks.");
-  if (r === "kitchen") pool.push("the fridge shudders, thinks about it, and goes quiet.");
-  if (r === "study") pool.push("HEARTH's fan spins up, considers something, and spins down again.");
-  if (r === "dock") pool.push("a fish jumps, far out. just the ring of it left, spreading.");
-  if (r === "garden") pool.push("a robin follows you along the beds at a respectful distance.");
-  if (S.cat.room === r) pool.push("Biscuit, asleep, runs a little in a dream. whatever she's chasing, she's winning.", "Biscuit yawns enormously and looks embarrassed about it.");
+  if (fireLit()) pool.push("a log settles in the stove.");
+  if (r === "kitchen") pool.push("the fridge shudders and goes quiet.");
+  if (r === "study") pool.push("HEARTH's fan spins up and down again.", "the radio on the shelf crackles once, by itself.");
+  if (r === "dock") pool.push("a fish jumps, far out.", "the cable at your feet ticks.");
+  if (r === "cellar") pool.push("the box's green light blinks three times, and then once.");
+  if (S.cat.room === r) pool.push("Biscuit, asleep, twitches.", "Biscuit yawns.");
   print("{dim:(" + pick(pool) + ")}");
   showLine(true);
 }
@@ -191,13 +193,43 @@ async function newDay(fellAsleep) {
   await morning(fellAsleep);
 }
 
+/* The journal should read like a person wrote it at the end of a long day:
+   the one or two things that mattered, the ordinary stuff squashed into a
+   list, and whatever was on their mind when they put the pen down. */
+const ORDINARY = [
+  [/tea/, () => "tea"], [/fed Biscuit/, () => "fed B."], [/watered/, () => "watered"],
+  [/planted (\w+)/, m => m[1] + " in"], [/harvested (.*?)\.$/, m => "picked " + m[1]],
+  [/made (.*?)\.$/, m => m[1]], [/^ate /, () => null], [/stove|fire going/, () => "fire"],
+  [/petted Biscuit/, () => "B. purred"], [/rowed|took the boat/, () => "out in the boat"],
+  [/caught (?:and released )?a (\w+)/, m => "a " + m[1] + " off the dock"], [/sent .* to (\w+)/, m => "post for " + m[1]],
+  [/record|piano/, () => "records"], [/chopped|logs/, () => "wood"], [/a postcard from/, () => "card from W."]
+];
+function composeJournal(fellAsleep) {
+  if (S.pendingEntry) return S.pendingEntry;
+  const r = seeded(S.day * 101);
+  const notable = [], small = [];
+  for (const line of S.today) {
+    const hit = ORDINARY.find(([re]) => re.test(line));
+    if (hit) { const t = hit[1](line.match(hit[0])); if (t && !small.includes(t)) small.push(t); }
+    else notable.push(line.replace(/\.$/, ""));
+  }
+  const parts = [];
+  if (!notable.length && !small.length) parts.push(["quiet day.", "didn't do much.", "nothing to report. good."][Math.floor(r() * 3)]);
+  for (const n of notable.slice(0, 2)) parts.push(n + ".");
+  if (small.length) parts.push((notable.length ? "also " : "") + small.slice(0, 4).join(", ") + ".");
+  if (fellAsleep) parts.push("fell asleep at the desk.");
+  const w = weatherFor(S.day);
+  const closers = [];
+  if (S.day >= 4 && !S.flags.answered) closers.push("the hum again tonight.", "can hear the cellar from the bed.");
+  if (w.rain) closers.push("rain all evening.");
+  if (w.name === "clear" && S.day >= 10) closers.push("clear tonight. went out and looked for the comet.");
+  if (S.cat.mood > 80) closers.push("B. on the bed.");
+  if (closers.length && r() < 0.6) parts.push(closers[Math.floor(r() * closers.length)]);
+  return parts.join(" ");
+}
 function writeJournal(fellAsleep) {
-  const bits = S.today.slice();
-  let text;
-  if (!bits.length) text = pick(["quiet day. didn't do much. that's allowed.", "a nothing sort of day. the good kind.", "today happened. i was there for most of it."]);
-  else text = bits.slice(0, 5).join(" ");
-  if (fellAsleep) text += " fell asleep at the desk again. Biscuit sat on my back.";
-  if (S.warmth > 75) text += " felt warm right through.";
+  const text = composeJournal(fellAsleep);
+  S.pendingEntry = null;
   S.journal.push({ day: S.day, text });
   S.today = [];
 }

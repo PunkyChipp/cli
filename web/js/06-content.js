@@ -2,280 +2,218 @@
    06-content.js — the cottage, room by room. Most of the writing in
    the game lives here. If you want to add a room or hide a note
    somewhere, this is the file. (See MODDING.md.)
+
+   A rule for writing in here: not everything needs a joke. Most real
+   things are just things. Let them be plain, and let the odd one be odd.
    ===================================================================== */
 "use strict";
 
 const NAME = () => S.name || "you";
-const W = s => s + "\n\n{dim:— W.}";
+const W = s => s + "\n\n{dim:W.}";
 
 /* ---------- little dynamic descriptions ---------- */
 function skyLine() {
   const w = weatherNow();
   const night = isNight();
-  if (w.snow) return night ? "Snow is coming down past the window, lit orange where the lamp catches it." : "It's snowing — slow, fat flakes that don't seem in any hurry to land.";
-  if (w.rain >= 1) return night ? "Rain ticks against the glass in the dark." : "Rain is coming down properly, the kind that bounces.";
-  if (w.rain > 0) return "A fine drizzle is hanging in the air, not quite committing to anything.";
-  if (w.fog > 0.5) return "Fog has swallowed the far side of the lake. The world ends about forty feet away.";
-  if (w.wind > 0.8) return "Wind is shoving at the trees and rattling the gutter like it wants to come in.";
-  if (night) return w.cloud > 0.5 ? "Outside it's a soft, starless dark." : "Outside, the sky is clear and absolutely crowded with stars.";
-  if (S.min < 8 * 60) return "Early light, thin and gold, is coming in sideways.";
-  if (S.min > 17 * 60) return "The light's gone amber and long. Evening, nearly.";
-  return w.cloud > 0.5 ? "The sky is one big soft grey blanket." : "It's a bright, cold, blue sort of day.";
+  if (w.snow) return night ? "Snow going past the window, orange where the lamp catches it." : "It's snowing. Big slow flakes.";
+  if (w.rain >= 1) return night ? "Rain on the glass." : "Heavy rain. The lake's gone grey and pocked.";
+  if (w.rain > 0) return "A thin drizzle.";
+  if (w.fog > 0.5) return "Fog. You can't see the far shore, or the end of the dock.";
+  if (w.wind > 0.8) return "Windy. The gutter keeps knocking.";
+  if (night) return w.cloud > 0.5 ? "Dark, and no stars." : "Clear. A lot of stars.";
+  if (S.min < 8 * 60) return "Early light, low over the hill.";
+  if (S.min > 17 * 60) return "The light's going.";
+  return w.cloud > 0.5 ? "Overcast." : "Bright and cold.";
 }
 function catHere() { return S.cat.room === roomName(); }
 function catLine() {
   const r = roomName();
   const lines = {
-    kitchen: "Biscuit is sitting next to her bowl with the patience of a tax inspector.",
-    parlour: fireLit() ? "Biscuit is stretched in front of the stove, belly to the heat, entirely liquid." : "Biscuit is curled in the armchair. It's her armchair. You're allowed to borrow it.",
-    study: "Biscuit is on the desk, lying across exactly the papers you need.",
-    garden: "Biscuit is in the garden, stalking a leaf with enormous seriousness.",
-    greenhouse: "Biscuit is asleep between two pots, where it's warmest.",
-    dock: "Biscuit is at the end of the dock, staring at the water like it owes her money.",
-    attic: "Two green eyes in the dark: Biscuit, investigating a box she's been investigating since 2019.",
-    hall: "Biscuit is lying in the exact middle of the hall rug, a tripping hazard on purpose.",
-    cellar: "Biscuit is curled on top of the humming beige box. It's warm. She knows.",
-    roof: "Biscuit has somehow followed you onto the roof and is looking very pleased about it."
+    kitchen: "Biscuit is sitting by her bowl.",
+    parlour: fireLit() ? "Biscuit is flat out in front of the stove." : "Biscuit is asleep in the armchair.",
+    study: "Biscuit is on the desk, on the papers.",
+    garden: "Biscuit is in the long grass at the end of the beds. Just her ears.",
+    greenhouse: "Biscuit is asleep between two pots.",
+    dock: "Biscuit is at the end of the dock, looking down into the water.",
+    attic: "Biscuit is up here somewhere. You can hear her.",
+    hall: "Biscuit is lying in the middle of the rug.",
+    cellar: "Biscuit is curled on top of the humming box. It's warm.",
+    roof: "Biscuit has followed you up the ladder."
   };
   return lines[r] || "Biscuit is here.";
 }
 
-/* ---------- Wren's welcome letter ---------- */
-const WELCOME = () => `{hi:Dear ${NAME()},}
+/* ---------- the note on the screen (the first thing you read) ---------- */
+const NOTE = () => `{dim:(biro, on the back of an envelope)}
 
-If you're reading this, you found the computer, you worked out how
-to turn it on (the switch is at the BACK, everyone looks at the front),
-and you typed {cmd:cat welcome.txt}. Or you tapped it. Either is fine.
+${NAME()} —
 
-Thank you for minding the cottage while I'm away. I'll be gone the
-season. I've wanted to see the Faroe Islands since I was nine and
-I am seventy-eight, so I've decided that's long enough to wait.
+you made it. the bed's made up, the spare key is under the
+heron, and the kettle is in the kitchen. thump it on the left.
 
-A few things:
+Biscuit gets fed twice a day. she will tell you otherwise.
 
- * The cottage runs on HEARTH, which is this machine. I wired it into
-   every room in 1987 and I'm still very pleased with myself. Every
-   room is a folder. Type {cmd:ls} to look around, {cmd:cd kitchen} to go
-   somewhere, and {cmd:cat} a thing to read it. {cmd:look} if you're lost.
- * Biscuit is fed twice a day and will tell you it's four times.
- * I've left you a list. It's called {cmd:todo.txt}. You'll be fine.
- * The kettle needs a thump on the left side. Not the right side.
-   The right side is where it keeps its feelings.
+the lantern at the end of the dock gets lit on the 25th.
+everyone will be watching for it. it's been lit every year
+since 1974 and I'd like it to stay that way. everything it
+needs is in this house somewhere.
 
-Most important: Lantern Night is on the 25th, two weeks from today.
-The lantern on our dock is the first one lit every year. It has been
-every year since 1974. I'd like that to keep being true. Everything you need
-is somewhere in this house, and I've never been very good at
-remembering where I put things, so — good luck, love.
+the rest you can work out. you were always cleverer than me.
 
-Make yourself at home. It is your home, for now.
+{acc:W.}
 
-{dim:all my love,}
-{acc:Wren}
+{dim:p.s. ignore the noise in the cellar.}`;
 
-{dim:p.s. the radio's broken. the disk for it is wherever I put the bread.}`;
-
-/* ---------- the to-do list (it ticks itself) ---------- */
+/* ---------- the list (it ticks itself) ---------- */
 function todoText() {
   const items = [
-    ["make a cup of tea", () => S.stats.teas > 0, "kitchen → {cmd:brew}"],
-    ["feed Biscuit (she will lie about this)", () => S.flags.fedOnce, "{cmd:feed biscuit}"],
-    ["plant something in the garden", () => S.flags.planted, "garden → {cmd:plant mint}"],
-    ["fix the radio (the disk is with the bread)", () => S.disks.radio, "kitchen → bread_bin"],
-    ["say hello to Ottoline on 101.3 in the morning", () => S.quests.otto_radio === "done", "{cmd:radio 101.3} before noon"],
-    ["fish off the dock. it's good for you.", () => S.stats.fish > 0, "dock → {cmd:fish}"],
-    ["find the oil lamp & light it (cellar? probably cellar)", () => S.flags.lampLit, "you'll need matches"],
-    ["the greenhouse door sticks. it needs oil, not swearing.", () => S.flags.ghOpen, "the shed has an oilcan"],
-    ["write back to people. they like that.", () => S.stats.letters > 0, "{cmd:mail}, then {cmd:send}"],
-    ["light the lantern on Lantern Night", () => S.flags.lanternLit, "the 25th. everything's in the attic trunk."]
+    ["tea", () => S.stats.teas > 0, "kitchen"],
+    ["feed Biscuit", () => S.flags.fedOnce, "kitchen"],
+    ["plant something", () => S.flags.planted, "garden. seeds in your coat"],
+    ["the radio needs its disk", () => S.disks.radio, "it's with the bread"],
+    ["the oil lamp (cellar)", () => S.flags.lampLit, "matches in the drawer"],
+    ["greenhouse door", () => S.flags.ghOpen, "oilcan, shed"],
+    ["write back to people", () => S.stats.letters > 0, ""],
+    ["the lantern. the 25th.", () => S.flags.lanternLit, ""]
   ];
-  let out = "{hi:THINGS TO DO}   {dim:(in no particular order, except the last one)}\n\n";
-  let done = 0;
+  let out = "{dim:(Wren's list, pinned by the door)}\n\n";
   for (const [t, ok, hint] of items) {
     const d = ok();
-    if (d) done++;
-    out += (d ? "{ok:[x]} {dim:" + t + "}" : "{acc:[ ]} " + t + "  {dim:" + hint + "}") + "\n";
+    out += (d ? "{dim:  {s:" + t + "}}" : "  " + t + (hint ? "  {dim:— " + hint + "}" : "")) + "\n";
   }
-  out += "\n{dim:" + (done === items.length ? "...you did all of it. I'm so proud I could burst. — W." : done >= 5 ? "you're doing wonderfully. don't let Biscuit tell you otherwise." : "one thing at a time. tea first, always.") + "}";
-  return out;
+  return out.trimEnd();
 }
 
-const BISCUIT_MANUAL = `{hi:BISCUIT: A USER'S MANUAL}  {dim:(rev. 6)}
+const BISCUIT_MANUAL = `{hi:BISCUIT}  {dim:(typed, then corrected in pen)}
 
-MODEL ........ domestic shorthair, orange, "large-boned"
-AGE .......... eleven (claims three)
-FIRMWARE ..... stubborn
+  orange. eleven. heavier than she looks.
+  fed morning and evening. half a tin. she gets the
+  other half {s:tomorrow} at 5pm.
+  likes: the armchair, the cellar box, the end of the dock.
+  dislikes: the hoover, Fenn, being picked up.
+  don't touch the belly.
 
-FEEDING
-  Twice a day. Morning and evening. She will tell you she has
-  not been fed. She has been fed. She was fed by me before I left
-  and she will STILL tell you she has not been fed.
-  {cmd:feed biscuit}
+  the brass key on her collar is the spare for my trunk.
+  she won't let you have it until she's decided about you.
+  give her a few days.`;
 
-AFFECTION
-  Head and cheeks: yes. Belly: it's a trap. It's always a trap.
-  {cmd:pet biscuit}
+const FRIDGE_NOTE = () => `On the fridge, under a magnet shaped like a sardine:
 
-KNOWN ISSUES
-  - walks on the keyboard. there is no fix. it is a feature now.
-  - sits on whatever you are reading.
-  - is PID 1. everything else in this house is a child of Biscuit.
-    try {cmd:ps} if you don't believe me.
+  {acc:milk — Ottoline, Tues}
+  {acc:eggs — Fenn}
+  {acc:${S.day > 3 ? "{s:jam}" : "jam"} — cellar}
+  {acc:ring J. about the 25th}`;
 
-LOCATION
-  She moves around. {cmd:where biscuit} will tell you, roughly.
-  HEARTH tracks her by her collar. She knows, and she resents it.
+const HEARTH_MANUAL = `{hi:HEARTH-80 OPERATOR'S GUIDE}  {dim:(the printed part is three pages. the rest is pencil.)}
 
-{dim:p.s. the little brass key on her collar is the spare for the
-attic trunk. she won't give it to just anybody. be decent to her
-for a few days and she'll let you have it.}`;
+  {acc:ls}            what's here (add -a for hidden things)
+  {acc:cd} kitchen    go somewhere.  {acc:cd ..}  back out
+  {acc:cat} thing     read it, or look at it closely
+  {acc:look}          where am I
+  {acc:take} thing    pick it up
+  {acc:map}           the house
+  {acc:board}         what you've worked out so far
 
-const FRIDGE_NOTE = () => `a note under a magnet shaped like a sardine:
+  everything underlined can be tapped.
+  tab finishes words. the up arrow repeats things.
 
-  {acc:MILK — Ottoline brings it Tues}
-  {acc:EGGS — Fenn's hens, he says "they're not for sale" then sells them}
-  {acc:FISH — me, the lake, patience}
-  {acc:${S.day > 3 ? "{s:JAM} jam is in the CELLAR, not here, stop looking" : "JAM — the cellar, obviously"}}`;
-
-const HEARTH_MANUAL = `{hi:HEARTH-80 — OPERATOR'S GUIDE}   {dim:(handwritten addendum: W.)}
-
-  The cottage is the filesystem. Don't think about it too hard.
-  I didn't, and it works fine.
-
-  {acc:GETTING AROUND}
-    {cmd:ls}            what's here           {cmd:ls -a}  what's hiding
-    {cmd:cd kitchen}    go to the kitchen     {cmd:cd ..}  go back out
-    {cmd:look}          describe where I am   {cmd:map}    see the whole house
-    {cmd:cat} <thing>   read it / look at it  {cmd:take} <thing>  pick it up
-
-  {acc:LIVING HERE}
-    {cmd:brew}  {cmd:cook}  {cmd:eat}  {cmd:plant}  {cmd:water}  {cmd:harvest}  {cmd:fish}
-    {cmd:stoke}  {cmd:pet biscuit}  {cmd:mail}  {cmd:send}  {cmd:sleep}  {cmd:pockets}
-
-  {acc:WHEN STUCK}
-    {cmd:help}    {cmd:todo}    {cmd:hint}
-
-  Tap anything that's {u:underlined} and it'll do it for you.
-  The little keys under the screen change depending on the room.
-
-  The {cmd:tab} key finishes words for you. The up arrow remembers
-  things you said. (I wish people did that.)
-
-{dim:  BUGS: Biscuit.}`;
+{dim:  pencil, in the margin: "HEARTH does more than this. it's
+  listening, mostly. — W."}`;
 
 /* ---------- books on the parlour shelf ---------- */
 const BOOKS = {
-  "the_patient_gardener.book": `{hi:THE PATIENT GARDENER}  by Mabel Thorne, 1962
-{dim:(dog-eared at chapter four)}
+  "the_patient_gardener.book": `{hi:THE PATIENT GARDENER}  Mabel Thorne, 1962. {dim:Spine broken at chapter four.}
 
-"...and the beginner will water her seedlings and then stand over them,
-as though watching will help. It does not help. It has never helped.
-Water them, go inside, put the kettle on. Plants grow in the dark
-and when you're not looking, like most good things.
+  "Water them, then go inside. Watching does not help. Plants
+  grow at night, when nobody is looking, like most good things.
 
-Mint will grow anywhere, including places you do not want it.
-Carrots are slow and sulky but worth it. Lavender wants sun and
-to be left alone, which is also true of most of my relatives.
+  Mint will grow anywhere. Carrots take three nights and sulk.
+  Lavender wants sun and to be left alone. Rain counts."
 
-Rain counts as watering. Do not let anyone tell you otherwise."
+{dim:In pencil: "pumpkins are five nights here, not four."}`,
+  "knots_for_small_boats.book": `{hi:KNOTS FOR SMALL BOATS}  {dim:a pamphlet}
 
-{dim:in the margin, in pencil: "Mabel was right about everything except
-pumpkins. pumpkins take five days here, not four. — W."}`,
-  "knots_for_small_boats.book": `{hi:KNOTS FOR SMALL BOATS}  {dim:(a pamphlet, really)}
-
-  THE BOWLINE: the rabbit comes out of the hole, goes round
+  THE BOWLINE: the rabbit comes up through the hole, round
   the tree, and back down the hole.
 
-{dim:Wren has added: "the rabbit has never once come out of the hole for me.
-I tie the boat with a bow, like a shoelace, and it has been fine since 1981."}`,
-  "fishes_of_lake_ilse.book": `{hi:A FIELD GUIDE TO THE FISHES OF LAKE ILSE}
+{dim:In pencil: "I tie it like a shoelace. it has been fine since 1981."}`,
+  "fishes_of_lake_ilse.book": `{hi:THE FISHES OF LAKE ILSE}  {dim:county field guide, 1971}
 
-  {acc:PERCH}   common. bold. bites at anything, any time.
-  {acc:ROACH}   common. silver. slightly embarrassed-looking.
-  {acc:MINNOW}  very common. very small. put it back.
-  {acc:TROUT}   likes clean mornings and quiet evenings.
-  {acc:PIKE}    the evening fish. long. toothy. disapproving.
-  {acc:EEL}     comes out at night, likes rain. slippery in every sense.
-  {acc:CARP}    rare. slow. old. some say a golden one has lived in
-          the lake since before the war. most say this is nonsense.
+  {acc:PERCH}   common. daytime.
+  {acc:ROACH}   common. any time.
+  {acc:MINNOW}  very common. put back.
+  {acc:TROUT}   clear mornings and evenings.
+  {acc:PIKE}    evening and after dark.
+  {acc:EEL}     night, in rain.
+  {acc:CARP}    rare. old fish come up in fog, and at dawn.
 
-{dim:Wren has circled CARP so many times the pencil went through the page.
-"HE IS REAL. HIS NAME IS OLD MARMALADE. he likes FOG. and DAWN. — W."}`,
-  "the_cat_who_kept_a_lighthouse.book": `{hi:THE CAT WHO KEPT A LIGHTHOUSE}  {dim:(a picture book)}
+  The lake is 41 metres at its deepest point, roughly
+  below the centre of the bay. It has never been surveyed
+  below that. {dim:(Wren has underlined "never".)}`,
+  "the_cat_who_kept_a_lighthouse.book": `{hi:THE CAT WHO KEPT A LIGHTHOUSE}  {dim:a picture book}
 
-  Once there was a cat who kept a lighthouse.
-  Every night she pushed the big switch with her paw,
-  and every night the ships came safely home.
+  Every night the cat pushed the big switch with her paw,
+  and every night the boats came home.
 
-  "Why do you do it?" asked the gull. "You don't even LIKE ships."
+  "Why do you do it?" said the gull. "You don't like boats."
+  "No," said the cat. "But I like it when they come home."
 
-  "No," said the cat. "But I like it when everyone comes home."
+{dim:Inside the cover: "for Pip. — W."}`,
+  "hearth_80_technical_reference.book": `{hi:HEARTH-80 TECHNICAL REFERENCE}  {dim:412 pages. very annotated.}
 
-{dim:inside the cover: "for Pip, when she's old enough. which is now, probably.
-she's been old enough since she was four. — W."}`,
-  "hearth_80_technical_reference.book": `{hi:HEARTH-80 TECHNICAL REFERENCE}  {dim:(412 pages, very annotated)}
+  Ch. 2  Memory (640K) ................ {dim:"enough"}
+  Ch. 3  Peripherals .................. {dim:"kettle, radio, telescope, cellar"}
+  Ch. 7  Receivers .................... {dim:this chapter is mostly pencil}
+  Ch. 9  Troubleshooting .............. {dim:"thump it"}
+  App. C Pipes ........................ {dim:"ls | grep txt. J. showed me."}
 
-  Chapter 1: Installation ......................... {dim:"done. ish."}
-  Chapter 2: Memory (640K) ........................ {dim:"plenty."}
-  Chapter 3: Peripherals .......................... {dim:"kettle. radio. cat (unsupported)."}
-  Chapter 9: Troubleshooting ...................... {dim:"thump it."}
-  Appendix C: Pipes ............................... {dim:"you can join commands with a | like
-                                                    {cmd:ls | grep txt}. Juniper showed me.
-                                                    she thinks I don't use it. I use it."}
-  Appendix F: sudo ................................ {dim:"the password is not 'password'."}`,
-  "wrens_almanac_1987.book": `{hi:WREN'S ALMANAC, 1987}  {dim:(a ring binder. a diary, really.)}
+{dim:Ch. 7, in the margin: "the aerial goes down into the lake, not up.
+everyone thinks I've wired it backwards. I haven't."}`,
+  "wrens_almanac_1987.book": `{hi:WREN'S ALMANAC, 1987}  {dim:a ring binder}
 
-  {acc:Mar 3.}  Bought a computer. Fenn says I'm mad. Fenn keeps bees.
-  {acc:Mar 9.}  Ran a cable to the kitchen. Kettle now has an IP address.
-          Kettle does not know what to do with this. Neither do I.
-  {acc:Apr 2.}  Every room is a directory now. Juniper came for supper and
-          typed "cd garden" and then stood up and went into the garden.
-          We laughed until we had to sit down.
-  {acc:Jun 21.} Old Marmalade took my best lure. Again. I saw him. I SAW him.
-  {acc:Oct 25.} Lantern Night. Lit the dock lantern with the computer this
-          year. Ottoline said it was cheating. It was a bit.
-          It was so beautiful I cried into the lake.`
+  {acc:Mar 3.}  bought a computer. Fenn says I'm mad.
+  {acc:Mar 9.}  cable to the kitchen. the kettle has an address now.
+  {acc:Apr 2.}  every room is a directory. J. typed "cd garden" and
+          then got up and went into the garden.
+  {acc:May 18.} ran the long cable off the end of the dock, weighted.
+          forty metres. the cellar box started humming that night.
+  {acc:Jun 21.} lost another lure to the carp.
+  {acc:Oct 25.} Lantern Night. it answered again. smaller than '62.
+          I wrote it all down. nobody but J. believes me and J.
+          won't talk about it.`
 };
 
 /* ---------- Wren's letter in the attic trunk ---------- */
-const TRUNK_LETTER = () => `{hi:to whoever is minding the cottage —}
-{dim:(so: to you, ${NAME()}. I knew it would be you.)}
+const TRUNK_LETTER = () => `{dim:(folded in four, in the lid of the trunk)}
 
-You found the trunk, which means Biscuit gave you the key, which
-means she likes you, which means you're all right. She's a
-better judge of people than I am. She hated my second husband
-on sight and she was correct.
+${NAME()},
 
-In here: the lantern disk, a wick, and a photo of all of us from
-the first Lantern Night. Look how young Fenn was. Look at his HAIR.
+if you're reading this then Biscuit gave you the key, so
+she's decided about you. good.
 
-The lantern burns moonflower oil. One bloom is enough. Moonflowers
-only open at night and only in the greenhouse, which is why I've
-been telling everybody for years that the greenhouse is important.
-Juniper has the seeds. She's had them since 1974. She will pretend
-she doesn't know what you're talking about, and then she'll give
-you them, and she'll say "tell Wren she owes me."
+the lantern disk and a wick are in here. the lantern burns
+moonflower oil. one flower is enough. they only grow in the
+greenhouse and only open at night. Juniper has the seeds,
+and has had them since 1974, and will say she doesn't.
 
-I don't owe her. She owes me. Tell her I said so.
+you've heard the cellar by now. I said ignore it. I didn't
+mean it. I've been listening to that noise since I was
+fourteen, and I've never been able to answer it properly.
 
-The lantern is lit from the dock, after dark, on the 25th. Put the
-disk in, then go down to the water and type {cmd:lantern}.
-Everyone across the lake will be watching for it. No pressure.
+if it ever asks you something, answer with its name.
+you'll know when. I can't tell you the name. I promised.
 
-{dim:I wanted someone to love this place the way I do.}
-{dim:I think it might be you. — W.}`;
+{acc:W.}`;
 
-const PHOTO_1974 = `a black and white photo, soft at the corners.
+const PHOTO_1974 = `A photograph, soft at the corners.
 
-    .  *    .       *   .      .     *
-       ___                 _
-      ( o )   o   o  o    ( )   o      {dim:<- lanterns on the water}
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      [W] [O] [F] [J]     {dim:<- four people on a dock}
+  Four people on the end of the dock in the rain, holding jam
+  jars with candles in. Behind them, out on the water, more
+  lights. A lot more lights than there are boats.
 
 On the back, in pencil:
-  {acc:"Lantern Night 1974. me, Ottoline, Abernathy Fenn (THE HAIR),}
-  {acc: Juniper. first one we ever did. it rained. we didn't care."}`;
+  {acc:"Lantern Night, the first. me, O., A.F., J."}
+  {acc:"count the lights. then count the boats."}`;
 
 /* ---------- the tree itself ---------- */
 function buildTree() {
@@ -290,25 +228,24 @@ function buildTree() {
     return k;
   };
 
-  ROOT = D("the root of everything. there's not much up here but wiring.", {
-    cottage: D(() => "The hall. Coats on hooks, boots in a line that's mostly straight, and a smell of woodsmoke and old paper. The rug is worn pale down the middle from fifty years of the same route: kitchen, study, kitchen.", {
-      "welcome.txt": F(WELCOME, { owner: "wren", onRead: f => f && remember("read Wren's letter. she's in the Faroes, or getting there.") }),
+  ROOT = D("the root. wiring, mostly.", {
+    cottage: D(() => "The hall. Coats, boots, a long rug worn pale down the middle. The front door, the stairs, and a list pinned by the light switch.", {
       "todo.txt": F(todoText, { owner: "wren" }),
-      coat_hooks: F("Three coats. A yellow mac (Wren's), a waxed jacket (also Wren's), and one small hand-knitted jumper on its own hook, which can only be Biscuit's, and which she has very clearly never worn."),
-      umbrella: F("A black umbrella with a duck's head for a handle. The duck looks worried. Keeps the rain off outside.", { item: "umbrella" }),
-      kitchen: D(() => "The kitchen is the warmest room, even when it isn't. A chipped enamel kettle sits on the range. Jars line the windowsill, each labelled in Wren's handwriting. Some of the labels are lying. ('SUGAR' is buttons.)", {
-        kettle: F(() => (teaWarm() ? "The kettle's still warm. There's tea in the pot." : "A big enamel kettle, cream with a green rim, dented on the left side where it gets thumped.") + "\nPut it on with {cmd:brew}. Or {cmd:brew mint}, {cmd:brew chamomile}... whatever you've got."),
-        bread_bin: D("A wooden bread bin with BREAD painted on the lid, in case of confusion.", {
-          "radio.dsk": F("A 3.5\" floppy disk, wrapped in a tea towel for some reason. The label says {acc:RADIO} in red pen, underlined twice.\nTake it with {cmd:take radio.dsk}, then {cmd:insert radio.dsk} in the study.", { item: "disk:radio" }),
-          half_a_loaf: F("Half a loaf, gone hard. Biscuit has licked it, probably. Leave it for the birds.")
+      coat_hooks: F("A yellow mac, a waxed jacket, and a small knitted jumper on its own hook. The jumper is cat-sized. It's never been worn."),
+      umbrella: F("A black umbrella with a duck's head handle. For going out in the rain.", { item: "umbrella" }),
+      kitchen: D(() => "The kitchen. Range, kettle, a long table with one end cleared. Jars on the windowsill with Wren's labels on. The window looks out over the garden to the lake.", {
+        kettle: F(() => (teaWarm() ? "Still warm." : "Cream enamel, green rim, dented on the left.") + " {cmd:brew}"),
+        bread_bin: D("A bread bin.", {
+          "radio.dsk": F("A floppy disk wrapped in a tea towel. RADIO, in red pen. {dim:(disks go in HEARTH, in the study.)}", { item: "disk:radio" }),
+          half_a_loaf: F("Half a loaf, gone hard.")
         }),
-        drawer: D("The kitchen drawer. Every house has one. This is that drawer.", {
-          matches: F("A box of matches. 'BRYANT & MAY', almost full.", { item: "matches" }),
-          string: F("A ball of string, tangled into what is now technically a new kind of knot."),
-          rubber_bands: F("Forty rubber bands. You count them. You're not sure why."),
-          "IOU.txt": F(`{acc:IOU}\n  one (1) jar of honey back to Fenn\n  {dim:(written 1996. still haven't. he hasn't asked. he's waiting for me to remember. I remember.)}`)
+        drawer: D("The kitchen drawer.", {
+          matches: F("A box of matches, nearly full.", { item: "matches" }),
+          string: F("A ball of string."),
+          rubber_bands: F("Rubber bands. A lot of them."),
+          "IOU.txt": F(`{acc:IOU}  one jar of honey back to Fenn  {dim:(1996)}`)
         }),
-        recipes: D("Recipe cards, held together with a bulldog clip and optimism.", () => {
+        recipes: D("Recipe cards, in a bulldog clip.", () => {
           const k = {
             "carrot_soup.card": F(recipeCard("carrot_soup"), { onRead: () => learn("carrot_soup") }),
             "fish_pie.card": F(recipeCard("fish_pie"), { onRead: () => learn("fish_pie") }),
@@ -319,142 +256,144 @@ function buildTree() {
           if (S.flags.gotBiscuitCard) k["mint_biscuits.card"] = F(recipeCard("mint_biscuits"), { onRead: () => learn("mint_biscuits") });
           return k;
         }),
-        "biscuit_manual.txt": F(BISCUIT_MANUAL),
+        "biscuit.txt": F(BISCUIT_MANUAL),
         fridge_note: F(FRIDGE_NOTE),
-        cat_bowl: F(() => (S.cat.fed ? "Licked clean. Polished, almost." : "Empty. Pointedly empty.") + " A bowl with BISCUIT written on it, in case she forgets her own name. {cmd:feed biscuit}"),
-        pantry: F("Flour, butter, sugar, oats, an onion, tins of things. Somehow it's always just stocked enough. Wren's doing, probably. Staples are on the house.")
+        cat_bowl: F(() => (S.cat.fed ? "Empty, licked clean." : "Empty.") + " It says BISCUIT on the side. {cmd:feed biscuit}"),
+        pantry: F("Flour, butter, oats, onions, tins. Enough for anything on the recipe cards.")
       }, { room: true }),
 
-      parlour: D(() => "The parlour: a low ceiling, a rag rug, a squashy armchair the colour of marmalade, and a cast-iron wood stove " + (fireLit() ? "glowing and ticking away happily." : "sitting cold and a bit sorry for itself.") + " Books everywhere. A record player under the window.", {
-        stove: F(() => fireLit() ? "The fire's going. Little orange windows in the stove door. It'll burn till about " + clock(S.fireUntil % 1440) + "." : "Cold. There's ash from Wren's last fire. {cmd:stoke} it, if you've got wood (" + S.wood + " logs in the basket)."),
-        wood_basket: F(() => S.wood ? "A wicker basket with " + plural(S.wood, "log") + " in it." : "Empty. The woodpile's in the garden — {cmd:chop} some."),
-        armchair: F("Marmalade-coloured, soft as a held breath, and shaped exactly like Wren. {cmd:sit} in it."),
-        record_player: F("A suitcase record player and a short stack of records. The top one is {acc:'Nocturnes for a Wet Tuesday'}. {cmd:play record}"),
-        mantel_photo: F(PHOTO_1974),
-        mantel_clock: F(() => "The mantel clock says " + clock(S.min) + ". It's right, which surprises everyone, including the clock."),
-        bookshelf: D("Floor to ceiling. Paperbacks, field guides, a ring binder, a dictionary propping up the short leg of the shelf itself.",
-          Object.fromEntries(Object.entries(BOOKS).map(([n, t]) => [n, F(t, { onRead: () => checkBooks() })])))
+      parlour: D(() => "The parlour. Low ceiling, rag rug, an orange armchair, and a wood stove that's " + (fireLit() ? "lit." : "cold.") + " Books on every wall. A record player by the window.", {
+        stove: F(() => fireLit() ? "Lit. It'll go until about " + clock(S.fireUntil % 1440) + "." : "Cold. " + plural(S.wood, "log") + " in the basket. {cmd:stoke}"),
+        wood_basket: F(() => S.wood ? plural(S.wood, "log") + "." : "Empty. The woodpile's in the garden. {cmd:chop}"),
+        armchair: F("Orange, and shaped like Wren. {cmd:sit}"),
+        record_player: F("A suitcase record player. On top: {acc:Nocturnes for a Wet Tuesday}. {cmd:play record}"),
+        mantel_photo: F(PHOTO_1974, { onRead: () => clue("count") }),
+        mantel_clock: F(() => "It says " + clock(S.min) + ". It's right."),
+        bookshelf: D("Paperbacks, field guides, a ring binder, a dictionary holding up the short leg of the shelf.",
+          Object.fromEntries(Object.entries(BOOKS).map(([n, t]) => [n, F(t, { onRead: () => { checkBooks(); if (n.startsWith("wrens_almanac")) clue("cable"); if (n.startsWith("hearth_80")) clue("cable"); } })])))
       }, { room: true }),
 
-      study: D(() => "The study. Your desk, and on it HEARTH: beige, humming, the screen you're looking at now. A disk drive with a mouth like a letterbox. A window over the lake. Piles of paper with a system known only to Wren.", {
+      study: D(() => "The study. HEARTH on the desk, the screen you're looking at. A disk drive. A corkboard on the wall" + (Object.keys(S.clues || {}).length ? ", with a few things pinned to it now." : ", empty.") + " A window over the lake.", {
+        "note.txt": F(NOTE, { owner: "wren", onRead: f => f && remember("found Wren's note on the screen.") }),
         "hearth.manual": F(HEARTH_MANUAL),
+        corkboard: F(() => "Cork, drawing pins, a reel of red wool. {cmd:board}"),
         disk_drive: F(() => {
           const d = Object.keys(S.disks).filter(k => S.disks[k]);
-          return "A 3.5\" disk drive. It clunks satisfyingly.\nInstalled: " + (d.length ? d.map(x => "{acc:" + x + "}").join(", ") : "{dim:nothing yet}") + "\nPut a disk in with {cmd:insert}.";
+          return "A 3.5\" drive. Installed: " + (d.length ? d.map(x => "{acc:" + x + "}").join(", ") : "{dim:nothing}") + ". {cmd:insert}";
         }),
-        desk: D("Wren's desk. A green lamp, a mug full of pencils, a stack of envelopes she'll get to.", {
-          "almanac_page.txt": F("A loose page, torn from somewhere:\n\n  {acc:\"the good seeds are hidden in the shed. use your -a's.\"}\n\n{dim:...what does that mean? (it means {cmd:ls -a})}"),
-          pencils: F("Eleven pencils, all sharpened at both ends. Wren doesn't trust a pencil with only one plan."),
-          floppy_box: D("A plastic box of floppy disks.", {
-            "BLANK.DSK": F("Blank. Labelled 'BLANK' and then, underneath, 'really blank'."),
-            "GAMES.DSK": F("Labelled GAMES. It contains one file: a spreadsheet of who owes Wren money at cards."),
-            "BACKUP.DSK": F("Labelled BACKUP, 1993. Wren has never needed it. Wren has never needed anything.")
+        desk: D("Wren's desk. A green lamp, pencils in a mug, a stack of envelopes.", {
+          "torn_page.txt": F("A page torn out of something:\n\n  {acc:the good seeds are in the shed. use your -a's.}\n\n{dim:(as in {cmd:ls -a})}"),
+          pencils: F("Eleven pencils, all sharpened at both ends."),
+          floppy_box: D("A box of floppy disks.", {
+            "BLANK.DSK": F("Labelled BLANK, and underneath, 'really blank'."),
+            "GAMES.DSK": F("Labelled GAMES. It's a spreadsheet of who owes Wren money at cards."),
+            "LOG-87.DSK": F("Labelled LOG 87–. Empty. {dim:(whatever was on it has been copied somewhere. /var/log, maybe.)}", { onRead: () => clue("log") })
           })
         }),
-        postcards: D("A shoebox Wren left out for postcards. Your postcards.", () => {
+        postcards: D("A shoebox for postcards.", () => {
           const k = {};
           for (const id of S.letters) { const L = LETTERS[id]; if (L && L.from === "wren") k[L.file] = F(() => letterText(id)); }
           return k;
         }),
-        notes: D("An empty folder Wren made for you. There's a label: {acc:'yours. write things. — W.'}  ({cmd:write} a note here.)", {})
+        notes: D("An empty folder labelled {acc:yours}. ({cmd:write} something.)", {})
       }, { room: true }),
 
-      garden: D(() => "The garden: six raised beds in a row, a crooked shed, a woodpile, a birdbath, and a path that goes down through the long grass to the dock. " + skyLine(), () => Object.assign(plotKids(), {
-        shed: D("The shed smells of creosote and string. Tools on nails, outlines painted behind each one so you know where they go. (One outline is shaped like Biscuit. Nobody knows why.)", {
-          fishing_rod: F("Wren's split-cane rod, with a red-and-white float. Take it with {cmd:take rod}. The dock's where fish live.", { item: "rod" }),
-          oilcan: F("A little brass oilcan with a long nose. For hinges, bikes, and anything that squeaks out of spite.", { item: "oilcan" }),
-          watering_can: F("A green watering can with a rose on the spout. You'll use it automatically with {cmd:water}."),
-          trowel: F("A trowel, worn to a perfect curve by fifty years of one particular hand."),
-          ".seed_tin": D("A biscuit tin (not that Biscuit). Inside, paper envelopes in Wren's handwriting.", {
-            lavender_seeds: F("{acc:LAVENDER} — for Fenn's bees. He's been asking for years.", { item: "seed:lavender", count: 3 }),
-            pumpkin_seeds: F("{acc:PUMPKIN} — 'for lanterns, and pie, in that order.'", { item: "seed:pumpkin", count: 2 }),
-            chamomile_seeds: F("{acc:CHAMOMILE} — 'for sleeping. or for pretending to.'", { item: "seed:chamomile", count: 2 })
+      garden: D(() => "Six raised beds, a shed, a woodpile, a birdbath. A path down through the long grass to the dock. " + skyLine(), () => Object.assign(plotKids(), {
+        shed: D("Creosote and string. Tools on nails, each with its outline painted behind it.", {
+          fishing_rod: F("Wren's split-cane rod, red and white float.", { item: "rod" }),
+          oilcan: F("A small brass oilcan.", { item: "oilcan" }),
+          watering_can: F("Green. You'll use it when you {cmd:water}."),
+          trowel: F("Worn to the shape of one hand."),
+          ".seed_tin": D("A biscuit tin full of paper seed envelopes.", {
+            lavender_seeds: F("{acc:LAVENDER} — for Fenn's bees.", { item: "seed:lavender", count: 3 }),
+            pumpkin_seeds: F("{acc:PUMPKIN}", { item: "seed:pumpkin", count: 2 }),
+            chamomile_seeds: F("{acc:CHAMOMILE}", { item: "seed:chamomile", count: 2 })
           })
         }),
-        woodpile: F(() => "Split logs under a tarp, and an axe leaning just so. {cmd:chop} some for the stove. (" + plural(S.wood, "log") + " inside.)"),
-        birdbath: F(() => pick(["A robin is using the birdbath as a mirror. It's going well for him.", "Two sparrows are having an argument in the birdbath.", "The birdbath has a single leaf in it, turning slowly, like it's thinking."])),
-        fox: F(() => "A fox, " + (S.fox ? "{acc:" + S.fox + "}, " : "") + "sitting at the edge of the long grass, watching you with an expression of polite expectation." + (S.fox ? "" : "\nShe doesn't have a name yet. You could {cmd:name fox} something."), { when: () => isNight() || isEvening() })
+        woodpile: F(() => "Split logs under a tarp. An axe. {cmd:chop} {dim:(" + plural(S.wood, "log") + " inside)}"),
+        birdbath: F(() => pick(["A robin, bathing.", "Two sparrows.", "One leaf, turning slowly."])),
+        fox: F(() => "A fox" + (S.fox ? " — " + esc(S.fox) + " —" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:({cmd:name fox} her?)}"), { when: () => isNight() || isEvening() })
       }), { room: true }),
 
-      greenhouse: D(() => "The greenhouse: whitewashed glass, the smell of warm soil and tomato leaves, an old mister on the ceiling that hisses now and then. Three clay pots on the bench. It's three degrees warmer in here than anywhere else in the world.", () => Object.assign(potKids(), {
-        "moonflower_note.txt": F(W("{hi:MOONFLOWERS}\n\nOnly in here. Only in the pots. They need the warm and they need the dark.\nThey open after nightfall and close at dawn, so harvest them at night.\nOne bloom = enough oil for the lantern. Juniper has the seeds.")),
-        mister: F("A brass mister. It keeps the pots damp on its own, so you only need to {cmd:water} out in the garden. Wren built it. It hisses at you if you stand too close.")
-      }), { room: true, lock: () => (S.flags.ghOpen ? null : "the greenhouse door won't budge. the hinges have rusted solid.\n{dim:(it needs oil, not swearing. try {cmd:oil greenhouse} with the oilcan from the shed.)}") }),
+      greenhouse: D(() => "Whitewashed glass, warm soil, a brass mister that hisses now and then. Three clay pots on the bench.", () => Object.assign(potKids(), {
+        "moonflower_note.txt": F(W("{hi:moonflowers}\n\npots only. they want warm and dark.\nthey open after nightfall and close at dawn — pick them at night.\none flower gives enough oil for the lantern.\n\nthe light they give off is the same colour as the other light.\nthat's not a coincidence. I don't know what it is."), { onRead: () => clue("colour") }),
+        mister: F("A brass mister on the ceiling. It keeps the pots wet, so they never need watering.")
+      }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:(the oilcan's in the shed: {cmd:oil greenhouse})}") }),
 
-      dock: D(() => "The dock: grey boards, warm in the sun and slippery in the rain, running out into Lake Ilse. A rowing boat knocks gently against a post. At the very end stands an iron lantern on a pole, " + (S.flags.lanternLit ? "burning blue-gold." : "unlit.") + " " + skyLine(), {
+      dock: D(() => "Grey boards out over the water. A green rowing boat. At the end, an iron lantern on a pole, " + (S.flags.lanternLit ? "lit." : "unlit.") + " A thick black cable runs along the boards and over the edge into the lake. " + skyLine(), {
         lantern: F(() => lanternStatus()),
-        rowboat: F("A green rowing boat. Painted on the back: {acc:THE SECOND OPINION}. Wren named it after an argument. {cmd:row} out for a bit, if you like."),
-        tackle_box: D("A tackle box that opens like a staircase.", {
-          "nemesis.txt": F(W("{hi:OLD MARMALADE}\n\nGolden carp. Enormous. Older than me (rude).\nSeen: fog, dawn, and once on my birthday, which was personal.\nHe has four of my lures in his lip like earrings.\n\nIf you catch him, {u:let him go}. Then tell me EVERYTHING.")),
-          lures: F("A tangle of spinners, feathers, and one lure that's just a teaspoon with a hook.")
+        cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:(it goes back up the garden towards the house.)}", { onRead: () => clue("cable") }),
+        water: F(() => lakeLook()),
+        rowboat: F("Green. {acc:THE SECOND OPINION} painted on the back. {cmd:row}"),
+        tackle_box: D("A tackle box.", {
+          "carp.txt": F(W("{hi:the carp}\n\ngolden. huge. older than me.\nseen in fog, at dawn, and once on my birthday.\nhe has four of my lures in his lip.\n\nif you catch him, let him go.")),
+          lures: F("Spinners, feathers, and a teaspoon with a hook on.")
         }),
-        bench: F("A bench at the land end of the dock, with a little brass plaque: {acc:'FOR SITTING. — W.'} {cmd:sit}")
+        bench: F("A bench with a small plaque: {acc:FOR SITTING}. {cmd:sit}")
       }, { room: true }),
 
-      cellar: D(() => "The cellar. Stone walls, a single bulb on a string, and shelves and shelves of jam. In the corner there's a beige box the size of a suitcase, humming to itself, warm to the touch.", {
-        jam_shelf: F(() => "Jars and jars. Blackberry, damson, plum, 'MYSTERY 2019'. " + (jamLeft() ? jamLeft() + " you could take. {cmd:take jam}" : "You've taken all the ones you're allowed. The rest are 'for winter'."), { item: "jam" }),
-        oil_lamp: F("A brass oil lamp with a glass chimney. Full of oil. Would be very useful somewhere dark, like the attic. {cmd:take lamp} and then {cmd:light lamp} — you'll need matches.", { item: "lamp" }),
-        mainframe: F("A beige box, humming. A label in Wren's capitals: {acc:HEARTH — DO NOT UNPLUG. NOT EVEN IF IT ASKS.}\nIt's never asked. You find that you're checking."),
-        "the_hum.txt": F("There's a hum down here. It's the freezer.\n\n{dim:It's always been the freezer.}\n\n{dim:(the freezer has been unplugged since 2011.)}")
+      cellar: D(() => "Stone walls, a bulb on a string, shelves of jam. In the corner, a beige metal box the size of a suitcase. It hums. The cable from the dock comes in through the wall and goes into the back of it.", {
+        jam_shelf: F(() => "Blackberry, damson, plum, one labelled MYSTERY 2019. " + (jamLeft() ? "{cmd:take jam}" : "The rest are labelled 'winter'."), { item: "jam" }),
+        oil_lamp: F("A brass oil lamp, full. {dim:(the attic is dark.)}", { item: "lamp" }),
+        box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:(there's a program for it. Wren used to run it down here: {cmd:listen})}", { onRead: () => { clue("hum"); clue("listen"); } }),
+        "the_hum.txt": F("{dim:(taped to the box)}\n\nit's the freezer.\n\n{dim:(the freezer is unplugged.)}", { onRead: () => clue("hum") })
       }, { room: true }),
 
-      attic: D(() => S.flags.atticLit ? "The attic, in lamplight. Rafters, boxes, a rocking horse with one glass eye, and the smell of a hundred summers. Under the round window sits a heavy old trunk with a brass padlock. A ladder leads up through a hatch to the roof." : "It's pitch black up here. You can hear the rafters creak and something small and many-legged going about its business.", () => (S.flags.atticLit ? {
-        trunk: D("Wren's trunk. Leather straps, brass corners, a padlock about the size of a walnut.", {
-          "lantern.dsk": F("A floppy disk labelled {acc:LANTERN} in gold pen. The label has little stars drawn round it.", { item: "disk:lantern" }),
-          wick: F("A coil of thick cotton wick, new, still with the shop's string on it.", { item: "wick" }),
-          "letter_to_whoever.txt": F(TRUNK_LETTER, { onRead: f => f && remember("found Wren's letter in the trunk. had to sit down for a minute.") }),
-          "photo_1974.txt": F(PHOTO_1974)
-        }, { lock: () => (S.flags.trunkOpen ? null : "the trunk is padlocked. a little brass padlock.\n{dim:(Biscuit's collar has a key on it. {cmd:cat biscuit_manual.txt} in the kitchen if you haven't.)}") }),
-        rocking_horse: F("A rocking horse with one glass eye. Someone has written {acc:GERALD} on his saddle. Don't ask. You ask anyway: there's no answer."),
-        margaret: F("A spider in the corner of the rafters with a magnificent web. Wren's note pinned beside her: {acc:'MARGARET. pays rent in flies. do NOT hoover.'}"),
-        boxes: F("Boxes labelled XMAS, XMAS (REAL), TAX, NOT TAX, and one just labelled {acc:'NO'}. You leave that one.")
+      attic: D(() => S.flags.atticLit ? "Rafters, boxes, a rocking horse with one glass eye. A heavy trunk under the round window. A ladder up to a hatch in the roof." : "Pitch black. Something small walks across the boards.", () => (S.flags.atticLit ? {
+        trunk: D("A leather trunk with brass corners and a small padlock.", {
+          "lantern.dsk": F("A floppy disk labelled {acc:LANTERN} in gold pen.", { item: "disk:lantern" }),
+          wick: F("A coil of new lantern wick.", { item: "wick" }),
+          "letter.txt": F(TRUNK_LETTER, { onRead: f => { clue("ask"); if (f) remember("found Wren's letter in the trunk. read it twice."); } }),
+          "diary_1962.txt": F(DIARY_1962, { onRead: () => { clue("1962"); clue("name"); } }),
+          "photo_1974.txt": F(PHOTO_1974, { onRead: () => clue("count") })
+        }, { lock: () => (S.flags.trunkOpen ? null : "Padlocked.\n{dim:(the key is on Biscuit's collar.)}") }),
+        rocking_horse: F("One glass eye. GERALD, on the saddle, in a child's writing."),
+        margaret: F("A spider with a big web in the corner. A note pinned beside it: {acc:MARGARET. do not hoover.}"),
+        boxes: F("XMAS. XMAS (REAL). TAX. NOT TAX. One labelled {acc:NO}.")
       } : {}), { room: true, dark: () => !S.flags.atticLit }),
 
-      roof: D(() => "The flat bit of roof between the chimneys, with a railing and a weathervane shaped like a heron. A brass telescope on a tripod, under an oilskin cover. " + skyLine(), {
-        telescope: F(() => S.disks.sky ? "A brass telescope, cover off, pointed at the sky. {cmd:sky} to look up." + (isNight() ? "" : " (it works better at night, obviously.)") : "A brass telescope. The motor housing has a slot for a disk and a label: {acc:'SKY.DSK — Juniper has it.'}"),
-        weathervane: F(() => "The heron weathervane is pointing " + pick(["north-west", "west", "south-west", "north"]) + ". Today is " + weatherNow().word + "."),
+      roof: D(() => "The flat bit of roof between the chimneys. A railing, a heron weathervane, and a brass telescope under an oilskin. " + skyLine(), {
+        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:(after dark.)}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK — J. has it}."),
+        weathervane: F(() => "The heron points " + pick(["north-west", "west", "south-west", "north"]) + ". " + cap(weatherNow().word) + "."),
         "star_notes.txt": F(starNotes, { when: () => S.disks.sky })
-      }, { room: true, lock: () => (S.flags.atticLit ? null : "the ladder to the roof goes up from the attic, and the attic is pitch dark.\n{dim:(find a light first.)}") })
+      }, { room: true, lock: () => (S.flags.atticLit ? null : "The ladder to the roof is in the attic, and the attic is dark.") })
     }),
 
-    dev: D("devices. everything in the house that HEARTH can talk to.", {
-      kettle: F(() => (teaWarm() ? "warm. content. 92°C and falling." : "cold. waiting. ready when you are.")),
-      cat: F(() => pick(["mrrp.", "mrrrrrp?", "...", "mrow.", "(a slow blink. that means I love you, in cat.)", "prrrrrrrrrrrrrrrrrrr"])),
+    dev: D("devices.", {
+      kettle: F(() => (teaWarm() ? "warm." : "cold.")),
+      cat: F(() => pick(["mrrp.", "...", "mrrp?"])),
       null: F(""),
-      rain: F(() => (weatherNow().rain ? "tik tik tik. tk. tiktiktik. tik. tk tk tik." : "nothing. the rain's taken the day off.")),
-      lake: F(() => "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~\n  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~\n" + (chance(0.2) ? "              ><>" : "")),
-      random: F(() => Array.from({ length: 6 }, () => pick(["teacup", "moss", "lantern", "heron", "toast", "wool", "puddle", "marmalade", "owl", "pinecone", "soup", "mitten", "kindling", "drizzle"])).join(" ")),
-      hum: F("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n{dim:(it's the freezer.)}")
+      rain: F(() => (weatherNow().rain ? "tk tk tik tk tik" : "")),
+      lake: F(() => lakeLook()),
+      receiver: F(() => "signal " + signalLevel().toFixed(2), { onRead: () => clue("listen") })
     }),
 
-    etc: D("configuration. Wren's settings, mostly.", {
+    etc: D("settings.", {
       motd: F(() => S.files["/etc/motd"] || "Welcome home.", { user: true }),
-      "hearth.conf": F(() => "[cottage]\nowner      = wren\nminder     = " + NAME() + "\nkettle     = enabled\ncat        = enabled  # cannot be disabled. have tried.\ntimezone   = lake/ilse\nlantern    = 25-oct\n\n[radio]\nspoon_on_aerial = yes   # don't remove the spoon"),
-      hosts: F("127.0.0.1    cottage hearth\n10.0.0.2     post-office      # ottoline\n10.0.0.3     apiary           # fenn & 40,000 bees\n10.0.0.4     okafor-house     # pip. (she's 11. she will try to hack you.)\n10.0.0.5     observatory      # juniper\n10.0.0.99    the-lake         # doesn't reply. dignified."),
-      passwd: F("wren:x:1000:1000:Wren Ashdown:/cottage:/bin/tea\nbiscuit:x:1:1:Biscuit (cat):/cottage/parlour/armchair:/bin/purr\n{dim:you:x:1001:1001:the minder:/cottage:/bin/hearth}\n\n{dim:(the actual passwords aren't in here. don't be nosy.)}"),
-      fstab: F("/dev/kettle   /kitchen   tea    defaults   0 1\n/dev/cat      /          cat    everywhere 0 0\n/dev/lake     /dock      water  noatime    0 2")
+      "hearth.conf": F(() => "[cottage]\nowner   = wren\nminder  = " + NAME() + "\n\n[receiver]\naerial  = /dock/cable   # down, not up\ndepth   = 40m\nlog     = /var/log/listen\nreply   = disabled      # until it asks", { onRead: () => clue("listen") }),
+      hosts: F("127.0.0.1    hearth\n10.0.0.2     post-office      # ottoline\n10.0.0.3     apiary           # fenn\n10.0.0.4     okafor-house     # pip\n10.0.0.5     observatory      # juniper\n{dim:# 10.0.0.99  the-lake     # doesn't reply. not to ping, anyway}"),
+      passwd: F("wren:x:1000:1000:Wren Ashdown:/cottage:/bin/tea\nbiscuit:x:1:1:Biscuit:/cottage/parlour/armchair:/bin/purr\nyou:x:1001:1001::/cottage:/bin/hearth")
     }),
 
-    proc: D("running things. live information.", {
-      biscuit: D("process 1. the cat.", {
+    proc: D("running things.", {
+      biscuit: D("process 1.", {
         status: F(() => `Name:     biscuit
 Pid:      1
-State:    ${pick(["S (sleeping)", "S (sleeping)", "R (running, briefly)", "D (dreaming)"])}
 Location: ${S.cat.room}
-Mood:     ${S.cat.mood > 80 ? "adores you (won't admit it)" : S.cat.mood > 55 ? "content" : S.cat.mood > 30 ? "tolerating you" : "aloof"}
-Fed:      ${S.cat.fed ? "yes (will claim no)" : "no (will claim no)"}
-Collar:   ${S.flags.gotKey ? "a little bell" : "a little bell, a small brass key"}`)
+Mood:     ${S.cat.mood > 80 ? "fond of you" : S.cat.mood > 55 ? "content" : S.cat.mood > 30 ? "undecided" : "aloof"}
+Fed:      ${S.cat.fed ? "yes" : "no"}
+Collar:   ${S.flags.gotKey ? "bell" : "bell, small brass key"}`)
       }),
-      uptime: F(() => "up " + S.day + " days. load average: 1 cat, 0.5 kettle, " + (weatherNow().rain ? "rain" : "0.0 rain")),
-      weather: F(() => "today: " + weatherNow().word + "\nwarmth: " + Math.round(S.warmth) + "%\nfire: " + (fireLit() ? "lit" : "out"))
+      uptime: F(() => "up " + S.day + " days.")
     }),
 
-    bin: D("all the programs HEARTH knows.", () => {
+    bin: D("programs.", () => {
       const k = {};
-      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "a program.") + "\n{dim:(run it by typing its name: {cmd:" + n + "})}", { exec: true });
+      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "") + "\n{dim:({cmd:" + n + "})}", { exec: true });
       return k;
     }),
-    tmp: D("temporary files. Wren cleans up after herself. It's empty, apart from a crumb.", { crumb: F("A crumb. Shortbread, you'd guess. Biscuit can't reach up here, so it's safe. For now.") }),
-    "lost+found": D("things the system found, lost again, and found.", { sock: F("A single wool sock. It's been here since 1991. Its partner is presumably out there, living its best life.") })
+    tmp: D("empty, apart from a crumb.", { crumb: F("Shortbread.") }),
+    "lost+found": D("", { sock: F("One wool sock. Here since 1991.") })
   });
+  if (typeof mysteryTree === "function") Object.assign(ROOT.kids, mysteryTree());
 }

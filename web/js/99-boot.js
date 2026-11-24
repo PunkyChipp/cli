@@ -10,17 +10,6 @@ const LOGO = [
   "| __ | _| / _ \\|   / | | | __ |",
   "|_||_|___/_/ \\_\\_|_\\ |_| |_||_|"
 ];
-const HOUSE = [
-  "            (  )",
-  "             ) (",
-  "        _____|_|______",
-  "       /              \\",
-  "      /   _        _   \\",
-  "     |   |#|  __  |#|   |",
-  "     |        ||        |",
-  "  ~~~|________||________|~~~~~~~~"
-];
-
 async function bootSequence(reboot) {
   $("screen").classList.remove("off");
   $("screen").classList.add("boot");
@@ -28,70 +17,63 @@ async function bootSequence(reboot) {
   T.busy = true;
   showLine(false);
   const fresh = !S.name;
-  const quick = !fresh && !reboot;
-  await pause(quick ? 200 : 500);
-  print("{dim:HEARTH-80 BIOS v2.1   (c) 1987 Ashdown Home Systems}");
-  if (!quick) {
-    await pause(250);
-    const mem = printRaw("");
-    for (let k = 0; k <= 640; k += 64) { mem.innerHTML = fmt("{dim:memory test:} " + k + "K"); await pause(45); }
-    mem.innerHTML = fmt("{dim:memory test:} 640K {ok:OK}  {dim:(plenty)}");
-    await pause(200);
-    print("{dim:detecting peripherals...}");
-    const per = [
-      ["kettle", "{ok:ok}"],
-      ["radio", S.disks.radio ? "{ok:ok}" : "{warn:no disk}"],
-      ["telescope", S.disks.sky ? "{ok:ok}" : "{dim:not found}"],
-      ["cat", "{acc:detected (unsupported)}"],
-      ["rain", weatherNow().rain ? "{ok:yes}" : "{dim:none today}"]
-    ];
-    for (const [n, s] of per) { await pause(160); print("  " + pad(n, 12, ".") + " " + s); }
-    await pause(200);
-    print("{dim:mounting /cottage ...} {ok:ok}");
-    await pause(400);
+  await pause(300);
+  print("{dim:HEARTH-80 · 640K · receiver: on}");
+  if (reboot) {
+    await pause(300);
+    for (const l of LOGO) print("{acc:" + esc(l) + "}");
   }
   print("");
-  for (const l of LOGO) print("{acc:" + esc(l) + "}");
-  print("{dim:      personal home computer · Wren's build}");
-  print("");
   if (fresh) {
-    for (const l of HOUSE) { print("{hi:" + esc(l) + "}"); await pause(40); }
-    print("");
-    await pause(500);
-    await type("There's a note taped to the keyboard, in loopy handwriting:", 45, "dim");
-    await pause(300);
-    print("{acc:  \"type your name, love, and press enter. it'll remember you. — W.\"}");
-    print("");
+    await pause(400);
     let name = "";
+    print("{dim:(type your name and press enter)}");
     while (!name) {
       const got = await ask("login: ");
       name = (got || "").trim().replace(/[^\p{L}\p{N} _'.-]/gu, "").slice(0, 18);
-      if (!name) print("{dim:(go on. any name. Biscuit won't tell.)}");
-      if (name.toLowerCase() === "biscuit") { print("{dim:(nice try, Biscuit.)}"); name = ""; }
+      if (name.toLowerCase() === "biscuit") { print("{dim:(no.)}"); name = ""; }
     }
     S.name = name;
-    sfx("chime");
+    S.min = 6 * 60 + 10;
+    S.cwd = "/cottage/study";
+    S.cat.room = "study";
+    clearScreen();
+    // whatever Wren left on the screen is still there
+    const last = [
+      "{dim:── last session: wren · 11 oct · 11:48pm ──────────}",
+      "{dim:wren@hearth:~/cellar$} listen",
+      "{dim:  listening} {sky:··:····:···:··} {dim:signal 0.07}",
+      "{dim:  heard:} {sky:kettle . three}",
+      "{dim:wren@hearth:~/cellar$} listen",
+      "{dim:  listening} {sky:·:···::···:·:·} {dim:signal 0.08}",
+      "{dim:  heard:} {sky:three . three}",
+      "{dim:wren@hearth:~/cellar$} echo \"don't tell them about the noise. let them find it.\" >> ~/.plan",
+      "{dim:wren@hearth:~/cellar$} logout",
+      "{dim:─────────────────────────────────────────────────}"
+    ];
+    for (const l of last) { print(l); await pause(60); }
     print("");
-    print("Welcome home, {hi:" + esc(name) + "}.");
+    await pause(600);
+    await type("Ten past six. You couldn't sleep. When you came down the computer was already on, and the cat was sitting next to it like she'd been waiting.", 70);
+    await pause(250);
+    await type("There's an envelope propped against the screen. Somewhere below the floor, something is humming.", 70);
     print("");
-    await pause(500);
-    await type("You arrived last night, late, in the rain. You remember a key under a flowerpot, a cold dark hall, a cat who looked at you like you were an unexpected parcel, and then sleep.", 55);
-    await pause(400);
-    await type("Now it's 7 o'clock on a drizzly Wednesday in October. The cottage is quiet and smells of woodsmoke and old paper. Grey light on the lake.", 55);
-    await pause(400);
-    await type("On the desk, propped against the screen, there's an envelope with your name on it.", 55);
+    print("  {cmd:cat note.txt}    {cmd:look}");
     print("");
-    print("  {cmd:cat welcome.txt}   {dim:← type that and press enter, or just tap it}");
-    print("");
-    print("{dim:(new to typing commands? that's fine. tap anything that's underlined. the keys under the screen help too.)}");
+    print("{dim:(tap anything underlined, or type it. {cmd:help} if you're stuck.)}");
     S.mailbox = []; S.letters = [];
     deliverMail();
-    remember("arrived at the cottage. Biscuit looked at me like I was a parcel.");
+    remember("arrived at the cottage. couldn't sleep. the computer was already on.");
   } else {
-    await pause(200);
-    print("Welcome back, {hi:" + esc(S.name) + "}.  {dim:It's " + clock(S.min) + " on " + dayName(S.day) + ", " + dateStr(S.day) + ". " + weatherNow().word + ".}");
-    if (S.mailbox.length) print("{acc:You have post.} {cmd:mail}");
-    print("{dim:You're in the " + roomName() + ". " + (catHere() ? "Biscuit is here, pretending not to have noticed you." : "Biscuit is in the " + S.cat.room + ".") + "}  {cmd:look}");
+    // put them back in the room, and remind them what they were doing, the way a person would
+    const r = roomName();
+    print("{hi:" + clock(S.min) + ", " + dayName(S.day) + ".} You're " + (["dock", "roof"].includes(r) ? "on" : "in") + " the " + r + ". " + skyLine());
+    const lately = S.today.slice(-2).map(x => x.replace(/\.$/, ""));
+    if (lately.length) print("{dim:last thing you remember: " + esc(lately.join(". ")) + ".}");
+    else if (S.journal.length) print("{dim:from your journal, last night: " + esc(S.journal[S.journal.length - 1].text) + "}");
+    if (catHere()) print("{dim:" + catLine() + "}");
+    if (S.mailbox.length) print("{acc:There's post.} {cmd:mail}");
+    print("{dim:(}{cmd:look}{dim: around, or check the }{cmd:board}{dim:.)}");
   }
   print("");
   T.busy = false;
