@@ -3129,14 +3129,14 @@ function notFound(name, w) {
   const l = w.join(" ").toLowerCase();
   if (/^(go|walk|enter|head)\b/.test(l)) return runOne("cd " + w.slice(1).filter(x => !["to", "the", "into", "in"].includes(x.toLowerCase())).join(" "));
   if (/^(make|have|drink)\s+(a\s+)?(cup|tea|pot)/.test(l) || l === "tea") return runOne("brew " + (w.find(x => TEAS[x.toLowerCase()]) || ""));
-  if (/^(hi|hello|hey|hiya)\b/.test(l)) { print(pick(["Hello! HEARTH is pleased to see you. (HEARTH can't see.)", "hello. (Biscuit, from somewhere: mrrp.)"])); return true; }
-  if (/^(thank|thanks|ty)\b/.test(l)) { print("You're welcome. {dim:(HEARTH blushes, as much as beige can.)}"); return true; }
-  if (/^(ok|okay|yes|no|y|n)$/.test(l)) { print("{dim:(HEARTH nods, politely, at nothing in particular.)}"); return true; }
-  if (/biscuit|cat/.test(l) && w.length > 1) { print("Biscuit ignores this. {dim:(try {cmd:pet biscuit} or {cmd:feed biscuit}.)}"); return true; }
+  if (/^(hi|hello|hey|hiya)\b/.test(l)) { print(pick(["hello.", "hello. {dim:(from somewhere in the house: mrrp.)}"])); return true; }
+  if (/^(thank|thanks|ty)\b/.test(l)) { print("{dim:(you say thank you to a computer. nobody saw.)}"); return true; }
+  if (/^(ok|okay|yes|no|y|n)$/.test(l)) { print("{dim:(the cursor blinks.)}"); return true; }
+  if (/biscuit|cat/.test(l) && w.length > 1) { print("Biscuit doesn't look round. {dim:({cmd:pet biscuit}, {cmd:feed biscuit})}"); return true; }
   const all = Object.keys(CMDS).filter(n => cmdAvailable(n) && !CMDS[n].secret).concat(Object.keys(ALIAS_OF).filter(a => cmdAvailable(ALIAS_OF[a]) && !CMDS[ALIAS_OF[a]].secret && a.length > 1));
   const g = closest(name.toLowerCase(), all, name.length > 4 ? 2 : 1);
   sfx("bonk");
-  if (/^[a-z;'\]\[,.]{12,}$/.test(name) && /(.)\1{4,}/.test(name)) { print("hearth: command not found: " + esc(name) + "\n{dim:(that was Biscuit. she walked across the keyboard. she's not sorry.)}"); return false; }
+  if (/^[a-z;'\]\[,.]{12,}$/.test(name) && /(.)\1{4,}/.test(name)) { print("hearth: command not found: " + esc(name) + "\n{dim:(that was Biscuit, on the keyboard.)}"); return false; }
   print("hearth: command not found: {warn:" + esc(name) + "}" + (g ? "   {dim:did you mean} {cmd:" + g + "}{dim:?}" : "   {dim:(try {cmd:help}, or {cmd:hint} if you're stuck)}"));
   return false;
 }
@@ -3170,14 +3170,14 @@ function doCd(args) {
     if (path.endsWith("/trunk") && has("key")) { S.flags.trunkOpen = true; print("You fit the little brass key into the padlock. It turns with a satisfying {acc:click}."); }
     else { sfx("bonk"); print(lock); return false; }
   }
-  if (path === S.cwd) { print("{dim:you're already here. (very here.)}"); return true; }
+  if (path === S.cwd) { print("{dim:you're already here.}"); return true; }
   const fromRoom = roomName();
   S.prevCwd = S.cwd; S.cwd = path;
   const toRoom = roomName();
   if (toRoom !== fromRoom) {
     spend(1);
     sfx("door");
-    if (["garden", "dock", "roof"].includes(toRoom) && weatherNow().rain >= 1 && !has("umbrella")) print("{dim:(it's chucking it down out here. you could have brought the duck umbrella from the hall.)}"), warm(-2);
+    if (["garden", "dock", "roof"].includes(toRoom) && weatherNow().rain >= 1 && !has("umbrella")) print("{dim:(it's pouring. there's an umbrella in the hall.)}"), warm(-2);
     if (toRoom === "attic" && !S.flags.atticSeen && S.flags.atticLit) { S.flags.atticSeen = true; keepsake("attic"); }
     if (toRoom === "greenhouse" && !S.flags.ghSeen) { S.flags.ghSeen = true; keepsake("greenhouse"); }
     print("{dim:" + esc(shortPath(path)) + "}");
@@ -3306,16 +3306,16 @@ function doTake(args) {
     }
   }
   if (!f) {
-    if (what === "biscuit" || what === "cat") return print(catHere() ? "You pick Biscuit up. She becomes forty pounds of liquid and pours back onto the floor." : "Biscuit isn't here.");
+    if (what === "biscuit" || what === "cat") return print(catHere() ? "You try to pick Biscuit up. She goes heavy and slides out of your arms." : "Biscuit isn't here.");
     return print("You can't see " + esc(what) + " here. {dim:(" + "{cmd:ls -a}" + "?)}");
   }
   const n = f.node;
-  if (n.kind === "dir") return print("That's a whole " + f.name + ". It won't fit in your pocket. {dim:(you can {cmd:cd " + f.name + "} into it.)}");
+  if (n.kind === "dir") return print("You can't carry the " + f.name + ". {dim:(look inside: {cmd:cd " + f.name + "})}");
   if (!n.item) {
-    return print(pick(["You'd rather leave that where Wren put it.", "That stays here. It belongs here.", "It's not the sort of thing you take. You give it a little pat instead."]));
+    return print(pick(["You'd rather leave that where Wren put it.", "That stays here.", "It's not the kind of thing you take."]));
   }
   if (n.item === "jam") {
-    if (!jamLeft()) return print("The rest of the jam is 'for winter'. A label says so. You respect the label.");
+    if (!jamLeft()) return print("The rest are labelled 'winter'. You leave them.");
     S.flags.jamTaken = (S.flags.jamTaken || 0) + 1; give("jam");
     return print("You take a jar of " + pick(["blackberry", "damson", "plum", "MYSTERY 2019"]) + " jam. {dim:(" + jamLeft() + " left that you're allowed.)}");
   }
@@ -3331,13 +3331,13 @@ function takeKey() {
   if (!catHere()) return print("The key's on Biscuit's collar, and Biscuit's in the " + S.cat.room + ".");
   if (S.cat.mood < 75 || S.stats.pets < 8 || S.day < 3) {
     S.flags.keyTried = true;
-    return print(pick(["You reach for Biscuit's collar. Biscuit reaches for your hand, with teeth. Not yet.", "Biscuit leans away from your hand with an expression that says 'we're not there yet'.", "Biscuit looks at you, then at the key, then at you. 'Earn it,' says her face."]) + "\n{dim:(be kind to her for a while — {cmd:pet biscuit}, {cmd:feed biscuit} — and try again.)}");
+    return print(pick(["You reach for her collar. She bites your hand, not hard. Not yet.", "She leans away from your hand.", "She moves off before you can get to the collar."]) + "\n{dim:(give her a few days. {cmd:pet biscuit}, {cmd:feed biscuit}, a fish.)}");
   }
   S.flags.gotKey = true; give("key");
   sfx("chime");
-  print("You reach for Biscuit's collar, slowly. She lifts her chin and lets you unclip the little brass key, and then headbutts your hand, once, as if to say {acc:'look after it'}.");
+  print("You reach for her collar, slowly. She lifts her chin and lets you unclip the brass key. Then she bumps her head against your hand, once, and walks off.");
   print("{dim:(it's the key to Wren's trunk, in the attic.)}");
-  remember("Biscuit let me have the key. i think that means something.");
+  remember("Biscuit let me have the key.");
 }
 
 function doLook(args) {
@@ -3465,7 +3465,7 @@ cmd("journal diary", "your journal, one entry a day", doJournal, { group: "peopl
 cmd("jar keepsakes achievements", "the jar of keepsakes on the windowsill", doJar, { group: "people" });
 cmd("fishlog fishing", "every fish you've caught", doFishlog, { group: "people" });
 cmd("name", "name something (name fox Clementine)", (a) => {
-  if ((a[0] || "").toLowerCase() !== "fox") return print("You can name the fox: {cmd:name fox} something. {dim:(Biscuit already has a name and is very attached to it.)}");
+  if ((a[0] || "").toLowerCase() !== "fox") return print("You can name the fox: {cmd:name fox} something. ");
   const n = a.slice(1).join(" ").trim();
   if (!n) return print("Name her what? {dim:(name fox Clementine)}");
   if (roomName() !== "garden" || !(isNight() || isEvening())) return print("You should probably meet her first. She's in the garden in the evenings.");
@@ -3583,7 +3583,7 @@ async function doInsert(a) {
 }
 
 async function doRadio(a) {
-  if (!S.disks.radio) return print("The radio on the study shelf is dead as a doornail. {dim:(Wren: 'the disk for it is wherever I put the bread.')}");
+  if (!S.disks.radio) return print("The radio on the shelf doesn't come on. {dim:(it needs its disk. Wren's list says it's with the bread.)}");
   const arg = (a[0] || "").toLowerCase();
   if (arg === "off") { S.flags.radioOn = null; return print("You switch the radio off. The click is very loud in the quiet."); }
   if (!arg) {

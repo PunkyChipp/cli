@@ -30,3 +30,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Looking into the water from the dock now rewards patience. The first look is just dark water, the second you crouch and wait, and by the third your eyes have adjusted and (from about a week in) you see the light. It used to roll dice and repeat "Probably not." word for word.
 - Each look costs a few minutes of game time, so waiting feels like waiting.
 - Rewrote the rowing scene in plain language (the "wobble, wobble, fine" and "like a lighthouse keeper" draft is gone).
+
+## 6 — quip sweep
+- Went through the everyday responses (moving, taking things, the cat's key, small talk, the dead radio, wrong-room messages) and cut the ones that were trying too hard: "very here", "forty pounds of liquid", "HEARTH blushes, as much as beige can", "'Earn it,' says her face", "dead as a doornail", "you respect the label". Replaced them with short plain lines.
+- Getting Biscuit's key is quieter now: she bumps your hand and walks off, rather than narrating what it means.
