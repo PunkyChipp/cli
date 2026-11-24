@@ -119,6 +119,7 @@ async function runOne(text, stdin, depth) {
     for (const part of splitTop(a, [";", "&&"])) if (part.text.trim()) await pipeline(part.text.trim(), depth + 1);
     return true;
   }
+  w = plainEnglish(w);
   let name = w[0];
   // ./script
   if (name.startsWith("./") || (name.startsWith("/") && nodeAt(resolve(name)) && nodeAt(resolve(name)).exec)) return execFile(name);
@@ -126,6 +127,42 @@ async function runOne(text, stdin, depth) {
   if (!c) return notFound(name, w);
   const r = await c.fn(w.slice(1), { stdin, raw: text });
   return r !== false;
+}
+
+/* ---------- plain English ----------
+   People type the way they talk. Before the shell sees a line, we turn the
+   common shapes of "read the note" / "go downstairs" / "check the mail" into
+   the command they mean. Anything that already looks like a command passes
+   straight through untouched, so devs never notice this exists. */
+const FILLER = new Set(["the", "a", "an", "my", "at", "to", "on", "into", "in", "inside", "of", "some", "this", "that", "with", "please", "up"]);
+function plainEnglish(w) {
+  if (!w.length || findCmd(w[0].toLowerCase()) && !["look", "open", "read", "go", "check", "get", "pick", "take", "turn", "play", "give"].includes(w[0].toLowerCase())) return w;
+  const lo = w.map(x => x.toLowerCase());
+  const rest = () => lo.slice(1).filter(x => !FILLER.has(x));
+  const v = lo[0], line = lo.join(" ");
+  const obj = rest().join("_");
+  if (/^(check|read|open|get|see)\s+(the\s+)?(mail|post|letters?|inbox|envelopes?)$/.test(line)) return ["mail"];
+  if (/^(turn|switch)\s+(on|off)?\s*(the\s+)?radio/.test(line) || /^listen\s+to\s+(the\s+)?radio/.test(line)) return ["radio"].concat(/off/.test(line) ? ["off"] : []);
+  if (/^(go|head|walk|climb)\s+(down|downstairs)\b/.test(line) || line === "downstairs" || line === "down") return ["cd", "cellar"];
+  if (/^(go|head|walk|climb)\s+(up|upstairs)\b/.test(line) || line === "upstairs") return ["cd", "attic"];
+  if (/^(go|walk|head)\s+(back|out)$/.test(line)) return ["cd", ".."];
+  if (/^(go\s+to\s+)?(bed|sleep)$/.test(line)) return ["sleep"];
+  if (/^(use|turn on|switch on)\s+(the\s+)?(computer|hearth|screen|terminal)/.test(line)) return ["help"];
+  if (/^(examine|inspect|x|check|study|view|read)$/.test(v) && obj) return ["cat", obj];
+  if (v === "look" && lo[1] === "at" && obj) return ["cat", obj];
+  if (v === "look" && ["in", "inside", "into"].includes(lo[1]) && obj) return ["ls", obj];
+  if (v === "open" && obj) { const f = findHere(obj); return f && f.node.kind === "dir" ? ["cd", obj] : ["cat", obj]; }
+  if (["take", "get", "grab", "pick"].includes(v) && obj) return ["take", obj.replace(/^up_/, "")];
+  if (/^(what|whats|what's|who|why)\b/.test(v)) {
+    if (/hum|noise|sound|box|cellar/.test(line)) return ["cat", "/cottage/cellar/the_hum.txt"];
+    if (/do|now|next/.test(line)) return ["hint"];
+    return ["look"];
+  }
+  if (/^(talk|speak|chat|say)$/.test(v) && obj) {
+    const who = WHO(obj.replace(/^to_/, ""));
+    if (who) return ["echo", "(" + PEOPLE[who].short + " isn't here. people in the Hollow write. try: send <thing> to " + who + ")"];
+  }
+  return w;
 }
 
 function notFound(name, w) {
@@ -137,7 +174,7 @@ function notFound(name, w) {
   if (/^(thank|thanks|ty)\b/.test(l)) { print("You're welcome. {dim:(HEARTH blushes, as much as beige can.)}"); return true; }
   if (/^(ok|okay|yes|no|y|n)$/.test(l)) { print("{dim:(HEARTH nods, politely, at nothing in particular.)}"); return true; }
   if (/biscuit|cat/.test(l) && w.length > 1) { print("Biscuit ignores this. {dim:(try {cmd:pet biscuit} or {cmd:feed biscuit}.)}"); return true; }
-  const all = Object.keys(CMDS).filter(cmdAvailable).concat(Object.keys(ALIAS_OF).filter(a => cmdAvailable(ALIAS_OF[a])));
+  const all = Object.keys(CMDS).filter(n => cmdAvailable(n) && !CMDS[n].secret).concat(Object.keys(ALIAS_OF).filter(a => cmdAvailable(ALIAS_OF[a]) && !CMDS[ALIAS_OF[a]].secret && a.length > 1));
   const g = closest(name.toLowerCase(), all, name.length > 4 ? 2 : 1);
   sfx("bonk");
   if (/^[a-z;'\]\[,.]{12,}$/.test(name) && /(.)\1{4,}/.test(name)) { print("hearth: command not found: " + esc(name) + "\n{dim:(that was Biscuit. she walked across the keyboard. she's not sorry.)}"); return false; }
@@ -188,12 +225,20 @@ function doCd(args) {
     const d = val(node.desc);
     if (d && (!S.flags["seen" + toRoom] || isDark(path))) {
       print(d);
+      if (!node.room && !isDark(path) && Object.keys(children(path)).length) doLs([]);
       if (node.room && !isDark(path)) print("{dim:doors:} " + doorsOf(toRoom).map(x => '<span class="cmd" data-c="cd ' + x + '">' + x + "</span>").join("{dim: · }"));
       S.flags["seen" + toRoom] = true;
     }
     if (catHere()) print("{dim:" + catLine() + "}");
     if (toRoom === "garden" && (isNight() || isEvening()) && chance(0.6)) print("{dim:(a fox is sitting at the edge of the long grass, watching you. {cmd:cat fox})}");
     if (isDark(path)) print("{dim:(you'll want some light. {cmd:cd ..} back down.)}");
+  } else if (!S.flags["seen:" + path]) {
+    // a shed, a drawer, a trunk: say what it is and what's in it, once
+    S.flags["seen:" + path] = true;
+    const d = val(node.desc);
+    if (d) print(d);
+    const ks = Object.keys(children(path));
+    if (ks.length) doLs([]);
   }
   return true;
 }
@@ -250,7 +295,12 @@ function doCat(args, ctx) {
     let node = nodeAt(path);
     let p = path;
     if (!node) { const f = findHere(a); if (f) { node = f.node; p = f.path; } }
-    if (!node) { print("cat: {warn:" + esc(a) + "}: no such file. {dim:(" + "{cmd:ls}" + " shows what's here.)}"); return false; }
+    if (!node) {
+      const where = whereIs(a);
+      if (where) print("There's no " + esc(a.replace(/_/g, " ")) + " here. {dim:(there's one in the " + where.room + ": {cmd:cd " + where.room + "})}");
+      else print("cat: {warn:" + esc(a) + "}: no such file. {dim:(" + "{cmd:ls}" + " shows what's here.)}");
+      return false;
+    }
     if (node.kind === "dir") {
       const lock = node.lock && node.lock();
       print(lock || ("{dim:" + esc(a) + " is a place, not a thing. you look in:}\n" + (isDark(p) ? "it's dark." : val(node.desc) || "")));
@@ -266,6 +316,18 @@ function doCat(args, ctx) {
   }
   spend(1);
   return true;
+}
+
+/** Somewhere else in the house with a thing by this name? (for "x kettle" in the wrong room) */
+function whereIs(name) {
+  const want = name.toLowerCase().replace(/\.(txt|dsk|card|book)$/, "");
+  for (const room of ROOM_NAMES) {
+    const p = HOME + "/" + room;
+    if (lockMsg(p) || isDark(p)) continue;
+    const f = findHere(want, p);
+    if (f && f.node.kind === "file") return { room, path: f.path };
+  }
+  return null;
 }
 
 function doTake(args) {
