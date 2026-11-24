@@ -1610,21 +1610,26 @@ function buildTree() {
   ROOT = D("the root. wiring, mostly.", {
     cottage: D(() => "A narrow hall with a long rug worn pale down the middle, where fifty years of feet have gone between the kitchen and the study. Wren's coats are still on the hooks, and her list is pinned up by the light switch.", {
       "todo.txt": F(todoText, { owner: "wren" }),
-      coat_hooks: F("A yellow mac, a waxed jacket, and a small knitted jumper on its own hook. The jumper is cat-sized. It's never been worn."),
-      umbrella: F("A black umbrella with a duck's head handle. For going out in the rain.", { item: "umbrella" }),
+      coat_hooks: F("Wren's yellow mac is still here, so wherever she's gone she's taken the good coat. There's a waxed jacket with string in the pockets, and on the last hook a tiny knitted jumper in green wool that can only have been made for the cat. It doesn't look like it's ever been worn."),
+      umbrella: F("A big black umbrella with a wooden duck's head for a handle. One of the spokes is bent. You'll want it if you go out in the rain.", { item: "umbrella" }),
       kitchen: D(() => "The kitchen is the warmest room in the house and smells faintly of toast. There's a cream range with the kettle on it, a long table with one end cleared for eating and the other buried in seed catalogues, and a window over the sink that looks down the garden to the lake.", {
-        kettle: F(() => (teaWarm() ? "Still warm." : "Cream enamel, green rim, dented on the left.") + " {cmd:brew}"),
-        bread_bin: D("A bread bin.", {
-          "radio.dsk": F("A floppy disk wrapped in a tea towel. RADIO, in red pen. {dim:(disks go in HEARTH, in the study.)}", { item: "disk:radio" }),
-          half_a_loaf: F("Half a loaf, gone hard.")
+        kettle: F(() => (teaWarm() ? "Still warm." : "A cream enamel kettle with a green rim. There's a dent on the left side about the size of a fist, which explains the note.") + " {cmd:brew}"),
+        bread_bin: D("A tin bread bin with BREAD on the lid in case anyone was unsure.", {
+          "radio.dsk": F("Under the half loaf, wrapped in a tea towel for some reason, is a floppy disk with RADIO written on it in red pen. Disks go in HEARTH's drive in the study.", { item: "disk:radio" }),
+          half_a_loaf: F("Half a loaf of something brown and seeded. It's gone hard enough to knock on.")
         }),
-        drawer: D("The kitchen drawer.", {
-          matches: F("A box of matches, nearly full.", { item: "matches" }),
-          string: F("A ball of string."),
-          rubber_bands: F("Rubber bands. A lot of them."),
-          "IOU.txt": F(`{acc:IOU}  one jar of honey back to Fenn  {dim:(1996)}`)
+        drawer: D("The drawer by the cooker, the one every kitchen has, full of things that might come in handy.", {
+          matches: F("A box of kitchen matches, nearly full. Someone has written STOVE on the side in case there was any doubt.", { item: "matches" }),
+          string: F("A ball of garden string that's been rewound so many times it's more knot than ball."),
+          rubber_bands: F("Rubber bands, the red ones the postman drops. Wren has clearly been picking them up off the path for years."),
+          "IOU.txt": F(`A torn-off bit of envelope:
+
+  {acc:IOU one jar of honey. to A.F.}
+  {acc:1996}
+
+It's been folded and unfolded a lot.`)
         }),
-        recipes: D("Recipe cards, in a bulldog clip.", () => {
+        recipes: D("A stack of recipe cards held together with a bulldog clip, some of them spotted with grease.", () => {
           const k = {
             "carrot_soup.card": F(recipeCard("carrot_soup"), { onRead: () => learn("carrot_soup") }),
             "fish_pie.card": F(recipeCard("fish_pie"), { onRead: () => learn("fish_pie") }),
@@ -1637,17 +1642,17 @@ function buildTree() {
         }),
         "biscuit.txt": F(BISCUIT_MANUAL),
         fridge_note: F(FRIDGE_NOTE),
-        cat_bowl: F(() => (S.cat.fed ? "Empty, licked clean." : "Empty.") + " It says BISCUIT on the side. {cmd:feed biscuit}"),
-        pantry: F("Flour, butter, oats, onions, tins. Enough for anything on the recipe cards.")
+        cat_bowl: F(() => (S.cat.fed ? "Empty, licked clean." : "Empty.") + " It's a white china bowl with BISCUIT painted on the side, chipped where she's pushed it round the floor. {cmd:feed biscuit}"),
+        pantry: F("A tall cupboard with flour, oats, a string of onions, a lot of tins and a tub of butter on the cold shelf. There's enough in here for anything on Wren's recipe cards.")
       }, { room: true }),
 
       parlour: D(() => "The parlour has a ceiling low enough to touch flat-handed, an orange armchair with a dent in it the shape of Wren, and a wood stove that's " + (fireLit() ? "going nicely." : "gone cold.") + " Every wall that isn't a window is books. The record player by the window has its lid up.", {
         stove: F(() => fireLit() ? "Lit. It'll go until about " + clock(S.fireUntil % 1440) + "." : "Cold. " + plural(S.wood, "log") + " in the basket. {cmd:stoke}"),
         wood_basket: F(() => S.wood ? plural(S.wood, "log") + "." : "Empty. The woodpile's in the garden. {cmd:chop}"),
-        armchair: F("Orange, and shaped like Wren. {cmd:sit}"),
-        record_player: F("A suitcase record player. On top: {acc:Nocturnes for a Wet Tuesday}. {cmd:play record}"),
+        armchair: F("The orange armchair has a dip in the seat and a darker patch on the right arm where a mug has been put down every evening for a very long time. {cmd:sit}"),
+        record_player: F("A red suitcase record player. The record on it is {acc:Nocturnes for a Wet Tuesday}, and there are about thirty more in a box underneath, mostly piano. {cmd:play record}"),
         mantel_photo: F(PHOTO_1974, { onRead: () => clue("count") }),
-        mantel_clock: F(() => "It says " + clock(S.min) + ". It's right."),
+        mantel_clock: F(() => "A wooden clock that ticks loudly enough to hear from the hall. It says " + clock(S.min) + ", which you check against HEARTH. It's right."),
         bookshelf: D("Paperbacks, field guides, a ring binder, a dictionary holding up the short leg of the shelf.",
           Object.fromEntries(Object.entries(BOOKS).map(([n, t]) => [n, F(t, { onRead: () => { checkBooks(); if (n.startsWith("wrens_almanac")) clue("cable"); if (n.startsWith("hearth_80")) clue("cable"); } })])))
       }, { room: true }),
@@ -1655,21 +1660,21 @@ function buildTree() {
       study: D(() => "The study is only just big enough for the desk. HEARTH sits on it, beige and humming quietly, with the disk drive underneath. Above it there's a corkboard" + (Object.keys(S.clues || {}).length ? " with a few things pinned to it now" : ", empty except for the drawing pins") + ", and the window looks straight out over the lake.", {
         "note.txt": F(NOTE, { owner: "wren", onRead: f => f && remember("found Wren's note on the screen.") }),
         "hearth.manual": F(HEARTH_MANUAL),
-        corkboard: F(() => "Cork, drawing pins, a reel of red wool. {cmd:board}"),
+        corkboard: F(() => "A corkboard with a tin of drawing pins and a reel of red wool hanging off a nail beside it. Wren must have used it for something, because the cork is full of tiny holes. {cmd:board}"),
         disk_drive: F(() => {
           const d = Object.keys(S.disks).filter(k => S.disks[k]);
           return "A 3.5\" drive. Installed: " + (d.length ? d.map(x => "{acc:" + x + "}").join(", ") : "{dim:nothing}") + ". {cmd:insert}";
         }),
-        desk: D("Wren's desk. A green lamp, pencils in a mug, a stack of envelopes.", {
+        desk: D("Wren's desk has a green-shaded lamp, a mug of pencils and a pile of envelopes she was clearly going to get round to.", {
           "torn_page.txt": F("A page torn out of something:\n\n  {acc:the good seeds are in the shed. use your -a's.}\n\n{dim:(as in {cmd:ls -a})}"),
-          pencils: F("Eleven pencils, all sharpened at both ends."),
+          pencils: F("A mug of pencils. All of them have been sharpened at both ends, which you didn't know was a thing people did."),
           floppy_box: D("A box of floppy disks.", {
-            "BLANK.DSK": F("Labelled BLANK, and underneath, 'really blank'."),
-            "GAMES.DSK": F("Labelled GAMES. It's a spreadsheet of who owes Wren money at cards."),
+            "BLANK.DSK": F("BLANK, it says on the label, and underneath in smaller writing, 'actually blank'."),
+            "GAMES.DSK": F("The label says GAMES. The only thing on it is a spreadsheet of who owes Wren money from cards. Fenn owes the most."),
             "LOG-87.DSK": F("Labelled LOG 87–. Empty. {dim:(whatever was on it has been copied somewhere. /var/log, maybe.)}", { onRead: () => clue("log") })
           })
         }),
-        postcards: D("A shoebox for postcards.", () => {
+        postcards: D("A shoebox with POSTCARDS written on the lid. Wren must have left it out for you.", () => {
           const k = {};
           for (const id of S.letters) { const L = LETTERS[id]; if (L && L.from === "wren") k[L.file] = F(() => letterText(id)); }
           return k;
@@ -1678,57 +1683,57 @@ function buildTree() {
       }, { room: true }),
 
       garden: D(() => "The garden runs downhill in six raised beds. There's a shed with a crooked roof, a woodpile under a tarp, a stone birdbath, and a path worn through the long grass down to the dock. " + skyLine(), () => Object.assign(plotKids(), {
-        shed: D("Creosote and string. Tools on nails, each with its outline painted behind it.", {
-          fishing_rod: F("Wren's split-cane rod, red and white float.", { item: "rod" }),
-          oilcan: F("A small brass oilcan.", { item: "oilcan" }),
-          watering_can: F("Green. You'll use it when you {cmd:water}."),
-          trowel: F("Worn to the shape of one hand."),
-          ".seed_tin": D("A biscuit tin full of paper seed envelopes.", {
+        shed: D("The shed smells of creosote. Every tool hangs on its own nail with its outline painted on the wall behind it, so you'd know straight away if one went missing.", {
+          fishing_rod: F("Wren's old split-cane fishing rod, with a red and white float hooked onto the bottom ring. The cork handle is worn smooth where her hand goes.", { item: "rod" }),
+          oilcan: F("A small brass oilcan with a long spout, about half full. It's the kind of thing you use on hinges.", { item: "oilcan" }),
+          watering_can: F("A green metal watering can with a rose on the end. It's what you use when you {cmd:water}."),
+          trowel: F("A trowel with a wooden handle that's gone dark and smooth. The blade has worn down on one side from always being used the same way."),
+          ".seed_tin": D("An old shortbread tin pushed to the back of the top shelf. Inside are paper envelopes of seeds, each labelled in Wren's capitals.", {
             lavender_seeds: F("{acc:LAVENDER}, for Fenn's bees.", { item: "seed:lavender", count: 3 }),
-            pumpkin_seeds: F("{acc:PUMPKIN}", { item: "seed:pumpkin", count: 2 }),
-            chamomile_seeds: F("{acc:CHAMOMILE}", { item: "seed:chamomile", count: 2 })
+            pumpkin_seeds: F("An envelope marked {acc:PUMPKIN} in capitals, with 'for the carving' underneath.", { item: "seed:pumpkin", count: 2 }),
+            chamomile_seeds: F("An envelope marked {acc:CHAMOMILE}. It smells of hay even through the paper.", { item: "seed:chamomile", count: 2 })
           })
         }),
-        woodpile: F(() => "Split logs under a tarp. An axe. {cmd:chop} {dim:(" + plural(S.wood, "log") + " inside)}"),
-        birdbath: F(() => pick(["A robin, bathing.", "Two sparrows.", "One leaf, turning slowly."])),
+        woodpile: F(() => "Logs stacked against the shed wall under a green tarp held down with bricks. The axe is leaning against them. {cmd:chop} {dim:(" + plural(S.wood, "log") + " in the basket inside)}"),
+        birdbath: F(() => "A stone birdbath with moss up the stem. " + pick(["There's a robin in it, splashing about.", "Two sparrows are arguing on the rim.", "There's a single yellow leaf floating in it."])),
         fox: F(() => "A fox" + (S.fox ? " (" + esc(S.fox) + ")" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:({cmd:name fox} her?)}"), { when: () => isNight() || isEvening() })
       }), { room: true }),
 
       greenhouse: D(() => "It's noticeably warmer in here. The glass is whitewashed on the inside, a brass mister on the ceiling hisses every so often, and three clay pots are lined up on the bench.", () => Object.assign(potKids(), {
         "moonflower_note.txt": F(W("{hi:moonflowers}\n\npots only. they want warm and dark.\nthey open after dark and shut again at dawn, so pick them at night.\none flower gives enough oil for the lantern.\n\nthe light they give off is the same colour as the other light.\nthat's not a coincidence. I don't know what it is."), { onRead: () => clue("colour") }),
-        mister: F("A brass mister on the ceiling. It keeps the pots wet, so they never need watering.")
+        mister: F("A brass pipe along the ceiling with little nozzles in it. Every few minutes it hisses and mists the pots, so you never need to water in here.")
       }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:(the oilcan's in the shed: {cmd:oil greenhouse})}") }),
 
       dock: D(() => "The dock is grey boards on old posts, thirty feet or so of it, with Wren's green rowing boat tied up alongside. At the far end there's an iron lantern on a pole" + (S.flags.lanternLit ? ", lit." : ".") + " A thick black cable is stapled along the boards the whole way out and drops over the end into the water. " + skyLine(), {
         lantern: F(() => lanternStatus()),
         cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:(it goes back up the garden towards the house.)}", { onRead: () => clue("cable") }),
         water: F(() => lakeLook()),
-        rowboat: F("Green. {acc:THE SECOND OPINION} painted on the back. {cmd:row}"),
-        tackle_box: D("A tackle box.", {
+        rowboat: F("A green wooden rowing boat with a bit of water in the bottom. Someone has painted {acc:THE SECOND OPINION} on the back in white. The oars are under the seat. {cmd:row}"),
+        tackle_box: D("A green metal tackle box with trays that fold out like stairs.", {
           "carp.txt": F(W("{hi:the carp}\n\ngolden. huge. older than me.\nseen in fog, at dawn, and once on my birthday.\nhe has four of my lures in his lip.\n\nif you catch him, let him go.")),
-          lures: F("Spinners, feathers, and a teaspoon with a hook on.")
+          lures: F("A tangle of spinners and feathered lures, and one that's just an old teaspoon with a hook soldered on. That one looks the most used.")
         }),
-        bench: F("A bench with a small plaque: {acc:FOR SITTING}. {cmd:sit}")
+        bench: F("A wooden bench at the land end of the dock. Someone has screwed a little brass plaque onto the back that says {acc:FOR SITTING}. {cmd:sit}")
       }, { room: true }),
 
       cellar: D(() => "You have to duck under the beam at the bottom of the steps. It's cold down here and smells of earth and jam, and there are shelves of jars along both walls. In the corner is a beige metal box about the size of a suitcase, and that's where the hum is coming from. A cable comes in through the wall and plugs into the back of it.", {
         jam_shelf: F(() => "Blackberry, damson, plum, one labelled MYSTERY 2019. " + (jamLeft() ? "{cmd:take jam}" : "The rest are labelled 'winter'."), { item: "jam" }),
-        oil_lamp: F("A brass oil lamp, full. {dim:(the attic is dark.)}", { item: "lamp" }),
+        oil_lamp: F("A brass oil lamp with a glass chimney, full of oil. The attic has no light up there, so you'll want this.", { item: "lamp" }),
         box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:(there's a program for it. Wren used to run it down here: {cmd:listen})}", { onRead: () => { clue("hum"); clue("listen"); } }),
         "the_hum.txt": F("{dim:(taped to the box)}\n\nit's the freezer.\n\n{dim:(the freezer is unplugged.)}", { onRead: () => clue("hum") })
       }, { room: true }),
 
       attic: D(() => S.flags.atticLit ? "The attic runs the whole length of the house. Boxes are stacked under the eaves, there's a rocking horse missing one eye, and under the round window there's a heavy leather trunk. A ladder goes up to a hatch onto the roof." : "It's completely dark up here. Something small walks across the boards and stops.", () => (S.flags.atticLit ? {
         trunk: D("A leather trunk with brass corners and a small padlock.", {
-          "lantern.dsk": F("A floppy disk labelled {acc:LANTERN} in gold pen.", { item: "disk:lantern" }),
-          wick: F("A coil of new lantern wick.", { item: "wick" }),
+          "lantern.dsk": F("A floppy disk with {acc:LANTERN} written on it in gold pen and a lot of little stars drawn round the edge.", { item: "disk:lantern" }),
+          wick: F("A coil of thick cotton lantern wick, still with the shop's paper band round it.", { item: "wick" }),
           "letter.txt": F(TRUNK_LETTER, { onRead: f => { clue("ask"); if (f) remember("found Wren's letter in the trunk. read it twice."); } }),
           "diary_1962.txt": F(DIARY_1962, { onRead: () => { clue("1962"); clue("name"); } }),
           "photo_1974.txt": F(PHOTO_1974, { onRead: () => clue("count") })
         }, { lock: () => (S.flags.trunkOpen ? null : "Padlocked.\n{dim:(the key is on Biscuit's collar.)}") }),
-        rocking_horse: F("One glass eye. GERALD, on the saddle, in a child's writing."),
-        margaret: F("A spider with a big web in the corner. A note pinned beside it: {acc:MARGARET. do not hoover.}"),
-        boxes: F("XMAS. XMAS (REAL). TAX. NOT TAX. One labelled {acc:NO}.")
+        rocking_horse: F("A dapple-grey rocking horse missing one glass eye. Someone wrote GERALD on the saddle in felt tip a long time ago."),
+        margaret: F("In the corner of the rafters there's a big spider in a big web, and pinned to the beam next to it a note in Wren's writing: {acc:MARGARET. do not hoover.}"),
+        boxes: F("Cardboard boxes labelled XMAS, XMAS (REAL), TAX and NOT TAX. One at the back just says {acc:NO}, and you decide to leave it.")
       } : {}), { room: true, dark: () => !S.flags.atticLit }),
 
       roof: D(() => "There's a flat bit of roof between the two chimneys with a railing round it and a weathervane shaped like a heron. Wren's brass telescope stands there under an oilskin cover. " + skyLine(), {

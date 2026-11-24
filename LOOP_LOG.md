@@ -65,3 +65,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Counted the tells: 110 em-dashes and 239 parenthetical asides in the game text, plus every description written as a clipped list of fragments ("Stone walls, a bulb on a string, shelves of jam."). That uniform rhythm is a big part of what reads as AI.
 - Rewrote the opening, every room description and the weather lines in ordinary, uneven sentences with specific details ("You have to duck under the beam at the bottom of the steps.", "awake since four... came downstairs in your socks").
 - Took the em-dashes out of player-facing prose (list separators are now a quiet dot).
+
+## 14 — the things in the house
+- Rewrote about 40 object and container descriptions (everything you `cat`/`examine` or open) from clipped fragments ("A ball of string.", "Rubber bands. A lot of them.", "Orange, and shaped like Wren.") into ordinary sentences with one specific, lived-in detail each: the mug ring on the armchair, the postman's red rubber bands Wren picks up off the path, the yellow mac missing so "she's taken the good coat", the teaspoon lure that looks the most used.
