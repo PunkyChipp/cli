@@ -48,3 +48,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Toned down `whoami`, `exit`, `coffee`, `python`, `npm`, `top`, `sl` and `credits`, which were each doing a little bit.
 - `top`/`uptime` say "1 day", not "1 days".
 - The carp is "the carp" everywhere now (man page, fishlog, keepsake), not "Old Marmalade" in some places.
+
+## 10 — coming back
+- Reopening the game used to greet you with a status dump ("Sam, 6:19am, Wednesday October 12. drizzly. you're in the kitchen."). Now it puts you back in the room: the time, where you are, what's outside, the last couple of things you did ("last thing you remember: made black tea. fed Biscuit."), or last night's journal line if it's a new morning, plus the cat if she's there.

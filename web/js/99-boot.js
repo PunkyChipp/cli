@@ -65,8 +65,15 @@ async function bootSequence(reboot) {
     deliverMail();
     remember("arrived at the cottage. couldn't sleep. the computer was already on.");
   } else {
-    print("{hi:" + esc(S.name) + "}{dim:, " + clock(S.min) + ", " + dayName(S.day) + " " + dateStr(S.day) + ". " + weatherNow().word + ". you're in the " + roomName() + ".}");
-    if (S.mailbox.length) print("{acc:post:} {cmd:mail}");
+    // put them back in the room, and remind them what they were doing, the way a person would
+    const r = roomName();
+    print("{hi:" + clock(S.min) + ", " + dayName(S.day) + ".} You're " + (["dock", "roof"].includes(r) ? "on" : "in") + " the " + r + ". " + skyLine());
+    const lately = S.today.slice(-2).map(x => x.replace(/\.$/, ""));
+    if (lately.length) print("{dim:last thing you remember: " + esc(lately.join(". ")) + ".}");
+    else if (S.journal.length) print("{dim:from your journal, last night: " + esc(S.journal[S.journal.length - 1].text) + "}");
+    if (catHere()) print("{dim:" + catLine() + "}");
+    if (S.mailbox.length) print("{acc:There's post.} {cmd:mail}");
+    print("{dim:(}{cmd:look}{dim: around, or check the }{cmd:board}{dim:.)}");
   }
   print("");
   T.busy = false;
