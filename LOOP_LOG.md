@@ -60,3 +60,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 - The bite cue was an arcade shout ("!! the float dips — NOW!"). It's now "the float goes under — now!", which is still clear but sounds like a lake.
 - Early strikes and misses are plain ("Too soon. The float hadn't moved." / "Missed it. The float comes back up, empty.") instead of "Whoops" and an embarrassed duck.
 - First cast ever: one dim line explains the rule (watch the float; when it goes under, press enter or tap; not before), so nobody has to learn it by failing.
+
+## 13 — after merging #3: the rhythm problem
+- Counted the tells: 110 em-dashes and 239 parenthetical asides in the game text, plus every description written as a clipped list of fragments ("Stone walls, a bulb on a string, shelves of jam."). That uniform rhythm is a big part of what reads as AI.
+- Rewrote the opening, every room description and the weather lines in ordinary, uneven sentences with specific details ("You have to duck under the beam at the bottom of the steps.", "awake since four... came downstairs in your socks").
+- Took the em-dashes out of player-facing prose (list separators are now a quiet dot).

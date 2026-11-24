@@ -133,7 +133,7 @@ function doHarvest() {
     if (c.regrow) beds[i] = { crop: p.crop, age: 0, wet: p.wet };
     else beds[i] = { crop: null, age: 0, wet: false };
   });
-  if (!got.length) return print(closedBud ? "The moonflower's still a tight little bud. It only opens after dark. {dim:(come back tonight.)}" : "Nothing's ready yet. {dim:(things grow overnight — {cmd:garden} shows how long.)}");
+  if (!got.length) return print(closedBud ? "The moonflower's still a tight little bud. It only opens after dark. {dim:(come back tonight.)}" : "Nothing's ready yet. {dim:(things grow overnight. {cmd:garden} shows how long.)}");
   spend(10); sfx("dig");
   print("You harvest: {ok:" + got.join(", ") + "}.");
   if (got.some(g => g.includes("moonflower"))) print("{dim:The moonflower glows faintly in your hand, a pale blue-gold, like it's remembering the moon.}");

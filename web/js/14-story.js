@@ -185,7 +185,7 @@ async function doLantern() {
   if (!has("moonflower")) missing.push("a moonflower {dim:(greenhouse, harvested at night)}");
   if (!has("matches")) missing.push("matches {dim:(kitchen drawer)}");
   if (S.day < SEASON_END) {
-    print("Not yet. It's for Lantern Night — " + dateStr(SEASON_END) + ", " + plural(SEASON_END - S.day, "day") + " away.");
+    print("Not yet. It's for Lantern Night, " + dateStr(SEASON_END) + ", " + plural(SEASON_END - S.day, "day") + " away.");
     print(missing.length ? "{dim:You'll need: " + missing.join(", ") + ".}" : "{ok:You've got everything it needs.}");
     S.flags.lanternReady = !missing.length;
     return;

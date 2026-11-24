@@ -229,7 +229,7 @@ async function trueEnding() {
   print("");
   await type("The whole bay is lit from underneath. Blue-gold, from the deep part out to the reeds, thousands of small lights, and all of them moving the same way, slowly, like a shoal.", 38);
   await pause(800);
-  await type("They turn once under the boats. Somebody — Pip — makes a sound that isn't a word.", 38);
+  await type("They turn once under the boats. Somebody, Pip probably, makes a sound that isn't a word.", 38);
   await pause(800);
   await type("Then they go down, together, and the lake is dark, and the comet is still there over the hill.", 38);
   await pause(1500);
@@ -246,7 +246,7 @@ async function trueEnding() {
   await pause(1500);
   print("{acc:WREN:} Sixty-four years I've been trying to say the right thing to it. {dim:(she's laughing, or crying, or both.)} You worked it out.");
   await pause(1500);
-  print("{acc:WREN:} I'll be home on the second. Leave the lantern lit. And — thank you, love. Really.");
+  print("{acc:WREN:} I'll be home on the second. Leave the lantern lit. And thank you, love. Really.");
   await pause(1200);
   print("{dim:(kshhhhh)}");
   await pause(1800);

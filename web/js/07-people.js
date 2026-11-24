@@ -411,7 +411,7 @@ function radioOut(st) {
     clue("r777");
   } else {
     lines.push("{dim:kshhhhhhhhhhhhhhhhhhhhh}");
-    if (st === "104.5") lines.push("{dim:(very faintly: \"is this on? IS THIS ON?\" — not yet.)}");
+    if (st === "104.5") lines.push("{dim:(very faintly, a kid's voice: \"is this on? IS THIS ON?\" not yet, apparently.)}");
     else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:(something, nearby on the dial. a voice? lower.)}");
   }
   return lines;

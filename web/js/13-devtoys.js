@@ -119,7 +119,7 @@ cmd("mv rename", "move or rename a file you wrote", (a) => {
   S.files[p] = S.files[s]; delete S.files[s];
   print("{dim:(moved to " + esc(shortPath(p)) + ")}");
 }, SYS);
-cmd("mkdir", "make a directory", () => print("You can't add a room to Wren's house. You consider it — a little reading nook, maybe — and then you remember the planning office."), SYS);
+cmd("mkdir", "make a directory", () => print("You can't add a room to Wren's house. You think about a reading nook for a minute, then think about the planning office."), SYS);
 cmd("chmod chown", "change permissions", (a) => {
   const t = a.join(" ");
   if (t.includes("greenhouse")) {
@@ -218,7 +218,7 @@ cmd("kill pkill killall", "stop a process", (a) => {
   if (t === "1" || t.includes("biscuit")) return print(nine ? "kill: (1) - Operation not permitted.\n{dim:Biscuit gives you a look of profound disappointment. She has nine lives. You'd need -10.}" : "You can't kill Biscuit. You give her a gentle pat instead. {dim:(that's what kill means, in this house.)}");
   if (t === "999" || t.includes("wren")) return print("Absolutely not.");
   if (t.includes("kettle") || t === "42") return print("The kettle clicks off. It'll sulk about this.");
-  if (t.includes("rain") || t === "101") return print("You can't kill the rain. You've tried, as a species. It's still raining." + (weatherNow().rain ? "" : " (well — not right now.)"));
+  if (t.includes("rain") || t === "101") return print("You can't kill the rain. You've tried, as a species. It's still raining." + (weatherNow().rain ? "" : " (well, not right now.)"));
   if (t.includes("radio")) { S.flags.radioOn = null; return print("Radio off."); }
   if (t.includes("stove") || t === "77") { S.fireUntil = now(); return print("You shut the stove's air vent and the fire dies down to embers."); }
   if (t.includes("hearth") || t === "512") return print("You can't kill HEARTH from inside HEARTH. It's a philosophical problem. Have a cup of tea.");
@@ -277,7 +277,7 @@ cmd("textsize fontsize zoom", "bigger or smaller text (textsize 24)", (a) => {
 }, SYS);
 cmd("save", "save (it does this by itself, but)", () => { save(); print("{ok:Saved.} {dim:(HEARTH saves after everything you do. but it's nice to be sure.)}"); }, SYS);
 cmd("reset", "start the whole season over", async () => {
-  print("{warn:This forgets everything — the garden, the letters, Biscuit's opinion of you.}");
+  print("{warn:This forgets everything: the garden, the letters, what Biscuit thinks of you.}");
   const y = await ask("Type {yes} to start over: ".replace(/[{}]/g, ""));
   if ((y || "").trim().toLowerCase() !== "yes") return print("{dim:(phew. nothing changed.)}");
   wipe(); save();
@@ -300,7 +300,7 @@ cmd("exit logout quit bye", "leave", async () => {
   print("logout: you're the only user. {dim:(the game saves as you go. close it whenever.)}");
   save();
 }, SYS);
-cmd("fortune", "something someone once said", () => { const [q, who] = pick(FORTUNES); print("{acc:\"" + q + "\"}  {dim:— " + who + "}"); }, SYS);
+cmd("fortune", "something someone once said", () => { const [q, who] = pick(FORTUNES); print("{acc:\"" + q + "\"}  {dim:· " + who + "}"); }, SYS);
 const FORTUNES = [
   ["Thump it on the left.", "W."],
   ["If it's foggy, go fishing.", "W."],

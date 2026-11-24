@@ -58,7 +58,7 @@ function starfield(dir, w = 40, h = 7) {
 
 function skyCan() {
   if (roomName() !== "roof") return "The telescope's up on the roof. {cmd:cd ~/roof}";
-  if (!S.disks.sky) return "The telescope's motor needs its disk. {dim:(SKY.DSK — Juniper has it.)}";
+  if (!S.disks.sky) return "The telescope's motor needs its disk. {dim:(Juniper has the disk.)}";
   if (!isNight()) return "It's daytime. You look through the telescope anyway and see a very magnified cloud. {dim:(come back after 8pm.)}";
   const w = weatherNow();
   if (w.rain) return "It's raining. You put the cover back on the telescope before it gets wet. {dim:(the weather's on 93.1.)}";
@@ -104,7 +104,7 @@ async function doSky(args) {
   for (const [k, c] of here) {
     const first = !S.stars[k];
     S.stars[k] = S.stars[k] || S.day;
-    print((first ? "{ok:New!} " : "") + "{hi:" + c.name + "} {dim:— " + c.note + "}");
+    print((first ? "{ok:New!} " : "") + "{hi:" + c.name + "} {dim:· " + c.note + "}");
     if (first) remember("found " + c.name + " through the telescope.");
   }
   if (comet) {
@@ -116,7 +116,7 @@ async function doSky(args) {
       keepsake("comet");
       clue("comet");
       remember("saw the comet. Juniper and Wren saw it from this exact roof in 1962.");
-      if (S.quests.jun_comet === "open") print("{dim:(Juniper will want to know. {cmd:send} her something — anything.)}");
+      if (S.quests.jun_comet === "open") print("{dim:(Juniper will want to know. {cmd:send} her something. anything.)}");
     }
   } else if (dir === "west" && S.day < 10) print("{dim:(nothing unusual in the west tonight. it's quiet. like it's waiting.)}");
   if (Object.keys(CONSTELLATIONS).every(k => S.stars[k])) keepsake("allstars");

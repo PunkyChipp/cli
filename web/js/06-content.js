@@ -15,15 +15,15 @@ const W = s => s + "\n\n{dim:W.}";
 function skyLine() {
   const w = weatherNow();
   const night = isNight();
-  if (w.snow) return night ? "Snow going past the window, orange where the lamp catches it." : "It's snowing. Big slow flakes.";
-  if (w.rain >= 1) return night ? "Rain on the glass." : "Heavy rain. The lake's gone grey and pocked.";
-  if (w.rain > 0) return "A thin drizzle.";
-  if (w.fog > 0.5) return "Fog. You can't see the far shore, or the end of the dock.";
-  if (w.wind > 0.8) return "Windy. The gutter keeps knocking.";
-  if (night) return w.cloud > 0.5 ? "Dark, and no stars." : "Clear. A lot of stars.";
-  if (S.min < 8 * 60) return "Early light, low over the hill.";
-  if (S.min > 17 * 60) return "The light's going.";
-  return w.cloud > 0.5 ? "Overcast." : "Bright and cold.";
+  if (w.snow) return night ? "Outside, snow is going past the window, orange where the lamp light catches it." : "It's snowing, big slow flakes that take ages to land.";
+  if (w.rain >= 1) return night ? "Rain is hitting the glass." : "It's raining hard, and the lake has gone grey and pocked all over.";
+  if (w.rain > 0) return "There's a fine drizzle that isn't quite rain.";
+  if (w.fog > 0.5) return "The fog is so thick you can't see the far shore, or the end of the dock.";
+  if (w.wind > 0.8) return "It's windy, and something on the gutter keeps knocking.";
+  if (night) return w.cloud > 0.5 ? "It's dark and overcast, no stars." : "It's a clear night with more stars than you're used to.";
+  if (S.min < 8 * 60) return "The sun's only just over the hill.";
+  if (S.min > 17 * 60) return "The light's starting to go.";
+  return w.cloud > 0.5 ? "It's overcast." : "It's bright and cold.";
 }
 function catHere() { return S.cat.room === roomName(); }
 function catLine() {
@@ -79,7 +79,7 @@ function todoText() {
   let out = "{dim:(Wren's list, pinned by the door)}\n\n";
   for (const [t, ok, hint] of items) {
     const d = ok();
-    out += (d ? "{dim:  {s:" + t + "}}" : "  " + t + (hint ? "  {dim:— " + hint + "}" : "")) + "\n";
+    out += (d ? "{dim:  {s:" + t + "}}" : "  " + t + (hint ? "  {dim:· " + hint + "}" : "")) + "\n";
   }
   return out.trimEnd();
 }
@@ -229,11 +229,11 @@ function buildTree() {
   };
 
   ROOT = D("the root. wiring, mostly.", {
-    cottage: D(() => "The hall. Coats, boots, a long rug worn pale down the middle. The front door, the stairs, and a list pinned by the light switch.", {
+    cottage: D(() => "A narrow hall with a long rug worn pale down the middle, where fifty years of feet have gone between the kitchen and the study. Wren's coats are still on the hooks, and her list is pinned up by the light switch.", {
       "todo.txt": F(todoText, { owner: "wren" }),
       coat_hooks: F("A yellow mac, a waxed jacket, and a small knitted jumper on its own hook. The jumper is cat-sized. It's never been worn."),
       umbrella: F("A black umbrella with a duck's head handle. For going out in the rain.", { item: "umbrella" }),
-      kitchen: D(() => "The kitchen. Range, kettle, a long table with one end cleared. Jars on the windowsill with Wren's labels on. The window looks out over the garden to the lake.", {
+      kitchen: D(() => "The kitchen is the warmest room in the house and smells faintly of toast. There's a cream range with the kettle on it, a long table with one end cleared for eating and the other buried in seed catalogues, and a window over the sink that looks down the garden to the lake.", {
         kettle: F(() => (teaWarm() ? "Still warm." : "Cream enamel, green rim, dented on the left.") + " {cmd:brew}"),
         bread_bin: D("A bread bin.", {
           "radio.dsk": F("A floppy disk wrapped in a tea towel. RADIO, in red pen. {dim:(disks go in HEARTH, in the study.)}", { item: "disk:radio" }),
@@ -262,7 +262,7 @@ function buildTree() {
         pantry: F("Flour, butter, oats, onions, tins. Enough for anything on the recipe cards.")
       }, { room: true }),
 
-      parlour: D(() => "The parlour. Low ceiling, rag rug, an orange armchair, and a wood stove that's " + (fireLit() ? "lit." : "cold.") + " Books on every wall. A record player by the window.", {
+      parlour: D(() => "The parlour has a ceiling low enough to touch flat-handed, an orange armchair with a dent in it the shape of Wren, and a wood stove that's " + (fireLit() ? "going nicely." : "gone cold.") + " Every wall that isn't a window is books. The record player by the window has its lid up.", {
         stove: F(() => fireLit() ? "Lit. It'll go until about " + clock(S.fireUntil % 1440) + "." : "Cold. " + plural(S.wood, "log") + " in the basket. {cmd:stoke}"),
         wood_basket: F(() => S.wood ? plural(S.wood, "log") + "." : "Empty. The woodpile's in the garden. {cmd:chop}"),
         armchair: F("Orange, and shaped like Wren. {cmd:sit}"),
@@ -273,7 +273,7 @@ function buildTree() {
           Object.fromEntries(Object.entries(BOOKS).map(([n, t]) => [n, F(t, { onRead: () => { checkBooks(); if (n.startsWith("wrens_almanac")) clue("cable"); if (n.startsWith("hearth_80")) clue("cable"); } })])))
       }, { room: true }),
 
-      study: D(() => "The study. HEARTH on the desk, the screen you're looking at. A disk drive. A corkboard on the wall" + (Object.keys(S.clues || {}).length ? ", with a few things pinned to it now." : ", empty.") + " A window over the lake.", {
+      study: D(() => "The study is only just big enough for the desk. HEARTH sits on it, beige and humming quietly, with the disk drive underneath. Above it there's a corkboard" + (Object.keys(S.clues || {}).length ? " with a few things pinned to it now" : ", empty except for the drawing pins") + ", and the window looks straight out over the lake.", {
         "note.txt": F(NOTE, { owner: "wren", onRead: f => f && remember("found Wren's note on the screen.") }),
         "hearth.manual": F(HEARTH_MANUAL),
         corkboard: F(() => "Cork, drawing pins, a reel of red wool. {cmd:board}"),
@@ -298,29 +298,29 @@ function buildTree() {
         notes: D("An empty folder labelled {acc:yours}. ({cmd:write} something.)", {})
       }, { room: true }),
 
-      garden: D(() => "Six raised beds, a shed, a woodpile, a birdbath. A path down through the long grass to the dock. " + skyLine(), () => Object.assign(plotKids(), {
+      garden: D(() => "The garden runs downhill in six raised beds. There's a shed with a crooked roof, a woodpile under a tarp, a stone birdbath, and a path worn through the long grass down to the dock. " + skyLine(), () => Object.assign(plotKids(), {
         shed: D("Creosote and string. Tools on nails, each with its outline painted behind it.", {
           fishing_rod: F("Wren's split-cane rod, red and white float.", { item: "rod" }),
           oilcan: F("A small brass oilcan.", { item: "oilcan" }),
           watering_can: F("Green. You'll use it when you {cmd:water}."),
           trowel: F("Worn to the shape of one hand."),
           ".seed_tin": D("A biscuit tin full of paper seed envelopes.", {
-            lavender_seeds: F("{acc:LAVENDER} — for Fenn's bees.", { item: "seed:lavender", count: 3 }),
+            lavender_seeds: F("{acc:LAVENDER}, for Fenn's bees.", { item: "seed:lavender", count: 3 }),
             pumpkin_seeds: F("{acc:PUMPKIN}", { item: "seed:pumpkin", count: 2 }),
             chamomile_seeds: F("{acc:CHAMOMILE}", { item: "seed:chamomile", count: 2 })
           })
         }),
         woodpile: F(() => "Split logs under a tarp. An axe. {cmd:chop} {dim:(" + plural(S.wood, "log") + " inside)}"),
         birdbath: F(() => pick(["A robin, bathing.", "Two sparrows.", "One leaf, turning slowly."])),
-        fox: F(() => "A fox" + (S.fox ? " — " + esc(S.fox) + " —" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:({cmd:name fox} her?)}"), { when: () => isNight() || isEvening() })
+        fox: F(() => "A fox" + (S.fox ? " (" + esc(S.fox) + ")" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:({cmd:name fox} her?)}"), { when: () => isNight() || isEvening() })
       }), { room: true }),
 
-      greenhouse: D(() => "Whitewashed glass, warm soil, a brass mister that hisses now and then. Three clay pots on the bench.", () => Object.assign(potKids(), {
-        "moonflower_note.txt": F(W("{hi:moonflowers}\n\npots only. they want warm and dark.\nthey open after nightfall and close at dawn — pick them at night.\none flower gives enough oil for the lantern.\n\nthe light they give off is the same colour as the other light.\nthat's not a coincidence. I don't know what it is."), { onRead: () => clue("colour") }),
+      greenhouse: D(() => "It's noticeably warmer in here. The glass is whitewashed on the inside, a brass mister on the ceiling hisses every so often, and three clay pots are lined up on the bench.", () => Object.assign(potKids(), {
+        "moonflower_note.txt": F(W("{hi:moonflowers}\n\npots only. they want warm and dark.\nthey open after dark and shut again at dawn, so pick them at night.\none flower gives enough oil for the lantern.\n\nthe light they give off is the same colour as the other light.\nthat's not a coincidence. I don't know what it is."), { onRead: () => clue("colour") }),
         mister: F("A brass mister on the ceiling. It keeps the pots wet, so they never need watering.")
       }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:(the oilcan's in the shed: {cmd:oil greenhouse})}") }),
 
-      dock: D(() => "Grey boards out over the water. A green rowing boat. At the end, an iron lantern on a pole, " + (S.flags.lanternLit ? "lit." : "unlit.") + " A thick black cable runs along the boards and over the edge into the lake. " + skyLine(), {
+      dock: D(() => "The dock is grey boards on old posts, thirty feet or so of it, with Wren's green rowing boat tied up alongside. At the far end there's an iron lantern on a pole" + (S.flags.lanternLit ? ", lit." : ".") + " A thick black cable is stapled along the boards the whole way out and drops over the end into the water. " + skyLine(), {
         lantern: F(() => lanternStatus()),
         cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:(it goes back up the garden towards the house.)}", { onRead: () => clue("cable") }),
         water: F(() => lakeLook()),
@@ -332,14 +332,14 @@ function buildTree() {
         bench: F("A bench with a small plaque: {acc:FOR SITTING}. {cmd:sit}")
       }, { room: true }),
 
-      cellar: D(() => "Stone walls, a bulb on a string, shelves of jam. In the corner, a beige metal box the size of a suitcase. It hums. The cable from the dock comes in through the wall and goes into the back of it.", {
+      cellar: D(() => "You have to duck under the beam at the bottom of the steps. It's cold down here and smells of earth and jam, and there are shelves of jars along both walls. In the corner is a beige metal box about the size of a suitcase, and that's where the hum is coming from. A cable comes in through the wall and plugs into the back of it.", {
         jam_shelf: F(() => "Blackberry, damson, plum, one labelled MYSTERY 2019. " + (jamLeft() ? "{cmd:take jam}" : "The rest are labelled 'winter'."), { item: "jam" }),
         oil_lamp: F("A brass oil lamp, full. {dim:(the attic is dark.)}", { item: "lamp" }),
         box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:(there's a program for it. Wren used to run it down here: {cmd:listen})}", { onRead: () => { clue("hum"); clue("listen"); } }),
         "the_hum.txt": F("{dim:(taped to the box)}\n\nit's the freezer.\n\n{dim:(the freezer is unplugged.)}", { onRead: () => clue("hum") })
       }, { room: true }),
 
-      attic: D(() => S.flags.atticLit ? "Rafters, boxes, a rocking horse with one glass eye. A heavy trunk under the round window. A ladder up to a hatch in the roof." : "Pitch black. Something small walks across the boards.", () => (S.flags.atticLit ? {
+      attic: D(() => S.flags.atticLit ? "The attic runs the whole length of the house. Boxes are stacked under the eaves, there's a rocking horse missing one eye, and under the round window there's a heavy leather trunk. A ladder goes up to a hatch onto the roof." : "It's completely dark up here. Something small walks across the boards and stops.", () => (S.flags.atticLit ? {
         trunk: D("A leather trunk with brass corners and a small padlock.", {
           "lantern.dsk": F("A floppy disk labelled {acc:LANTERN} in gold pen.", { item: "disk:lantern" }),
           wick: F("A coil of new lantern wick.", { item: "wick" }),
@@ -352,8 +352,8 @@ function buildTree() {
         boxes: F("XMAS. XMAS (REAL). TAX. NOT TAX. One labelled {acc:NO}.")
       } : {}), { room: true, dark: () => !S.flags.atticLit }),
 
-      roof: D(() => "The flat bit of roof between the chimneys. A railing, a heron weathervane, and a brass telescope under an oilskin. " + skyLine(), {
-        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:(after dark.)}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK — J. has it}."),
+      roof: D(() => "There's a flat bit of roof between the two chimneys with a railing round it and a weathervane shaped like a heron. Wren's brass telescope stands there under an oilskin cover. " + skyLine(), {
+        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:(after dark.)}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK (J. has it)}."),
         weathervane: F(() => "The heron points " + pick(["north-west", "west", "south-west", "north"]) + ". " + cap(weatherNow().word) + "."),
         "star_notes.txt": F(starNotes, { when: () => S.disks.sky })
       }, { room: true, lock: () => (S.flags.atticLit ? null : "The ladder to the roof is in the attic, and the attic is dark.") })

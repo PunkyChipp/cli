@@ -68,12 +68,12 @@ function doCook(args) {
   if (!want) {
     if (!known.length) return print("You don't know any recipes yet. {dim:(the recipe cards are in {cmd:ls recipes}. read one with {cmd:cat}.)}");
     print("{hi:You know how to make:}");
-    for (const r of known) print("  " + (canMake(r) ? "{ok:✓}" : "{dim:·}") + " {cmd:cook " + r.replace(/_/g, " ") + "}  {dim:— " + needsText(r) + "}");
+    for (const r of known) print("  " + (canMake(r) ? "{ok:✓}" : "{dim:·}") + " {cmd:cook " + r.replace(/_/g, " ") + "}  {dim:· " + needsText(r) + "}");
     return;
   }
   const id = Object.keys(RECIPES).find(r => r === want || r === want + "s" || RECIPES[r].name.replace(/ /g, "_") === want || r.startsWith(want));
   if (!id) return print("You don't know how to make that. {dim:(yet.)}");
-  if (!S.recipes[id]) return print("You'd need the recipe for that first. Wren's recipes are on cards — {cmd:ls recipes}.");
+  if (!S.recipes[id]) return print("You'd need the recipe for that first. Wren's recipes are on cards in the kitchen. {cmd:ls recipes}");
   if (!canMake(id)) return print("You need " + needsText(id) + " for " + RECIPES[id].name + ".");
   for (const [k, n] of Object.entries(RECIPES[id].needs)) {
     if (k === "fish:*") take(Object.keys(S.inv).find(x => x.startsWith("fish:")));
@@ -164,7 +164,7 @@ function doFeed(args) {
   const rest = args.slice(who === "the" ? 2 : 1);
   const fishKey = itemKey(rest.join(" ")) || (rest.length ? null : null);
   const giveFish = fishKey && fishKey.startsWith("fish:");
-  if (roomName() !== "kitchen" && !catHere()) return print("Biscuit's not here — she's in the " + S.cat.room + ". {dim:(or go to the kitchen and rattle the tin; she'll come.)}");
+  if (roomName() !== "kitchen" && !catHere()) return print("Biscuit's in the " + S.cat.room + ". {dim:(or rattle her tin in the kitchen and she'll come.)}");
   if (!catHere()) { S.cat.room = roomName(); print("You rattle the tin. Somewhere in the house there's a thump, and then Biscuit is in the doorway."); }
   if (giveFish) {
     take(fishKey);
@@ -225,7 +225,7 @@ function doPet(args) {
 /* ---------- fire & warmth ---------- */
 function doStoke() {
   if (roomName() !== "parlour") return print("The wood stove's in the parlour. {cmd:cd ~/parlour}");
-  if (!S.wood) return print("The wood basket's empty. {dim:(there's a woodpile in the garden — {cmd:chop} some.)}");
+  if (!S.wood) return print("The wood basket's empty. {dim:(there's a woodpile in the garden. {cmd:chop})}");
   if (!fireLit() && !has("matches")) return print("You've got wood but nothing to light it with. {dim:(matches are in the kitchen drawer.)}");
   S.wood--;
   const was = fireLit();

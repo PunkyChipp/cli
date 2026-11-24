@@ -286,7 +286,7 @@ function doLs(args) {
     line += cells[i] + "    "; len += w;
   }
   if (line) print(line);
-  if (path === HOME && !S.flags.lsHinted) { S.flags.lsHinted = true; print("{dim:(blue things are places — {cmd:cd} into them. orange things you can {cmd:take}. tap anything.)}"); }
+  if (path === HOME && !S.flags.lsHinted) { S.flags.lsHinted = true; print("{dim:(blue things are places you can {cmd:cd} into. orange things you can {cmd:take}. you can tap any of them.)}"); }
   return true;
 }
 
@@ -620,8 +620,8 @@ async function doInsert(a) {
   const msgs = {
     radio: "{ok:RADIO installed.} On the shelf, the old radio clicks and starts to warm up. {cmd:radio}",
     sky: "{ok:SKY installed.} Up on the roof, faintly, you hear the telescope motor whirr awake. {dim:(on clear nights: {cmd:cd roof}, {cmd:sky})}",
-    lantern: "{ok:LANTERN installed.} Nothing happens. Then — down at the dock, through the window — the lantern's little brass shutter clicks open and shut, once, like a wink.",
-    pip: "{ok:PIP.DSK installed.} The screen fills with a pixel cat that waves and says HI FROM PIP!!! — then vanishes. {dim:(new command: {cmd:catsay hello})}"
+    lantern: "{ok:LANTERN installed.} Nothing happens for a second. Then, through the window, you see the little brass shutter on the dock lantern click open and shut once.",
+    pip: "{ok:PIP.DSK installed.} The screen fills with a pixel cat that waves and says HI FROM PIP!!! and then vanishes. {dim:(new command: {cmd:catsay hello})}"
   };
   print(msgs[id] || "{ok:installed.}");
   if (id === "radio") { keepsake("radio"); remember("fixed the radio. it was a disk wrapped in a tea towel all along."); }
@@ -721,7 +721,7 @@ function doMail(a) {
   if (arg === "all" || arg === "old") {
     if (!S.letters.length) return print("No letters yet.");
     print("{hi:every letter you've had:}");
-    S.letters.forEach((id, i) => { const L = letterMeta(id); if (L) print("  {cmd:mail " + (i + 1) + "} {dim:from} " + (PEOPLE[L.from] ? PEOPLE[L.from].short : "Wren") + " {dim:— " + esc(L.subject) + "}"); });
+    S.letters.forEach((id, i) => { const L = letterMeta(id); if (L) print("  {cmd:mail " + (i + 1) + "} {dim:from} " + (PEOPLE[L.from] ? PEOPLE[L.from].short : "Wren") + " {dim:· " + esc(L.subject) + "}"); });
     return;
   }
   if (arg && /^\d+$/.test(arg)) {
@@ -771,11 +771,11 @@ function doFriends() {
   };
   for (const [k, p] of Object.entries(PEOPLE)) {
     const met = S.letters.some(id => (letterMeta(id) || {}).from === k);
-    print("  " + "{" + p.color + ":" + pad(p.full, 16) + "}" + " " + (met ? hearts(S.friends[k]) : "{dim:not met yet}") + (q[k] ? "  {dim:— " + q[k] + "}" : ""));
+    print("  " + "{" + p.color + ":" + pad(p.full, 16) + "}" + " " + (met ? hearts(S.friends[k]) : "{dim:not met yet}") + (q[k] ? "  {dim:· " + q[k] + "}" : ""));
   }
-  print("  {acc:" + pad("Biscuit", 16) + "} " + hearts(S.cat.mood / 10) + "  {dim:— " + (S.cat.mood > 80 ? "adores you, privately" : S.cat.mood > 55 ? "warming to you" : "reserving judgement") + "}");
+  print("  {acc:" + pad("Biscuit", 16) + "} " + hearts(S.cat.mood / 10) + "  {dim:· " + (S.cat.mood > 80 ? "adores you, privately" : S.cat.mood > 55 ? "warming to you" : "reserving judgement") + "}");
   if (S.fox) print("  {acc:" + pad(S.fox + " (fox)", 16) + "} " + hearts(Math.min(10, (S.flags.foxFed || 0) * 2)) );
-  print("{dim:(send people things they'd like. {cmd:send} — and read their letters, they drop hints.)}");
+  print("{dim:(send people things they'd like. {cmd:send}. their letters usually say what they'd like.)}");
 }
 
 async function doWrite(a, ctx) {
@@ -804,7 +804,7 @@ async function doWrite(a, ctx) {
 
 function doJournal(a) {
   if ((a[0] || "") === "today") return print(S.today.length ? "{dim:so far today:} " + S.today.join(" ") : "{dim:nothing yet today. the day's young.}");
-  if (!S.journal.length) return print("Your journal's empty — tonight's entry gets written when you {cmd:sleep}.\n{dim:so far today:} " + (S.today.join(" ") || "{dim:nothing yet.}"));
+  if (!S.journal.length) return print("Nothing in your journal yet. You'll write tonight's entry when you {cmd:sleep}.\n{dim:so far today:} " + (S.today.join(" ") || "{dim:nothing yet.}"));
   print("{hi:your journal}");
   for (const e of S.journal.slice(-10)) print("  {acc:" + dateStr(e.day).toLowerCase() + ".} " + esc(e.text));
   if (S.journal.length > 10) print("{dim:  (earlier pages: " + (S.journal.length - 10) + " more. {cmd:journal | head} works too.)}");
@@ -818,7 +818,7 @@ function doJar() {
   print("{dim:      |___________|}");
   print("");
   print("{hi:the keepsake jar} {dim:— little things, from the season:}");
-  for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) if (S.keeps[k]) print("  {acc:" + thing + "}  {dim:— " + why + "}");
+  for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) if (S.keeps[k]) print("  {acc:" + thing + "}  {dim:· " + why + "}");
   const left = Object.keys(KEEPSAKES).length - got.length;
   if (left) print("  {dim:...and room for " + left + " more.}");
 }

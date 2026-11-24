@@ -54,9 +54,11 @@ async function bootSequence(reboot) {
     for (const l of last) { print(l); await pause(60); }
     print("");
     await pause(600);
-    await type("Ten past six. You couldn't sleep. When you came down the computer was already on, and the cat was sitting next to it like she'd been waiting.", 70);
+    await type("It's ten past six in the morning. You've been awake since four, lying in a strange bed listening to a house you don't know yet, and in the end you gave up and came downstairs in your socks.", 70);
     await pause(250);
-    await type("There's an envelope propped against the screen. Somewhere below the floor, something is humming.", 70);
+    await type("The computer in the study was already on. Wren's cat was sitting on the desk next to it and didn't move when you came in.", 70);
+    await pause(250);
+    await type("There's an envelope with your name on it leaning against the screen. And there's the noise you noticed in the night and still can't place: a low hum, from somewhere under the floor.", 70);
     print("");
     print("  {cmd:cat note.txt}    {cmd:look}");
     print("");

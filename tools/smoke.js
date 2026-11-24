@@ -95,7 +95,7 @@ async function type(line, waitFor) {
   await step("plant + water", async () => { await type("cd ~/garden"); await type("plant lavender"); await type("plant carrot"); await type("plant carrot"); await type("water"); expect(G.S.plots.filter(p => p.crop).length === 3, "not planted"); });
   await step("oil the greenhouse open", async () => { await type("oil greenhouse"); expect(G.S.flags.ghOpen, "still stuck"); await type("cd greenhouse"); expect(G.S.cwd.endsWith("greenhouse"), "can't enter"); });
   await step("fishing", async () => { await type("cd dock"); for (let i = 0; i < 6; i++) { G.T.skip = false; await G.shell("fish"); } expect(G.S.stats.fish > 0 || Object.keys(G.S.inv).some(k => k.startsWith("junk:")), "caught nothing in 4 casts"); });
-  await step("lamp lights the attic", async () => { await type("cd kitchen"); await type("take matches"); await type("cd cellar"); await type("take lamp"); await type("light lamp"); expect(G.S.flags.atticLit, "attic dark"); await type("cd attic", "Rafters"); });
+  await step("lamp lights the attic", async () => { await type("cd kitchen"); await type("take matches"); await type("cd cellar"); await type("take lamp"); await type("light lamp"); expect(G.S.flags.atticLit, "attic dark"); await type("cd attic", "trunk"); });
   await step("trunk is locked without the key", () => type("cd trunk", "padlocked"));
   await step("pipes, grep, wc", async () => { const o = await type("ls ~/study | grep txt | wc -l"); expect(/\b1\b/.test(o), "expected 1 txt file, got " + o); });
   await step("redirect into a file", async () => { await type("cd ~/study/notes"); await type("echo dear diary > diary.txt"); await type("cat diary.txt", "dear diary"); });
