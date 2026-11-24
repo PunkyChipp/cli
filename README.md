@@ -24,14 +24,15 @@ where she put things.
 
 ## How to play it
 
-**On iPad (Swift Playgrounds):**
-1. Get the `Hearth.swiftpm` folder onto your iPad (download the repo as a zip
-   from GitHub, unzip it in the Files app).
-2. Tap the **whole `Hearth.swiftpm` folder** to open it in Swift Playgrounds.
-3. Press **Run** (▶). It saves as you go, so you can close it whenever.
+Open **`docs/index.html`** in any browser. That one file is the whole game:
+no install, no internet needed, and it saves as you go (in the browser's
+local storage), so you can close the tab whenever.
 
-**In a browser (any computer):** open `docs/index.html`. That one file is the
-whole game, so you can copy it anywhere and it still works offline.
+To put it online, turn on GitHub Pages for the `docs/` folder (Settings →
+Pages → branch, `/docs`) and you get a link you can share.
+
+It works with a keyboard or a touchscreen. A desktop (PC) version is planned
+later; the single file is built so it can be wrapped as-is.
 
 ## You don't need to know how to code
 
@@ -78,14 +79,13 @@ web/                 the game (plain HTML/CSS/JS, no build step needed to play i
   style.css          the monitor, the desk, the phosphor themes
   js/00..99-*.js     the game, split by topic (see MODDING.md)
   assets/            VT323 font (SIL Open Font License)
-docs/index.html      single-file build (generated)
-Hearth.swiftpm/      the iPad app: a WKWebView around the single-file build
-tools/build.js       web/ → docs/index.html + Hearth.swiftpm/GameHTML.swift
+docs/index.html      single-file build (generated; this is what you play)
+tools/build.js       web/ → docs/index.html
 tools/smoke.js       plays the whole season headlessly, start to finish
 ```
 
 ```sh
-npm run build   # rebuild docs/ and the iPad app after changing web/
+npm run build   # rebuild docs/index.html after changing web/
 npm test        # play the full season headlessly (45 checks)
 ```
 

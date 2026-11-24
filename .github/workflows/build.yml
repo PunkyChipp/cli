@@ -1,8 +1,7 @@
 name: Build
 
-# 1. plays the whole season headlessly (fast, on Linux)
-# 2. compiles the Swift Playgrounds app on a real macOS + Xcode runner, so the
-#    iPad wrapper is type-checked even though nobody here has a Mac handy.
+# Plays the whole season headlessly and checks the single-file build in docs/
+# is up to date with web/.
 
 on:
   push:
@@ -26,24 +25,4 @@ jobs:
       - name: Build is up to date
         run: |
           node tools/build.js
-          git diff --exit-code -- docs Hearth.swiftpm/GameHTML.swift || (echo "::error::run 'npm run build' and commit the result" && exit 1)
-
-  ipad:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Xcode version
-        run: xcodebuild -version
-      - name: Build Hearth.swiftpm for iOS Simulator
-        working-directory: Hearth.swiftpm
-        run: |
-          set -o pipefail
-          xcodebuild \
-            -scheme "Hearth" \
-            -destination "generic/platform=iOS Simulator" \
-            -derivedDataPath "$RUNNER_TEMP/dd" \
-            CODE_SIGNING_ALLOWED=NO \
-            build 2>&1 | tee "$RUNNER_TEMP/xcodebuild.log"
-      - name: Compile error summary
-        if: failure()
-        run: grep -nE "error:" "$RUNNER_TEMP/xcodebuild.log" || echo "no 'error:' lines — check the full log above"
+          git diff --exit-code -- docs || (echo "::error::run 'npm run build' and commit the result" && exit 1)

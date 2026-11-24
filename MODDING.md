@@ -6,7 +6,7 @@ and refresh. When you're happy, run:
 
 ```sh
 npm test          # plays the whole season headlessly. should be all ticks.
-npm run build     # updates docs/index.html and the iPad app
+npm run build     # updates docs/index.html (the playable single file)
 ```
 
 > Tip: in the browser console, `localStorage.clear()` then refresh to start
