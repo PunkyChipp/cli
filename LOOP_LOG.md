@@ -19,3 +19,9 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Ottoline no longer says "welcome" twice in a row on air.
 - The map says "on the dock" / "on the roof".
 - The radio-install line is plainer.
+
+## 4 — the end of a day
+- The nightly journal is now written like a person would: the one or two things that mattered, the ordinary stuff squashed into a list ("also tea, fed B., mint in."), and sometimes a last line about the weather or the hum. It used to be a run-on log of every action.
+- The keepsake jar no longer prints 22 lines of "????". It shows what you've found and "room for N more".
+- People you haven't heard from yet show as "not met yet" (it said "them" for everyone).
+- The stove tells you where the matches are instead of a riddle.

@@ -1209,13 +1209,43 @@ async function newDay(fellAsleep) {
   await morning(fellAsleep);
 }
 
+/* The journal should read like a person wrote it at the end of a long day:
+   the one or two things that mattered, the ordinary stuff squashed into a
+   list, and whatever was on their mind when they put the pen down. */
+const ORDINARY = [
+  [/tea/, () => "tea"], [/fed Biscuit/, () => "fed B."], [/watered/, () => "watered"],
+  [/planted (\w+)/, m => m[1] + " in"], [/harvested (.*?)\.$/, m => "picked " + m[1]],
+  [/made (.*?)\.$/, m => m[1]], [/^ate /, () => null], [/stove|fire going/, () => "fire"],
+  [/petted Biscuit/, () => "B. purred"], [/rowed|took the boat/, () => "out in the boat"],
+  [/caught (?:and released )?a (\w+)/, m => "a " + m[1] + " off the dock"], [/sent .* to (\w+)/, m => "post for " + m[1]],
+  [/record|piano/, () => "records"], [/chopped|logs/, () => "wood"], [/a postcard from/, () => "card from W."]
+];
+function composeJournal(fellAsleep) {
+  if (S.pendingEntry) return S.pendingEntry;
+  const r = seeded(S.day * 101);
+  const notable = [], small = [];
+  for (const line of S.today) {
+    const hit = ORDINARY.find(([re]) => re.test(line));
+    if (hit) { const t = hit[1](line.match(hit[0])); if (t && !small.includes(t)) small.push(t); }
+    else notable.push(line.replace(/\.$/, ""));
+  }
+  const parts = [];
+  if (!notable.length && !small.length) parts.push(["quiet day.", "didn't do much.", "nothing to report. good."][Math.floor(r() * 3)]);
+  for (const n of notable.slice(0, 2)) parts.push(n + ".");
+  if (small.length) parts.push((notable.length ? "also " : "") + small.slice(0, 4).join(", ") + ".");
+  if (fellAsleep) parts.push("fell asleep at the desk.");
+  const w = weatherFor(S.day);
+  const closers = [];
+  if (S.day >= 4 && !S.flags.answered) closers.push("the hum again tonight.", "can hear the cellar from the bed.");
+  if (w.rain) closers.push("rain all evening.");
+  if (w.name === "clear" && S.day >= 10) closers.push("clear tonight. went out and looked for the comet.");
+  if (S.cat.mood > 80) closers.push("B. on the bed.");
+  if (closers.length && r() < 0.6) parts.push(closers[Math.floor(r() * closers.length)]);
+  return parts.join(" ");
+}
 function writeJournal(fellAsleep) {
-  const bits = S.today.slice();
-  let text;
-  if (!bits.length) text = pick(["quiet day. didn't do much. that's allowed.", "a nothing sort of day. the good kind.", "today happened. i was there for most of it."]);
-  else text = bits.slice(0, 5).join(" ");
-  if (fellAsleep) text += " fell asleep at the desk again. Biscuit sat on my back.";
-  if (S.warmth > 75) text += " felt warm right through.";
+  const text = composeJournal(fellAsleep);
+  S.pendingEntry = null;
   S.journal.push({ day: S.day, text });
   S.today = [];
 }
@@ -2553,7 +2583,7 @@ function doPet(args) {
 function doStoke() {
   if (roomName() !== "parlour") return print("The wood stove's in the parlour. {cmd:cd ~/parlour}");
   if (!S.wood) return print("The wood basket's empty. {dim:(there's a woodpile in the garden — {cmd:chop} some.)}");
-  if (!fireLit() && !has("matches")) return print("You've got wood but nothing to light it with. {dim:(matches. every house has a drawer for this.)}");
+  if (!fireLit() && !has("matches")) return print("You've got wood but nothing to light it with. {dim:(matches are in the kitchen drawer.)}");
   S.wood--;
   const was = fireLit();
   S.fireUntil = Math.max(S.fireUntil, now()) + 180;
@@ -3628,7 +3658,8 @@ async function doSleep() {
   if (S.today.length) {
     print("");
     print("{dim:you write in your journal:}");
-    const entry = S.today.slice(0, 5).join(" ");
+    const entry = composeJournal(false);
+    S.pendingEntry = entry;
     await type("  " + dateStr(S.day).toLowerCase() + ". " + entry, 70, "hi");
     await pause(600);
   }
@@ -3693,7 +3724,7 @@ function doFriends() {
   };
   for (const [k, p] of Object.entries(PEOPLE)) {
     const met = S.letters.some(id => (letterMeta(id) || {}).from === k);
-    print("  " + "{" + p.color + ":" + pad(p.full, 16) + "}" + " " + (met ? hearts(S.friends[k]) : "{dim:haven't heard from them yet}") + (q[k] ? "  {dim:— " + q[k] + "}" : ""));
+    print("  " + "{" + p.color + ":" + pad(p.full, 16) + "}" + " " + (met ? hearts(S.friends[k]) : "{dim:not met yet}") + (q[k] ? "  {dim:— " + q[k] + "}" : ""));
   }
   print("  {acc:" + pad("Biscuit", 16) + "} " + hearts(S.cat.mood / 10) + "  {dim:— " + (S.cat.mood > 80 ? "adores you, privately" : S.cat.mood > 55 ? "warming to you" : "reserving judgement") + "}");
   if (S.fox) print("  {acc:" + pad(S.fox + " (fox)", 16) + "} " + hearts(Math.min(10, (S.flags.foxFed || 0) * 2)) );
@@ -3740,9 +3771,9 @@ function doJar() {
   print("{dim:      |___________|}");
   print("");
   print("{hi:the keepsake jar} {dim:— little things, from the season:}");
-  for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) {
-    print(S.keeps[k] ? "  {acc:" + thing + "}  {dim:— " + why + "}" : "  {dim:· ????}");
-  }
+  for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) if (S.keeps[k]) print("  {acc:" + thing + "}  {dim:— " + why + "}");
+  const left = Object.keys(KEEPSAKES).length - got.length;
+  if (left) print("  {dim:...and room for " + left + " more.}");
 }
 
 function doFishlog() {

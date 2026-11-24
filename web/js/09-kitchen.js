@@ -226,7 +226,7 @@ function doPet(args) {
 function doStoke() {
   if (roomName() !== "parlour") return print("The wood stove's in the parlour. {cmd:cd ~/parlour}");
   if (!S.wood) return print("The wood basket's empty. {dim:(there's a woodpile in the garden — {cmd:chop} some.)}");
-  if (!fireLit() && !has("matches")) return print("You've got wood but nothing to light it with. {dim:(matches. every house has a drawer for this.)}");
+  if (!fireLit() && !has("matches")) return print("You've got wood but nothing to light it with. {dim:(matches are in the kitchen drawer.)}");
   S.wood--;
   const was = fireLit();
   S.fireUntil = Math.max(S.fireUntil, now()) + 180;

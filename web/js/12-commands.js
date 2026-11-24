@@ -699,7 +699,8 @@ async function doSleep() {
   if (S.today.length) {
     print("");
     print("{dim:you write in your journal:}");
-    const entry = S.today.slice(0, 5).join(" ");
+    const entry = composeJournal(false);
+    S.pendingEntry = entry;
     await type("  " + dateStr(S.day).toLowerCase() + ". " + entry, 70, "hi");
     await pause(600);
   }
@@ -764,7 +765,7 @@ function doFriends() {
   };
   for (const [k, p] of Object.entries(PEOPLE)) {
     const met = S.letters.some(id => (letterMeta(id) || {}).from === k);
-    print("  " + "{" + p.color + ":" + pad(p.full, 16) + "}" + " " + (met ? hearts(S.friends[k]) : "{dim:haven't heard from them yet}") + (q[k] ? "  {dim:— " + q[k] + "}" : ""));
+    print("  " + "{" + p.color + ":" + pad(p.full, 16) + "}" + " " + (met ? hearts(S.friends[k]) : "{dim:not met yet}") + (q[k] ? "  {dim:— " + q[k] + "}" : ""));
   }
   print("  {acc:" + pad("Biscuit", 16) + "} " + hearts(S.cat.mood / 10) + "  {dim:— " + (S.cat.mood > 80 ? "adores you, privately" : S.cat.mood > 55 ? "warming to you" : "reserving judgement") + "}");
   if (S.fox) print("  {acc:" + pad(S.fox + " (fox)", 16) + "} " + hearts(Math.min(10, (S.flags.foxFed || 0) * 2)) );
@@ -811,9 +812,9 @@ function doJar() {
   print("{dim:      |___________|}");
   print("");
   print("{hi:the keepsake jar} {dim:— little things, from the season:}");
-  for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) {
-    print(S.keeps[k] ? "  {acc:" + thing + "}  {dim:— " + why + "}" : "  {dim:· ????}");
-  }
+  for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) if (S.keeps[k]) print("  {acc:" + thing + "}  {dim:— " + why + "}");
+  const left = Object.keys(KEEPSAKES).length - got.length;
+  if (left) print("  {dim:...and room for " + left + " more.}");
 }
 
 function doFishlog() {
