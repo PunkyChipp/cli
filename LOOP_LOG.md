@@ -68,3 +68,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 14 — the things in the house
 - Rewrote about 40 object and container descriptions (everything you `cat`/`examine` or open) from clipped fragments ("A ball of string.", "Rubber bands. A lot of them.", "Orange, and shaped like Wren.") into ordinary sentences with one specific, lived-in detail each: the mug ring on the armchair, the postman's red rubber bands Wren picks up off the path, the yellow mac missing so "she's taken the good coat", the teaspoon lure that looks the most used.
+
+## 15 — mornings
+- Rewrote the day-specific morning lines, the generic ones, falling asleep at the desk, the garden and post notices, and going to bed. Out with "Fog right up to the windows." / "Not asleep. Watching." / "Under the house, the hum."; in with full sentences that notice one real thing ("You wake up because something is standing on you. It's Biscuit...", "There's frost on the inside of the bedroom window, and you can see your breath in the hall.").

@@ -15,14 +15,14 @@ const WEATHER_ART = {
 };
 
 const MORNINGS = {
-  2: "Biscuit is sitting on your chest. Not asleep. Watching.",
-  3: "Clear. You can see the observatory on the far shore, small and white, like a tooth.",
-  5: "Rain on the roof. Downstairs, the hum is going, under it.",
-  6: "You dreamt about the lake. You can't remember any of it except that it was lit.",
-  8: "Fog right up to the windows.",
-  10: "You wake up and lie there and listen. The hum is louder. You're sure of it now.",
-  12: "Frost on the inside of the window.",
-  14: "Lantern Night. You can hear oars already, someone testing a boat."
+  2: "You wake up because something is standing on you. It's Biscuit, on your chest, looking straight at your face and waiting for you to notice.",
+  3: "It's clear for the first time since you got here. From the bedroom window you can see the observatory on the far shore, a small white dome on the hill.",
+  5: "Rain on the roof all night. When you go downstairs the hum is still there underneath it, the same as always.",
+  6: "You had a dream about the lake. You can't remember much of it, except that the water was lit up from below.",
+  8: "The fog has come right up to the house. You can't see the end of the garden from the kitchen window.",
+  10: "You lie in bed for a while listening. You're fairly sure now that the hum is louder than it was when you arrived.",
+  12: "It went cold overnight. There's frost on the inside of the bedroom window, and you can see your breath in the hall.",
+  14: "It's Lantern Night. You can already hear someone down on the water testing a boat, and Ottoline's voice carrying across the lake."
 };
 async function morning(fellAsleep) {
   const w = weatherFor(S.day);
@@ -33,18 +33,18 @@ async function morning(fellAsleep) {
   print(art[2] + "   {dim:" + clock(S.min) + ", " + w.word + "}");
   print("");
   await pause(300);
-  if (fellAsleep) await type("You wake up at the desk with a crick in your neck and the cat on your back.", 70);
+  if (fellAsleep) await type("You wake up at the desk with your face on your arm and a stiff neck. At some point in the night Biscuit got on your back and went to sleep there.", 70);
   else await type(MORNINGS[S.day] || pick([
-    w.rain ? "Rain on the roof." : w.snow ? "Snow. Everything's gone quiet." : "Light through the curtains.",
-    "Biscuit, downstairs, is telling the whole house about breakfast.",
-    "Woodsmoke from somewhere. The house ticking as it warms up."
+    w.rain ? "It's raining. You lie and listen to it on the roof for a bit before you get up." : w.snow ? "It's snowed, and everything outside has gone very quiet." : "The sun's coming through the gap in the curtains.",
+    "Biscuit is downstairs telling the whole house that she hasn't had breakfast.",
+    "Somebody across the lake has lit a fire already. You can smell it from the bed."
   ]), 70);
   const o = S.flags.overnight || [];
   const grew = o.filter(x => x !== "dry");
-  if (grew.length) print("{ok:Ready in the garden: " + [...new Set(grew)].join(", ") + ".}");
-  else if (o.includes("dry")) print("{dim:(something in the garden went thirsty yesterday and didn't grow.)}");
-  if (S.mailbox.length) { sfx("mail"); print("{acc:Post.} " + plural(S.mailbox.length, "letter") + " on the mat. {cmd:mail}"); }
-  if (S.day === SEASON_END + 1) print("{dim:It snowed in the night.}");
+  if (grew.length) print("{ok:From the window you can see the " + [...new Set(grew)].join(" and the ") + " in the garden " + (grew.length > 1 ? "are" : "is") + " ready.}");
+  else if (o.includes("dry")) print("{dim:Something in the garden didn't get watered yesterday, so it hasn't grown.}");
+  if (S.mailbox.length) { sfx("mail"); print("{acc:There's post on the mat}, " + (S.mailbox.length === 1 ? "one letter." : plural(S.mailbox.length, "letter") + ".") + " {cmd:mail}"); }
+  if (S.day === SEASON_END + 1) print("{dim:It snowed in the night. The first of the winter.}");
   print("");
 }
 

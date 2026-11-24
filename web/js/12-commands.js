@@ -700,7 +700,7 @@ async function doNap() {
 
 async function doSleep() {
   if (S.min < 19 * 60 && S.min >= 5 * 60) return print("It's only " + clock(S.min) + ". {dim:(bed from 7pm. or {cmd:nap}.)}");
-  print("You check the back door, turn the lamp off, and go up.");
+  print("You check the back door's locked, turn off the lamp, and go up to bed.");
   await pause(700);
   if (S.today.length) {
     print("");
@@ -711,7 +711,7 @@ async function doSleep() {
     await pause(600);
   }
   print("");
-  await type("Under the house, the hum.", 40, "dim");
+  await type(S.flags.answered ? "You fall asleep almost straight away." : "You fall asleep listening to the hum coming up through the floor.", 40, "dim");
   await pause(900);
   await newDay(false);
 }
