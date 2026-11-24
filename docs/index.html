@@ -275,6 +275,7 @@ body[data-theme="paper"] .glass { background: radial-gradient(140% 140% at 50% 5
 .fg { color: var(--fg); }
 #win.outside::after { display: none; }
 #bezel .brand i { font-style: normal; }
+.ln.ind { padding-left: 2.4em; }
 
 </style>
 </head>
@@ -439,6 +440,7 @@ function newState() {
     cat: { room: "parlour", mood: 60, fed: 0, petsToday: 0 },
     fox: null,                 // name you gave the fox
     keeps: {},                 // keepsakes (achievements) -> day found
+    clues: {},                 // the corkboard: clue id -> day pinned
     journal: [],               // [{ day, text }]
     today: [],                 // events that become tonight's journal entry
     stats: { cmds: 0, teas: 0, fish: 0, harvests: 0, pets: 0, letters: 0, gifts: 0, meals: 0, days: 1 },
@@ -461,7 +463,7 @@ function load() {
     S = Object.assign(newState(), got);
     // merge nested defaults so old saves don't explode when we add things
     const d = newState();
-    for (const k of ["flags", "friends", "stats", "cat"]) S[k] = Object.assign({}, d[k], got[k] || {});
+    for (const k of ["flags", "friends", "stats", "cat", "clues"]) S[k] = Object.assign({}, d[k], got[k] || {});
     return true;
   } catch (e) { return false; }
 }
@@ -499,6 +501,7 @@ const KEEPSAKES = {
   allfriends:  ["a village photograph", "befriended the whole Hollow"],
   fox:         ["a fox whisker (you think)", "named the fox"],
   lantern:     ["a lantern wick, burned down", "lit the lantern on Lantern Night"],
+  answered:    ["a scale of light, which fades if you look straight at it", "answered it"],
   writer:      ["a pencil stub", "wrote your own file"],
   sudo:        ["a sandwich crust", "used sudo for good"],
   night_owl:   ["a moth", "stayed up past 1am"],
@@ -1113,22 +1116,23 @@ function idleMoment() {
   lastIdle = Date.now();
   const r = roomName(), w = weatherNow(), m = S.min;
   const pool = [
-    "the house ticks and settles, like an old dog turning round before it lies down.",
-    "somewhere upstairs, a floorboard creaks on its own. it does that.",
-    "the mantel clock chimes " + (Math.floor(m / 60) % 12 || 12) + ", slightly late, as if it had to think about it."
+    "a floorboard upstairs.",
+    "the mantel clock chimes " + (Math.floor(m / 60) % 12 || 12) + ", a bit late.",
+    "under the floor, the hum dips, and comes back.",
+    "the hum. you'd stopped hearing it. now you can't stop."
   ];
-  if (w.rain) pool.push("the rain changes gear — heavier for a moment, then soft again.", "a drip has found its way into the gutter and is practising the same note.");
-  if (w.wind > 0.6) pool.push("the wind gets into the chimney and hums one long low note.");
-  if (w.fog > 0.5) pool.push("a foghorn, very far away, says something to nobody.");
-  if (isNight()) pool.push("an owl, close by. then another, further off, answering.", "a car on the far road sweeps its headlights across the lake and is gone.");
-  else pool.push("a blackbird lands on the windowsill, looks in at you, and leaves, unimpressed.", "across the lake, someone is chopping wood. the sound arrives a second after the axe.");
+  if (w.rain) pool.push("the rain gets heavier for a minute, then eases.", "a drip in the gutter, the same note over and over.");
+  if (w.wind > 0.6) pool.push("wind in the chimney.");
+  if (w.fog > 0.5) pool.push("a foghorn, a long way off.");
+  if (isNight()) pool.push("an owl. another, further off.", "headlights on the far road, sweeping across the lake.");
+  else pool.push("a blackbird on the sill. it looks in, and goes.", "someone across the lake chopping wood. the sound comes a second late.");
   if (teaWarm()) pool.push("the teapot ticks as it cools.");
-  if (fireLit()) pool.push("a log shifts in the stove and sends up a little fountain of sparks.");
-  if (r === "kitchen") pool.push("the fridge shudders, thinks about it, and goes quiet.");
-  if (r === "study") pool.push("HEARTH's fan spins up, considers something, and spins down again.");
-  if (r === "dock") pool.push("a fish jumps, far out. just the ring of it left, spreading.");
-  if (r === "garden") pool.push("a robin follows you along the beds at a respectful distance.");
-  if (S.cat.room === r) pool.push("Biscuit, asleep, runs a little in a dream. whatever she's chasing, she's winning.", "Biscuit yawns enormously and looks embarrassed about it.");
+  if (fireLit()) pool.push("a log settles in the stove.");
+  if (r === "kitchen") pool.push("the fridge shudders and goes quiet.");
+  if (r === "study") pool.push("HEARTH's fan spins up and down again.", "the radio on the shelf crackles once, by itself.");
+  if (r === "dock") pool.push("a fish jumps, far out.", "the cable at your feet ticks.");
+  if (r === "cellar") pool.push("the box's green light blinks three times, and then once.");
+  if (S.cat.room === r) pool.push("Biscuit, asleep, twitches.", "Biscuit yawns.");
   print("{dim:(" + pick(pool) + ")}");
   showLine(true);
 }
@@ -1343,280 +1347,218 @@ function writable(path) {
    06-content.js — the cottage, room by room. Most of the writing in
    the game lives here. If you want to add a room or hide a note
    somewhere, this is the file. (See MODDING.md.)
+
+   A rule for writing in here: not everything needs a joke. Most real
+   things are just things. Let them be plain, and let the odd one be odd.
    ===================================================================== */
 "use strict";
 
 const NAME = () => S.name || "you";
-const W = s => s + "\n\n{dim:— W.}";
+const W = s => s + "\n\n{dim:W.}";
 
 /* ---------- little dynamic descriptions ---------- */
 function skyLine() {
   const w = weatherNow();
   const night = isNight();
-  if (w.snow) return night ? "Snow is coming down past the window, lit orange where the lamp catches it." : "It's snowing — slow, fat flakes that don't seem in any hurry to land.";
-  if (w.rain >= 1) return night ? "Rain ticks against the glass in the dark." : "Rain is coming down properly, the kind that bounces.";
-  if (w.rain > 0) return "A fine drizzle is hanging in the air, not quite committing to anything.";
-  if (w.fog > 0.5) return "Fog has swallowed the far side of the lake. The world ends about forty feet away.";
-  if (w.wind > 0.8) return "Wind is shoving at the trees and rattling the gutter like it wants to come in.";
-  if (night) return w.cloud > 0.5 ? "Outside it's a soft, starless dark." : "Outside, the sky is clear and absolutely crowded with stars.";
-  if (S.min < 8 * 60) return "Early light, thin and gold, is coming in sideways.";
-  if (S.min > 17 * 60) return "The light's gone amber and long. Evening, nearly.";
-  return w.cloud > 0.5 ? "The sky is one big soft grey blanket." : "It's a bright, cold, blue sort of day.";
+  if (w.snow) return night ? "Snow going past the window, orange where the lamp catches it." : "It's snowing. Big slow flakes.";
+  if (w.rain >= 1) return night ? "Rain on the glass." : "Heavy rain. The lake's gone grey and pocked.";
+  if (w.rain > 0) return "A thin drizzle.";
+  if (w.fog > 0.5) return "Fog. You can't see the far shore, or the end of the dock.";
+  if (w.wind > 0.8) return "Windy. The gutter keeps knocking.";
+  if (night) return w.cloud > 0.5 ? "Dark, and no stars." : "Clear. A lot of stars.";
+  if (S.min < 8 * 60) return "Early light, low over the hill.";
+  if (S.min > 17 * 60) return "The light's going.";
+  return w.cloud > 0.5 ? "Overcast." : "Bright and cold.";
 }
 function catHere() { return S.cat.room === roomName(); }
 function catLine() {
   const r = roomName();
   const lines = {
-    kitchen: "Biscuit is sitting next to her bowl with the patience of a tax inspector.",
-    parlour: fireLit() ? "Biscuit is stretched in front of the stove, belly to the heat, entirely liquid." : "Biscuit is curled in the armchair. It's her armchair. You're allowed to borrow it.",
-    study: "Biscuit is on the desk, lying across exactly the papers you need.",
-    garden: "Biscuit is in the garden, stalking a leaf with enormous seriousness.",
-    greenhouse: "Biscuit is asleep between two pots, where it's warmest.",
-    dock: "Biscuit is at the end of the dock, staring at the water like it owes her money.",
-    attic: "Two green eyes in the dark: Biscuit, investigating a box she's been investigating since 2019.",
-    hall: "Biscuit is lying in the exact middle of the hall rug, a tripping hazard on purpose.",
-    cellar: "Biscuit is curled on top of the humming beige box. It's warm. She knows.",
-    roof: "Biscuit has somehow followed you onto the roof and is looking very pleased about it."
+    kitchen: "Biscuit is sitting by her bowl.",
+    parlour: fireLit() ? "Biscuit is flat out in front of the stove." : "Biscuit is asleep in the armchair.",
+    study: "Biscuit is on the desk, on the papers.",
+    garden: "Biscuit is in the long grass at the end of the beds. Just her ears.",
+    greenhouse: "Biscuit is asleep between two pots.",
+    dock: "Biscuit is at the end of the dock, looking down into the water.",
+    attic: "Biscuit is up here somewhere. You can hear her.",
+    hall: "Biscuit is lying in the middle of the rug.",
+    cellar: "Biscuit is curled on top of the humming box. It's warm.",
+    roof: "Biscuit has followed you up the ladder."
   };
   return lines[r] || "Biscuit is here.";
 }
 
-/* ---------- Wren's welcome letter ---------- */
-const WELCOME = () => `{hi:Dear ${NAME()},}
+/* ---------- the note on the screen (the first thing you read) ---------- */
+const NOTE = () => `{dim:(biro, on the back of an envelope)}
 
-If you're reading this, you found the computer, you worked out how
-to turn it on (the switch is at the BACK, everyone looks at the front),
-and you typed {cmd:cat welcome.txt}. Or you tapped it. Either is fine.
+${NAME()} —
 
-Thank you for minding the cottage while I'm away. I'll be gone the
-season. I've wanted to see the Faroe Islands since I was nine and
-I am seventy-eight, so I've decided that's long enough to wait.
+you made it. the bed's made up, the spare key is under the
+heron, and the kettle is in the kitchen. thump it on the left.
 
-A few things:
+Biscuit gets fed twice a day. she will tell you otherwise.
 
- * The cottage runs on HEARTH, which is this machine. I wired it into
-   every room in 1987 and I'm still very pleased with myself. Every
-   room is a folder. Type {cmd:ls} to look around, {cmd:cd kitchen} to go
-   somewhere, and {cmd:cat} a thing to read it. {cmd:look} if you're lost.
- * Biscuit is fed twice a day and will tell you it's four times.
- * I've left you a list. It's called {cmd:todo.txt}. You'll be fine.
- * The kettle needs a thump on the left side. Not the right side.
-   The right side is where it keeps its feelings.
+the lantern at the end of the dock gets lit on the 25th.
+everyone will be watching for it. it's been lit every year
+since 1974 and I'd like it to stay that way. everything it
+needs is in this house somewhere.
 
-Most important: Lantern Night is on the 25th, two weeks from today.
-The lantern on our dock is the first one lit every year. It has been
-every year since 1974. I'd like that to keep being true. Everything you need
-is somewhere in this house, and I've never been very good at
-remembering where I put things, so — good luck, love.
+the rest you can work out. you were always cleverer than me.
 
-Make yourself at home. It is your home, for now.
+{acc:W.}
 
-{dim:all my love,}
-{acc:Wren}
+{dim:p.s. ignore the noise in the cellar.}`;
 
-{dim:p.s. the radio's broken. the disk for it is wherever I put the bread.}`;
-
-/* ---------- the to-do list (it ticks itself) ---------- */
+/* ---------- the list (it ticks itself) ---------- */
 function todoText() {
   const items = [
-    ["make a cup of tea", () => S.stats.teas > 0, "kitchen → {cmd:brew}"],
-    ["feed Biscuit (she will lie about this)", () => S.flags.fedOnce, "{cmd:feed biscuit}"],
-    ["plant something in the garden", () => S.flags.planted, "garden → {cmd:plant mint}"],
-    ["fix the radio (the disk is with the bread)", () => S.disks.radio, "kitchen → bread_bin"],
-    ["say hello to Ottoline on 101.3 in the morning", () => S.quests.otto_radio === "done", "{cmd:radio 101.3} before noon"],
-    ["fish off the dock. it's good for you.", () => S.stats.fish > 0, "dock → {cmd:fish}"],
-    ["find the oil lamp & light it (cellar? probably cellar)", () => S.flags.lampLit, "you'll need matches"],
-    ["the greenhouse door sticks. it needs oil, not swearing.", () => S.flags.ghOpen, "the shed has an oilcan"],
-    ["write back to people. they like that.", () => S.stats.letters > 0, "{cmd:mail}, then {cmd:send}"],
-    ["light the lantern on Lantern Night", () => S.flags.lanternLit, "the 25th. everything's in the attic trunk."]
+    ["tea", () => S.stats.teas > 0, "kitchen"],
+    ["feed Biscuit", () => S.flags.fedOnce, "kitchen"],
+    ["plant something", () => S.flags.planted, "garden. seeds in your coat"],
+    ["the radio needs its disk", () => S.disks.radio, "it's with the bread"],
+    ["the oil lamp (cellar)", () => S.flags.lampLit, "matches in the drawer"],
+    ["greenhouse door", () => S.flags.ghOpen, "oilcan, shed"],
+    ["write back to people", () => S.stats.letters > 0, ""],
+    ["the lantern. the 25th.", () => S.flags.lanternLit, ""]
   ];
-  let out = "{hi:THINGS TO DO}   {dim:(in no particular order, except the last one)}\n\n";
-  let done = 0;
+  let out = "{dim:(Wren's list, pinned by the door)}\n\n";
   for (const [t, ok, hint] of items) {
     const d = ok();
-    if (d) done++;
-    out += (d ? "{ok:[x]} {dim:" + t + "}" : "{acc:[ ]} " + t + "  {dim:" + hint + "}") + "\n";
+    out += (d ? "{dim:  {s:" + t + "}}" : "  " + t + (hint ? "  {dim:— " + hint + "}" : "")) + "\n";
   }
-  out += "\n{dim:" + (done === items.length ? "...you did all of it. I'm so proud I could burst. — W." : done >= 5 ? "you're doing wonderfully. don't let Biscuit tell you otherwise." : "one thing at a time. tea first, always.") + "}";
-  return out;
+  return out.trimEnd();
 }
 
-const BISCUIT_MANUAL = `{hi:BISCUIT: A USER'S MANUAL}  {dim:(rev. 6)}
+const BISCUIT_MANUAL = `{hi:BISCUIT}  {dim:(typed, then corrected in pen)}
 
-MODEL ........ domestic shorthair, orange, "large-boned"
-AGE .......... eleven (claims three)
-FIRMWARE ..... stubborn
+  orange. eleven. heavier than she looks.
+  fed morning and evening. half a tin. she gets the
+  other half {s:tomorrow} at 5pm.
+  likes: the armchair, the cellar box, the end of the dock.
+  dislikes: the hoover, Fenn, being picked up.
+  don't touch the belly.
 
-FEEDING
-  Twice a day. Morning and evening. She will tell you she has
-  not been fed. She has been fed. She was fed by me before I left
-  and she will STILL tell you she has not been fed.
-  {cmd:feed biscuit}
+  the brass key on her collar is the spare for my trunk.
+  she won't let you have it until she's decided about you.
+  give her a few days.`;
 
-AFFECTION
-  Head and cheeks: yes. Belly: it's a trap. It's always a trap.
-  {cmd:pet biscuit}
+const FRIDGE_NOTE = () => `On the fridge, under a magnet shaped like a sardine:
 
-KNOWN ISSUES
-  - walks on the keyboard. there is no fix. it is a feature now.
-  - sits on whatever you are reading.
-  - is PID 1. everything else in this house is a child of Biscuit.
-    try {cmd:ps} if you don't believe me.
+  {acc:milk — Ottoline, Tues}
+  {acc:eggs — Fenn}
+  {acc:${S.day > 3 ? "{s:jam}" : "jam"} — cellar}
+  {acc:ring J. about the 25th}`;
 
-LOCATION
-  She moves around. {cmd:where biscuit} will tell you, roughly.
-  HEARTH tracks her by her collar. She knows, and she resents it.
+const HEARTH_MANUAL = `{hi:HEARTH-80 OPERATOR'S GUIDE}  {dim:(the printed part is three pages. the rest is pencil.)}
 
-{dim:p.s. the little brass key on her collar is the spare for the
-attic trunk. she won't give it to just anybody. be decent to her
-for a few days and she'll let you have it.}`;
+  {acc:ls}            what's here (add -a for hidden things)
+  {acc:cd} kitchen    go somewhere.  {acc:cd ..}  back out
+  {acc:cat} thing     read it, or look at it closely
+  {acc:look}          where am I
+  {acc:take} thing    pick it up
+  {acc:map}           the house
+  {acc:board}         what you've worked out so far
 
-const FRIDGE_NOTE = () => `a note under a magnet shaped like a sardine:
+  everything underlined can be tapped.
+  tab finishes words. the up arrow repeats things.
 
-  {acc:MILK — Ottoline brings it Tues}
-  {acc:EGGS — Fenn's hens, he says "they're not for sale" then sells them}
-  {acc:FISH — me, the lake, patience}
-  {acc:${S.day > 3 ? "{s:JAM} jam is in the CELLAR, not here, stop looking" : "JAM — the cellar, obviously"}}`;
-
-const HEARTH_MANUAL = `{hi:HEARTH-80 — OPERATOR'S GUIDE}   {dim:(handwritten addendum: W.)}
-
-  The cottage is the filesystem. Don't think about it too hard.
-  I didn't, and it works fine.
-
-  {acc:GETTING AROUND}
-    {cmd:ls}            what's here           {cmd:ls -a}  what's hiding
-    {cmd:cd kitchen}    go to the kitchen     {cmd:cd ..}  go back out
-    {cmd:look}          describe where I am   {cmd:map}    see the whole house
-    {cmd:cat} <thing>   read it / look at it  {cmd:take} <thing>  pick it up
-
-  {acc:LIVING HERE}
-    {cmd:brew}  {cmd:cook}  {cmd:eat}  {cmd:plant}  {cmd:water}  {cmd:harvest}  {cmd:fish}
-    {cmd:stoke}  {cmd:pet biscuit}  {cmd:mail}  {cmd:send}  {cmd:sleep}  {cmd:pockets}
-
-  {acc:WHEN STUCK}
-    {cmd:help}    {cmd:todo}    {cmd:hint}
-
-  Tap anything that's {u:underlined} and it'll do it for you.
-  The little keys under the screen change depending on the room.
-
-  The {cmd:tab} key finishes words for you. The up arrow remembers
-  things you said. (I wish people did that.)
-
-{dim:  BUGS: Biscuit.}`;
+{dim:  pencil, in the margin: "HEARTH does more than this. it's
+  listening, mostly. — W."}`;
 
 /* ---------- books on the parlour shelf ---------- */
 const BOOKS = {
-  "the_patient_gardener.book": `{hi:THE PATIENT GARDENER}  by Mabel Thorne, 1962
-{dim:(dog-eared at chapter four)}
+  "the_patient_gardener.book": `{hi:THE PATIENT GARDENER}  Mabel Thorne, 1962. {dim:Spine broken at chapter four.}
 
-"...and the beginner will water her seedlings and then stand over them,
-as though watching will help. It does not help. It has never helped.
-Water them, go inside, put the kettle on. Plants grow in the dark
-and when you're not looking, like most good things.
+  "Water them, then go inside. Watching does not help. Plants
+  grow at night, when nobody is looking, like most good things.
 
-Mint will grow anywhere, including places you do not want it.
-Carrots are slow and sulky but worth it. Lavender wants sun and
-to be left alone, which is also true of most of my relatives.
+  Mint will grow anywhere. Carrots take three nights and sulk.
+  Lavender wants sun and to be left alone. Rain counts."
 
-Rain counts as watering. Do not let anyone tell you otherwise."
+{dim:In pencil: "pumpkins are five nights here, not four."}`,
+  "knots_for_small_boats.book": `{hi:KNOTS FOR SMALL BOATS}  {dim:a pamphlet}
 
-{dim:in the margin, in pencil: "Mabel was right about everything except
-pumpkins. pumpkins take five days here, not four. — W."}`,
-  "knots_for_small_boats.book": `{hi:KNOTS FOR SMALL BOATS}  {dim:(a pamphlet, really)}
-
-  THE BOWLINE: the rabbit comes out of the hole, goes round
+  THE BOWLINE: the rabbit comes up through the hole, round
   the tree, and back down the hole.
 
-{dim:Wren has added: "the rabbit has never once come out of the hole for me.
-I tie the boat with a bow, like a shoelace, and it has been fine since 1981."}`,
-  "fishes_of_lake_ilse.book": `{hi:A FIELD GUIDE TO THE FISHES OF LAKE ILSE}
+{dim:In pencil: "I tie it like a shoelace. it has been fine since 1981."}`,
+  "fishes_of_lake_ilse.book": `{hi:THE FISHES OF LAKE ILSE}  {dim:county field guide, 1971}
 
-  {acc:PERCH}   common. bold. bites at anything, any time.
-  {acc:ROACH}   common. silver. slightly embarrassed-looking.
-  {acc:MINNOW}  very common. very small. put it back.
-  {acc:TROUT}   likes clean mornings and quiet evenings.
-  {acc:PIKE}    the evening fish. long. toothy. disapproving.
-  {acc:EEL}     comes out at night, likes rain. slippery in every sense.
-  {acc:CARP}    rare. slow. old. some say a golden one has lived in
-          the lake since before the war. most say this is nonsense.
+  {acc:PERCH}   common. daytime.
+  {acc:ROACH}   common. any time.
+  {acc:MINNOW}  very common. put back.
+  {acc:TROUT}   clear mornings and evenings.
+  {acc:PIKE}    evening and after dark.
+  {acc:EEL}     night, in rain.
+  {acc:CARP}    rare. old fish come up in fog, and at dawn.
 
-{dim:Wren has circled CARP so many times the pencil went through the page.
-"HE IS REAL. HIS NAME IS OLD MARMALADE. he likes FOG. and DAWN. — W."}`,
-  "the_cat_who_kept_a_lighthouse.book": `{hi:THE CAT WHO KEPT A LIGHTHOUSE}  {dim:(a picture book)}
+  The lake is 41 metres at its deepest point, roughly
+  below the centre of the bay. It has never been surveyed
+  below that. {dim:(Wren has underlined "never".)}`,
+  "the_cat_who_kept_a_lighthouse.book": `{hi:THE CAT WHO KEPT A LIGHTHOUSE}  {dim:a picture book}
 
-  Once there was a cat who kept a lighthouse.
-  Every night she pushed the big switch with her paw,
-  and every night the ships came safely home.
+  Every night the cat pushed the big switch with her paw,
+  and every night the boats came home.
 
-  "Why do you do it?" asked the gull. "You don't even LIKE ships."
+  "Why do you do it?" said the gull. "You don't like boats."
+  "No," said the cat. "But I like it when they come home."
 
-  "No," said the cat. "But I like it when everyone comes home."
+{dim:Inside the cover: "for Pip. — W."}`,
+  "hearth_80_technical_reference.book": `{hi:HEARTH-80 TECHNICAL REFERENCE}  {dim:412 pages. very annotated.}
 
-{dim:inside the cover: "for Pip, when she's old enough. which is now, probably.
-she's been old enough since she was four. — W."}`,
-  "hearth_80_technical_reference.book": `{hi:HEARTH-80 TECHNICAL REFERENCE}  {dim:(412 pages, very annotated)}
+  Ch. 2  Memory (640K) ................ {dim:"enough"}
+  Ch. 3  Peripherals .................. {dim:"kettle, radio, telescope, cellar"}
+  Ch. 7  Receivers .................... {dim:this chapter is mostly pencil}
+  Ch. 9  Troubleshooting .............. {dim:"thump it"}
+  App. C Pipes ........................ {dim:"ls | grep txt. J. showed me."}
 
-  Chapter 1: Installation ......................... {dim:"done. ish."}
-  Chapter 2: Memory (640K) ........................ {dim:"plenty."}
-  Chapter 3: Peripherals .......................... {dim:"kettle. radio. cat (unsupported)."}
-  Chapter 9: Troubleshooting ...................... {dim:"thump it."}
-  Appendix C: Pipes ............................... {dim:"you can join commands with a | like
-                                                    {cmd:ls | grep txt}. Juniper showed me.
-                                                    she thinks I don't use it. I use it."}
-  Appendix F: sudo ................................ {dim:"the password is not 'password'."}`,
-  "wrens_almanac_1987.book": `{hi:WREN'S ALMANAC, 1987}  {dim:(a ring binder. a diary, really.)}
+{dim:Ch. 7, in the margin: "the aerial goes down into the lake, not up.
+everyone thinks I've wired it backwards. I haven't."}`,
+  "wrens_almanac_1987.book": `{hi:WREN'S ALMANAC, 1987}  {dim:a ring binder}
 
-  {acc:Mar 3.}  Bought a computer. Fenn says I'm mad. Fenn keeps bees.
-  {acc:Mar 9.}  Ran a cable to the kitchen. Kettle now has an IP address.
-          Kettle does not know what to do with this. Neither do I.
-  {acc:Apr 2.}  Every room is a directory now. Juniper came for supper and
-          typed "cd garden" and then stood up and went into the garden.
-          We laughed until we had to sit down.
-  {acc:Jun 21.} Old Marmalade took my best lure. Again. I saw him. I SAW him.
-  {acc:Oct 25.} Lantern Night. Lit the dock lantern with the computer this
-          year. Ottoline said it was cheating. It was a bit.
-          It was so beautiful I cried into the lake.`
+  {acc:Mar 3.}  bought a computer. Fenn says I'm mad.
+  {acc:Mar 9.}  cable to the kitchen. the kettle has an address now.
+  {acc:Apr 2.}  every room is a directory. J. typed "cd garden" and
+          then got up and went into the garden.
+  {acc:May 18.} ran the long cable off the end of the dock, weighted.
+          forty metres. the cellar box started humming that night.
+  {acc:Jun 21.} lost another lure to the carp.
+  {acc:Oct 25.} Lantern Night. it answered again. smaller than '62.
+          I wrote it all down. nobody but J. believes me and J.
+          won't talk about it.`
 };
 
 /* ---------- Wren's letter in the attic trunk ---------- */
-const TRUNK_LETTER = () => `{hi:to whoever is minding the cottage —}
-{dim:(so: to you, ${NAME()}. I knew it would be you.)}
+const TRUNK_LETTER = () => `{dim:(folded in four, in the lid of the trunk)}
 
-You found the trunk, which means Biscuit gave you the key, which
-means she likes you, which means you're all right. She's a
-better judge of people than I am. She hated my second husband
-on sight and she was correct.
+${NAME()},
 
-In here: the lantern disk, a wick, and a photo of all of us from
-the first Lantern Night. Look how young Fenn was. Look at his HAIR.
+if you're reading this then Biscuit gave you the key, so
+she's decided about you. good.
 
-The lantern burns moonflower oil. One bloom is enough. Moonflowers
-only open at night and only in the greenhouse, which is why I've
-been telling everybody for years that the greenhouse is important.
-Juniper has the seeds. She's had them since 1974. She will pretend
-she doesn't know what you're talking about, and then she'll give
-you them, and she'll say "tell Wren she owes me."
+the lantern disk and a wick are in here. the lantern burns
+moonflower oil. one flower is enough. they only grow in the
+greenhouse and only open at night. Juniper has the seeds,
+and has had them since 1974, and will say she doesn't.
 
-I don't owe her. She owes me. Tell her I said so.
+you've heard the cellar by now. I said ignore it. I didn't
+mean it. I've been listening to that noise since I was
+fourteen, and I've never been able to answer it properly.
 
-The lantern is lit from the dock, after dark, on the 25th. Put the
-disk in, then go down to the water and type {cmd:lantern}.
-Everyone across the lake will be watching for it. No pressure.
+if it ever asks you something, answer with its name.
+you'll know when. I can't tell you the name. I promised.
 
-{dim:I wanted someone to love this place the way I do.}
-{dim:I think it might be you. — W.}`;
+{acc:W.}`;
 
-const PHOTO_1974 = `a black and white photo, soft at the corners.
+const PHOTO_1974 = `A photograph, soft at the corners.
 
-    .  *    .       *   .      .     *
-       ___                 _
-      ( o )   o   o  o    ( )   o      {dim:<- lanterns on the water}
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      [W] [O] [F] [J]     {dim:<- four people on a dock}
+  Four people on the end of the dock in the rain, holding jam
+  jars with candles in. Behind them, out on the water, more
+  lights. A lot more lights than there are boats.
 
 On the back, in pencil:
-  {acc:"Lantern Night 1974. me, Ottoline, Abernathy Fenn (THE HAIR),}
-  {acc: Juniper. first one we ever did. it rained. we didn't care."}`;
+  {acc:"Lantern Night, the first. me, O., A.F., J."}
+  {acc:"count the lights. then count the boats."}`;
 
 /* ---------- the tree itself ---------- */
 function buildTree() {
@@ -1631,25 +1573,24 @@ function buildTree() {
     return k;
   };
 
-  ROOT = D("the root of everything. there's not much up here but wiring.", {
-    cottage: D(() => "The hall. Coats on hooks, boots in a line that's mostly straight, and a smell of woodsmoke and old paper. The rug is worn pale down the middle from fifty years of the same route: kitchen, study, kitchen.", {
-      "welcome.txt": F(WELCOME, { owner: "wren", onRead: f => f && remember("read Wren's letter. she's in the Faroes, or getting there.") }),
+  ROOT = D("the root. wiring, mostly.", {
+    cottage: D(() => "The hall. Coats, boots, a long rug worn pale down the middle. The front door, the stairs, and a list pinned by the light switch.", {
       "todo.txt": F(todoText, { owner: "wren" }),
-      coat_hooks: F("Three coats. A yellow mac (Wren's), a waxed jacket (also Wren's), and one small hand-knitted jumper on its own hook, which can only be Biscuit's, and which she has very clearly never worn."),
-      umbrella: F("A black umbrella with a duck's head for a handle. The duck looks worried. Keeps the rain off outside.", { item: "umbrella" }),
-      kitchen: D(() => "The kitchen is the warmest room, even when it isn't. A chipped enamel kettle sits on the range. Jars line the windowsill, each labelled in Wren's handwriting. Some of the labels are lying. ('SUGAR' is buttons.)", {
-        kettle: F(() => (teaWarm() ? "The kettle's still warm. There's tea in the pot." : "A big enamel kettle, cream with a green rim, dented on the left side where it gets thumped.") + "\nPut it on with {cmd:brew}. Or {cmd:brew mint}, {cmd:brew chamomile}... whatever you've got."),
-        bread_bin: D("A wooden bread bin with BREAD painted on the lid, in case of confusion.", {
-          "radio.dsk": F("A 3.5\" floppy disk, wrapped in a tea towel for some reason. The label says {acc:RADIO} in red pen, underlined twice.\nTake it with {cmd:take radio.dsk}, then {cmd:insert radio.dsk} in the study.", { item: "disk:radio" }),
-          half_a_loaf: F("Half a loaf, gone hard. Biscuit has licked it, probably. Leave it for the birds.")
+      coat_hooks: F("A yellow mac, a waxed jacket, and a small knitted jumper on its own hook. The jumper is cat-sized. It's never been worn."),
+      umbrella: F("A black umbrella with a duck's head handle. For going out in the rain.", { item: "umbrella" }),
+      kitchen: D(() => "The kitchen. Range, kettle, a long table with one end cleared. Jars on the windowsill with Wren's labels on. The window looks out over the garden to the lake.", {
+        kettle: F(() => (teaWarm() ? "Still warm." : "Cream enamel, green rim, dented on the left.") + " {cmd:brew}"),
+        bread_bin: D("A bread bin.", {
+          "radio.dsk": F("A floppy disk wrapped in a tea towel. RADIO, in red pen. {dim:(disks go in HEARTH, in the study.)}", { item: "disk:radio" }),
+          half_a_loaf: F("Half a loaf, gone hard.")
         }),
-        drawer: D("The kitchen drawer. Every house has one. This is that drawer.", {
-          matches: F("A box of matches. 'BRYANT & MAY', almost full.", { item: "matches" }),
-          string: F("A ball of string, tangled into what is now technically a new kind of knot."),
-          rubber_bands: F("Forty rubber bands. You count them. You're not sure why."),
-          "IOU.txt": F(`{acc:IOU}\n  one (1) jar of honey back to Fenn\n  {dim:(written 1996. still haven't. he hasn't asked. he's waiting for me to remember. I remember.)}`)
+        drawer: D("The kitchen drawer.", {
+          matches: F("A box of matches, nearly full.", { item: "matches" }),
+          string: F("A ball of string."),
+          rubber_bands: F("Rubber bands. A lot of them."),
+          "IOU.txt": F(`{acc:IOU}  one jar of honey back to Fenn  {dim:(1996)}`)
         }),
-        recipes: D("Recipe cards, held together with a bulldog clip and optimism.", () => {
+        recipes: D("Recipe cards, in a bulldog clip.", () => {
           const k = {
             "carrot_soup.card": F(recipeCard("carrot_soup"), { onRead: () => learn("carrot_soup") }),
             "fish_pie.card": F(recipeCard("fish_pie"), { onRead: () => learn("fish_pie") }),
@@ -1660,144 +1601,146 @@ function buildTree() {
           if (S.flags.gotBiscuitCard) k["mint_biscuits.card"] = F(recipeCard("mint_biscuits"), { onRead: () => learn("mint_biscuits") });
           return k;
         }),
-        "biscuit_manual.txt": F(BISCUIT_MANUAL),
+        "biscuit.txt": F(BISCUIT_MANUAL),
         fridge_note: F(FRIDGE_NOTE),
-        cat_bowl: F(() => (S.cat.fed ? "Licked clean. Polished, almost." : "Empty. Pointedly empty.") + " A bowl with BISCUIT written on it, in case she forgets her own name. {cmd:feed biscuit}"),
-        pantry: F("Flour, butter, sugar, oats, an onion, tins of things. Somehow it's always just stocked enough. Wren's doing, probably. Staples are on the house.")
+        cat_bowl: F(() => (S.cat.fed ? "Empty, licked clean." : "Empty.") + " It says BISCUIT on the side. {cmd:feed biscuit}"),
+        pantry: F("Flour, butter, oats, onions, tins. Enough for anything on the recipe cards.")
       }, { room: true }),
 
-      parlour: D(() => "The parlour: a low ceiling, a rag rug, a squashy armchair the colour of marmalade, and a cast-iron wood stove " + (fireLit() ? "glowing and ticking away happily." : "sitting cold and a bit sorry for itself.") + " Books everywhere. A record player under the window.", {
-        stove: F(() => fireLit() ? "The fire's going. Little orange windows in the stove door. It'll burn till about " + clock(S.fireUntil % 1440) + "." : "Cold. There's ash from Wren's last fire. {cmd:stoke} it, if you've got wood (" + S.wood + " logs in the basket)."),
-        wood_basket: F(() => S.wood ? "A wicker basket with " + plural(S.wood, "log") + " in it." : "Empty. The woodpile's in the garden — {cmd:chop} some."),
-        armchair: F("Marmalade-coloured, soft as a held breath, and shaped exactly like Wren. {cmd:sit} in it."),
-        record_player: F("A suitcase record player and a short stack of records. The top one is {acc:'Nocturnes for a Wet Tuesday'}. {cmd:play record}"),
-        mantel_photo: F(PHOTO_1974),
-        mantel_clock: F(() => "The mantel clock says " + clock(S.min) + ". It's right, which surprises everyone, including the clock."),
-        bookshelf: D("Floor to ceiling. Paperbacks, field guides, a ring binder, a dictionary propping up the short leg of the shelf itself.",
-          Object.fromEntries(Object.entries(BOOKS).map(([n, t]) => [n, F(t, { onRead: () => checkBooks() })])))
+      parlour: D(() => "The parlour. Low ceiling, rag rug, an orange armchair, and a wood stove that's " + (fireLit() ? "lit." : "cold.") + " Books on every wall. A record player by the window.", {
+        stove: F(() => fireLit() ? "Lit. It'll go until about " + clock(S.fireUntil % 1440) + "." : "Cold. " + plural(S.wood, "log") + " in the basket. {cmd:stoke}"),
+        wood_basket: F(() => S.wood ? plural(S.wood, "log") + "." : "Empty. The woodpile's in the garden. {cmd:chop}"),
+        armchair: F("Orange, and shaped like Wren. {cmd:sit}"),
+        record_player: F("A suitcase record player. On top: {acc:Nocturnes for a Wet Tuesday}. {cmd:play record}"),
+        mantel_photo: F(PHOTO_1974, { onRead: () => clue("count") }),
+        mantel_clock: F(() => "It says " + clock(S.min) + ". It's right."),
+        bookshelf: D("Paperbacks, field guides, a ring binder, a dictionary holding up the short leg of the shelf.",
+          Object.fromEntries(Object.entries(BOOKS).map(([n, t]) => [n, F(t, { onRead: () => { checkBooks(); if (n.startsWith("wrens_almanac")) clue("cable"); if (n.startsWith("hearth_80")) clue("cable"); } })])))
       }, { room: true }),
 
-      study: D(() => "The study. Your desk, and on it HEARTH: beige, humming, the screen you're looking at now. A disk drive with a mouth like a letterbox. A window over the lake. Piles of paper with a system known only to Wren.", {
+      study: D(() => "The study. HEARTH on the desk, the screen you're looking at. A disk drive. A corkboard on the wall with nothing pinned to it" + (Object.keys(S.clues || {}).length ? " — well, not much." : ".") + " A window over the lake.", {
+        "note.txt": F(NOTE, { owner: "wren", onRead: f => f && remember("found Wren's note on the screen.") }),
         "hearth.manual": F(HEARTH_MANUAL),
+        corkboard: F(() => "Cork, drawing pins, a reel of red wool. {cmd:board}"),
         disk_drive: F(() => {
           const d = Object.keys(S.disks).filter(k => S.disks[k]);
-          return "A 3.5\" disk drive. It clunks satisfyingly.\nInstalled: " + (d.length ? d.map(x => "{acc:" + x + "}").join(", ") : "{dim:nothing yet}") + "\nPut a disk in with {cmd:insert}.";
+          return "A 3.5\" drive. Installed: " + (d.length ? d.map(x => "{acc:" + x + "}").join(", ") : "{dim:nothing}") + ". {cmd:insert}";
         }),
-        desk: D("Wren's desk. A green lamp, a mug full of pencils, a stack of envelopes she'll get to.", {
-          "almanac_page.txt": F("A loose page, torn from somewhere:\n\n  {acc:\"the good seeds are hidden in the shed. use your -a's.\"}\n\n{dim:...what does that mean? (it means {cmd:ls -a})}"),
-          pencils: F("Eleven pencils, all sharpened at both ends. Wren doesn't trust a pencil with only one plan."),
-          floppy_box: D("A plastic box of floppy disks.", {
-            "BLANK.DSK": F("Blank. Labelled 'BLANK' and then, underneath, 'really blank'."),
-            "GAMES.DSK": F("Labelled GAMES. It contains one file: a spreadsheet of who owes Wren money at cards."),
-            "BACKUP.DSK": F("Labelled BACKUP, 1993. Wren has never needed it. Wren has never needed anything.")
+        desk: D("Wren's desk. A green lamp, pencils in a mug, a stack of envelopes.", {
+          "torn_page.txt": F("A page torn out of something:\n\n  {acc:the good seeds are in the shed. use your -a's.}\n\n{dim:(as in {cmd:ls -a})}"),
+          pencils: F("Eleven pencils, all sharpened at both ends."),
+          floppy_box: D("A box of floppy disks.", {
+            "BLANK.DSK": F("Labelled BLANK, and underneath, 'really blank'."),
+            "GAMES.DSK": F("Labelled GAMES. It's a spreadsheet of who owes Wren money at cards."),
+            "LOG-87.DSK": F("Labelled LOG 87–. Empty. {dim:(whatever was on it has been copied somewhere. /var/log, maybe.)}", { onRead: () => clue("log") })
           })
         }),
-        postcards: D("A shoebox Wren left out for postcards. Your postcards.", () => {
+        postcards: D("A shoebox for postcards.", () => {
           const k = {};
           for (const id of S.letters) { const L = LETTERS[id]; if (L && L.from === "wren") k[L.file] = F(() => letterText(id)); }
           return k;
         }),
-        notes: D("An empty folder Wren made for you. There's a label: {acc:'yours. write things. — W.'}  ({cmd:write} a note here.)", {})
+        notes: D("An empty folder labelled {acc:yours}. ({cmd:write} something.)", {})
       }, { room: true }),
 
-      garden: D(() => "The garden: six raised beds in a row, a crooked shed, a woodpile, a birdbath, and a path that goes down through the long grass to the dock. " + skyLine(), () => Object.assign(plotKids(), {
-        shed: D("The shed smells of creosote and string. Tools on nails, outlines painted behind each one so you know where they go. (One outline is shaped like Biscuit. Nobody knows why.)", {
-          fishing_rod: F("Wren's split-cane rod, with a red-and-white float. Take it with {cmd:take rod}. The dock's where fish live.", { item: "rod" }),
-          oilcan: F("A little brass oilcan with a long nose. For hinges, bikes, and anything that squeaks out of spite.", { item: "oilcan" }),
-          watering_can: F("A green watering can with a rose on the spout. You'll use it automatically with {cmd:water}."),
-          trowel: F("A trowel, worn to a perfect curve by fifty years of one particular hand."),
-          ".seed_tin": D("A biscuit tin (not that Biscuit). Inside, paper envelopes in Wren's handwriting.", {
-            lavender_seeds: F("{acc:LAVENDER} — for Fenn's bees. He's been asking for years.", { item: "seed:lavender", count: 3 }),
-            pumpkin_seeds: F("{acc:PUMPKIN} — 'for lanterns, and pie, in that order.'", { item: "seed:pumpkin", count: 2 }),
-            chamomile_seeds: F("{acc:CHAMOMILE} — 'for sleeping. or for pretending to.'", { item: "seed:chamomile", count: 2 })
+      garden: D(() => "Six raised beds, a shed, a woodpile, a birdbath. A path down through the long grass to the dock. " + skyLine(), () => Object.assign(plotKids(), {
+        shed: D("Creosote and string. Tools on nails, each with its outline painted behind it.", {
+          fishing_rod: F("Wren's split-cane rod, red and white float.", { item: "rod" }),
+          oilcan: F("A small brass oilcan.", { item: "oilcan" }),
+          watering_can: F("Green. You'll use it when you {cmd:water}."),
+          trowel: F("Worn to the shape of one hand."),
+          ".seed_tin": D("A biscuit tin full of paper seed envelopes.", {
+            lavender_seeds: F("{acc:LAVENDER} — for Fenn's bees.", { item: "seed:lavender", count: 3 }),
+            pumpkin_seeds: F("{acc:PUMPKIN}", { item: "seed:pumpkin", count: 2 }),
+            chamomile_seeds: F("{acc:CHAMOMILE}", { item: "seed:chamomile", count: 2 })
           })
         }),
-        woodpile: F(() => "Split logs under a tarp, and an axe leaning just so. {cmd:chop} some for the stove. (" + plural(S.wood, "log") + " inside.)"),
-        birdbath: F(() => pick(["A robin is using the birdbath as a mirror. It's going well for him.", "Two sparrows are having an argument in the birdbath.", "The birdbath has a single leaf in it, turning slowly, like it's thinking."])),
-        fox: F(() => "A fox, " + (S.fox ? "{acc:" + S.fox + "}, " : "") + "sitting at the edge of the long grass, watching you with an expression of polite expectation." + (S.fox ? "" : "\nShe doesn't have a name yet. You could {cmd:name fox} something."), { when: () => isNight() || isEvening() })
+        woodpile: F(() => "Split logs under a tarp. An axe. {cmd:chop} {dim:(" + plural(S.wood, "log") + " inside)}"),
+        birdbath: F(() => pick(["A robin, bathing.", "Two sparrows.", "One leaf, turning slowly."])),
+        fox: F(() => "A fox" + (S.fox ? " — " + esc(S.fox) + " —" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:({cmd:name fox} her?)}"), { when: () => isNight() || isEvening() })
       }), { room: true }),
 
-      greenhouse: D(() => "The greenhouse: whitewashed glass, the smell of warm soil and tomato leaves, an old mister on the ceiling that hisses now and then. Three clay pots on the bench. It's three degrees warmer in here than anywhere else in the world.", () => Object.assign(potKids(), {
-        "moonflower_note.txt": F(W("{hi:MOONFLOWERS}\n\nOnly in here. Only in the pots. They need the warm and they need the dark.\nThey open after nightfall and close at dawn, so harvest them at night.\nOne bloom = enough oil for the lantern. Juniper has the seeds.")),
-        mister: F("A brass mister. It keeps the pots damp on its own, so you only need to {cmd:water} out in the garden. Wren built it. It hisses at you if you stand too close.")
-      }), { room: true, lock: () => (S.flags.ghOpen ? null : "the greenhouse door won't budge. the hinges have rusted solid.\n{dim:(it needs oil, not swearing. try {cmd:oil greenhouse} with the oilcan from the shed.)}") }),
+      greenhouse: D(() => "Whitewashed glass, warm soil, a brass mister that hisses now and then. Three clay pots on the bench.", () => Object.assign(potKids(), {
+        "moonflower_note.txt": F(W("{hi:moonflowers}\n\npots only. they want warm and dark.\nthey open after nightfall and close at dawn — pick them at night.\none flower gives enough oil for the lantern.\n\nthe light they give off is the same colour as the other light.\nthat's not a coincidence. I don't know what it is."), { onRead: () => clue("colour") }),
+        mister: F("A brass mister on the ceiling. It keeps the pots wet, so they never need watering.")
+      }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:(the oilcan's in the shed: {cmd:oil greenhouse})}") }),
 
-      dock: D(() => "The dock: grey boards, warm in the sun and slippery in the rain, running out into Lake Ilse. A rowing boat knocks gently against a post. At the very end stands an iron lantern on a pole, " + (S.flags.lanternLit ? "burning blue-gold." : "unlit.") + " " + skyLine(), {
+      dock: D(() => "Grey boards out over the water. A green rowing boat. At the end, an iron lantern on a pole, " + (S.flags.lanternLit ? "lit." : "unlit.") + " A thick black cable runs along the boards and over the edge into the lake. " + skyLine(), {
         lantern: F(() => lanternStatus()),
-        rowboat: F("A green rowing boat. Painted on the back: {acc:THE SECOND OPINION}. Wren named it after an argument. {cmd:row} out for a bit, if you like."),
-        tackle_box: D("A tackle box that opens like a staircase.", {
-          "nemesis.txt": F(W("{hi:OLD MARMALADE}\n\nGolden carp. Enormous. Older than me (rude).\nSeen: fog, dawn, and once on my birthday, which was personal.\nHe has four of my lures in his lip like earrings.\n\nIf you catch him, {u:let him go}. Then tell me EVERYTHING.")),
-          lures: F("A tangle of spinners, feathers, and one lure that's just a teaspoon with a hook.")
+        cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:(it goes back up the garden towards the house.)}", { onRead: () => clue("cable") }),
+        water: F(() => lakeLook()),
+        rowboat: F("Green. {acc:THE SECOND OPINION} painted on the back. {cmd:row}"),
+        tackle_box: D("A tackle box.", {
+          "carp.txt": F(W("{hi:the carp}\n\ngolden. huge. older than me.\nseen in fog, at dawn, and once on my birthday.\nhe has four of my lures in his lip.\n\nif you catch him, let him go.")),
+          lures: F("Spinners, feathers, and a teaspoon with a hook on.")
         }),
-        bench: F("A bench at the land end of the dock, with a little brass plaque: {acc:'FOR SITTING. — W.'} {cmd:sit}")
+        bench: F("A bench with a small plaque: {acc:FOR SITTING}. {cmd:sit}")
       }, { room: true }),
 
-      cellar: D(() => "The cellar. Stone walls, a single bulb on a string, and shelves and shelves of jam. In the corner there's a beige box the size of a suitcase, humming to itself, warm to the touch.", {
-        jam_shelf: F(() => "Jars and jars. Blackberry, damson, plum, 'MYSTERY 2019'. " + (jamLeft() ? jamLeft() + " you could take. {cmd:take jam}" : "You've taken all the ones you're allowed. The rest are 'for winter'."), { item: "jam" }),
-        oil_lamp: F("A brass oil lamp with a glass chimney. Full of oil. Would be very useful somewhere dark, like the attic. {cmd:take lamp} and then {cmd:light lamp} — you'll need matches.", { item: "lamp" }),
-        mainframe: F("A beige box, humming. A label in Wren's capitals: {acc:HEARTH — DO NOT UNPLUG. NOT EVEN IF IT ASKS.}\nIt's never asked. You find that you're checking."),
-        "the_hum.txt": F("There's a hum down here. It's the freezer.\n\n{dim:It's always been the freezer.}\n\n{dim:(the freezer has been unplugged since 2011.)}")
+      cellar: D(() => "Stone walls, a bulb on a string, shelves of jam. In the corner, a beige metal box the size of a suitcase. It hums. The cable from the dock comes in through the wall and goes into the back of it.", {
+        jam_shelf: F(() => "Blackberry, damson, plum, one labelled MYSTERY 2019. " + (jamLeft() ? "{cmd:take jam}" : "The rest are labelled 'winter'."), { item: "jam" }),
+        oil_lamp: F("A brass oil lamp, full. {dim:(the attic is dark.)}", { item: "lamp" }),
+        box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:(there's a program for it. Wren used to run it down here: {cmd:listen})}", { onRead: () => { clue("hum"); clue("listen"); } }),
+        "the_hum.txt": F("{dim:(taped to the box)}\n\nit's the freezer.\n\n{dim:(the freezer is unplugged.)}", { onRead: () => clue("hum") })
       }, { room: true }),
 
-      attic: D(() => S.flags.atticLit ? "The attic, in lamplight. Rafters, boxes, a rocking horse with one glass eye, and the smell of a hundred summers. Under the round window sits a heavy old trunk with a brass padlock. A ladder leads up through a hatch to the roof." : "It's pitch black up here. You can hear the rafters creak and something small and many-legged going about its business.", () => (S.flags.atticLit ? {
-        trunk: D("Wren's trunk. Leather straps, brass corners, a padlock about the size of a walnut.", {
-          "lantern.dsk": F("A floppy disk labelled {acc:LANTERN} in gold pen. The label has little stars drawn round it.", { item: "disk:lantern" }),
-          wick: F("A coil of thick cotton wick, new, still with the shop's string on it.", { item: "wick" }),
-          "letter_to_whoever.txt": F(TRUNK_LETTER, { onRead: f => f && remember("found Wren's letter in the trunk. had to sit down for a minute.") }),
-          "photo_1974.txt": F(PHOTO_1974)
-        }, { lock: () => (S.flags.trunkOpen ? null : "the trunk is padlocked. a little brass padlock.\n{dim:(Biscuit's collar has a key on it. {cmd:cat biscuit_manual.txt} in the kitchen if you haven't.)}") }),
-        rocking_horse: F("A rocking horse with one glass eye. Someone has written {acc:GERALD} on his saddle. Don't ask. You ask anyway: there's no answer."),
-        margaret: F("A spider in the corner of the rafters with a magnificent web. Wren's note pinned beside her: {acc:'MARGARET. pays rent in flies. do NOT hoover.'}"),
-        boxes: F("Boxes labelled XMAS, XMAS (REAL), TAX, NOT TAX, and one just labelled {acc:'NO'}. You leave that one.")
+      attic: D(() => S.flags.atticLit ? "Rafters, boxes, a rocking horse with one glass eye. A heavy trunk under the round window. A ladder up to a hatch in the roof." : "Pitch black. Something small walks across the boards.", () => (S.flags.atticLit ? {
+        trunk: D("A leather trunk with brass corners and a small padlock.", {
+          "lantern.dsk": F("A floppy disk labelled {acc:LANTERN} in gold pen.", { item: "disk:lantern" }),
+          wick: F("A coil of new lantern wick.", { item: "wick" }),
+          "letter.txt": F(TRUNK_LETTER, { onRead: f => { clue("ask"); if (f) remember("found Wren's letter in the trunk. read it twice."); } }),
+          "diary_1962.txt": F(DIARY_1962, { onRead: () => { clue("1962"); clue("name"); } }),
+          "photo_1974.txt": F(PHOTO_1974, { onRead: () => clue("count") })
+        }, { lock: () => (S.flags.trunkOpen ? null : "Padlocked.\n{dim:(the key is on Biscuit's collar.)}") }),
+        rocking_horse: F("One glass eye. GERALD, on the saddle, in a child's writing."),
+        margaret: F("A spider with a big web in the corner. A note pinned beside it: {acc:MARGARET. do not hoover.}"),
+        boxes: F("XMAS. XMAS (REAL). TAX. NOT TAX. One labelled {acc:NO}.")
       } : {}), { room: true, dark: () => !S.flags.atticLit }),
 
-      roof: D(() => "The flat bit of roof between the chimneys, with a railing and a weathervane shaped like a heron. A brass telescope on a tripod, under an oilskin cover. " + skyLine(), {
-        telescope: F(() => S.disks.sky ? "A brass telescope, cover off, pointed at the sky. {cmd:sky} to look up." + (isNight() ? "" : " (it works better at night, obviously.)") : "A brass telescope. The motor housing has a slot for a disk and a label: {acc:'SKY.DSK — Juniper has it.'}"),
-        weathervane: F(() => "The heron weathervane is pointing " + pick(["north-west", "west", "south-west", "north"]) + ". Today is " + weatherNow().word + "."),
+      roof: D(() => "The flat bit of roof between the chimneys. A railing, a heron weathervane, and a brass telescope under an oilskin. " + skyLine(), {
+        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:(after dark.)}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK — J. has it}."),
+        weathervane: F(() => "The heron points " + pick(["north-west", "west", "south-west", "north"]) + ". " + cap(weatherNow().word) + "."),
         "star_notes.txt": F(starNotes, { when: () => S.disks.sky })
-      }, { room: true, lock: () => (S.flags.atticLit ? null : "the ladder to the roof goes up from the attic, and the attic is pitch dark.\n{dim:(find a light first.)}") })
+      }, { room: true, lock: () => (S.flags.atticLit ? null : "The ladder to the roof is in the attic, and the attic is dark.") })
     }),
 
-    dev: D("devices. everything in the house that HEARTH can talk to.", {
-      kettle: F(() => (teaWarm() ? "warm. content. 92°C and falling." : "cold. waiting. ready when you are.")),
-      cat: F(() => pick(["mrrp.", "mrrrrrp?", "...", "mrow.", "(a slow blink. that means I love you, in cat.)", "prrrrrrrrrrrrrrrrrrr"])),
+    dev: D("devices.", {
+      kettle: F(() => (teaWarm() ? "warm." : "cold.")),
+      cat: F(() => pick(["mrrp.", "...", "mrrp?"])),
       null: F(""),
-      rain: F(() => (weatherNow().rain ? "tik tik tik. tk. tiktiktik. tik. tk tk tik." : "nothing. the rain's taken the day off.")),
-      lake: F(() => "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~\n  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~\n" + (chance(0.2) ? "              ><>" : "")),
-      random: F(() => Array.from({ length: 6 }, () => pick(["teacup", "moss", "lantern", "heron", "toast", "wool", "puddle", "marmalade", "owl", "pinecone", "soup", "mitten", "kindling", "drizzle"])).join(" ")),
-      hum: F("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n{dim:(it's the freezer.)}")
+      rain: F(() => (weatherNow().rain ? "tk tk tik tk tik" : "")),
+      lake: F(() => lakeLook()),
+      receiver: F(() => "signal " + signalLevel().toFixed(2), { onRead: () => clue("listen") })
     }),
 
-    etc: D("configuration. Wren's settings, mostly.", {
+    etc: D("settings.", {
       motd: F(() => S.files["/etc/motd"] || "Welcome home.", { user: true }),
-      "hearth.conf": F(() => "[cottage]\nowner      = wren\nminder     = " + NAME() + "\nkettle     = enabled\ncat        = enabled  # cannot be disabled. have tried.\ntimezone   = lake/ilse\nlantern    = 25-oct\n\n[radio]\nspoon_on_aerial = yes   # don't remove the spoon"),
-      hosts: F("127.0.0.1    cottage hearth\n10.0.0.2     post-office      # ottoline\n10.0.0.3     apiary           # fenn & 40,000 bees\n10.0.0.4     okafor-house     # pip. (she's 11. she will try to hack you.)\n10.0.0.5     observatory      # juniper\n10.0.0.99    the-lake         # doesn't reply. dignified."),
-      passwd: F("wren:x:1000:1000:Wren Ashdown:/cottage:/bin/tea\nbiscuit:x:1:1:Biscuit (cat):/cottage/parlour/armchair:/bin/purr\n{dim:you:x:1001:1001:the minder:/cottage:/bin/hearth}\n\n{dim:(the actual passwords aren't in here. don't be nosy.)}"),
-      fstab: F("/dev/kettle   /kitchen   tea    defaults   0 1\n/dev/cat      /          cat    everywhere 0 0\n/dev/lake     /dock      water  noatime    0 2")
+      "hearth.conf": F(() => "[cottage]\nowner   = wren\nminder  = " + NAME() + "\n\n[receiver]\naerial  = /dock/cable   # down, not up\ndepth   = 40m\nlog     = /var/log/listen\nreply   = disabled      # until it asks", { onRead: () => clue("listen") }),
+      hosts: F("127.0.0.1    hearth\n10.0.0.2     post-office      # ottoline\n10.0.0.3     apiary           # fenn\n10.0.0.4     okafor-house     # pip\n10.0.0.5     observatory      # juniper\n{dim:# 10.0.0.99  the-lake     # doesn't reply. not to ping, anyway}"),
+      passwd: F("wren:x:1000:1000:Wren Ashdown:/cottage:/bin/tea\nbiscuit:x:1:1:Biscuit:/cottage/parlour/armchair:/bin/purr\nyou:x:1001:1001::/cottage:/bin/hearth")
     }),
 
-    proc: D("running things. live information.", {
-      biscuit: D("process 1. the cat.", {
+    proc: D("running things.", {
+      biscuit: D("process 1.", {
         status: F(() => `Name:     biscuit
 Pid:      1
-State:    ${pick(["S (sleeping)", "S (sleeping)", "R (running, briefly)", "D (dreaming)"])}
 Location: ${S.cat.room}
-Mood:     ${S.cat.mood > 80 ? "adores you (won't admit it)" : S.cat.mood > 55 ? "content" : S.cat.mood > 30 ? "tolerating you" : "aloof"}
-Fed:      ${S.cat.fed ? "yes (will claim no)" : "no (will claim no)"}
-Collar:   ${S.flags.gotKey ? "a little bell" : "a little bell, a small brass key"}`)
+Mood:     ${S.cat.mood > 80 ? "fond of you" : S.cat.mood > 55 ? "content" : S.cat.mood > 30 ? "undecided" : "aloof"}
+Fed:      ${S.cat.fed ? "yes" : "no"}
+Collar:   ${S.flags.gotKey ? "bell" : "bell, small brass key"}`)
       }),
-      uptime: F(() => "up " + S.day + " days. load average: 1 cat, 0.5 kettle, " + (weatherNow().rain ? "rain" : "0.0 rain")),
-      weather: F(() => "today: " + weatherNow().word + "\nwarmth: " + Math.round(S.warmth) + "%\nfire: " + (fireLit() ? "lit" : "out"))
+      uptime: F(() => "up " + S.day + " days.")
     }),
 
-    bin: D("all the programs HEARTH knows.", () => {
+    bin: D("programs.", () => {
       const k = {};
-      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "a program.") + "\n{dim:(run it by typing its name: {cmd:" + n + "})}", { exec: true });
+      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "") + "\n{dim:({cmd:" + n + "})}", { exec: true });
       return k;
     }),
-    tmp: D("temporary files. Wren cleans up after herself. It's empty, apart from a crumb.", { crumb: F("A crumb. Shortbread, you'd guess. Biscuit can't reach up here, so it's safe. For now.") }),
-    "lost+found": D("things the system found, lost again, and found.", { sock: F("A single wool sock. It's been here since 1991. Its partner is presumably out there, living its best life.") })
+    tmp: D("empty, apart from a crumb.", { crumb: F("Shortbread.") }),
+    "lost+found": D("", { sock: F("One wool sock. Here since 1991.") })
   });
+  if (typeof mysteryTree === "function") Object.assign(ROOT.kids, mysteryTree());
 }
 
 /* ---- js/07-people.js ---- */
@@ -1823,214 +1766,181 @@ const WHO = n => { n = (n || "").toLowerCase(); for (const [k, p] of Object.entr
 /* ---------- the letters ----------
    day: the morning it arrives. reward: given when you open it.  */
 const LETTERS = {
-  otto_welcome: { from: "ottoline", day: 1, subject: "Welcome to the Hollow!", text: () => `Dear ${NAME()},
+  otto_welcome: { from: "ottoline", day: 1, subject: "welcome", text: () => `${NAME()},
 
-Welcome! I'm Ottoline, I run the post office, the shop, the
-radio, and (unofficially) everybody's business.
+Ottoline, from the post office. Welcome to the Hollow.
 
-Three things you need to know:
-  1. Post goes out at dawn. Leave things in the box and I'll
-     take them. Just type {cmd:send} and it'll sort itself out.
-  2. I do the morning show on {acc:101.3}, six till noon. Wren's
-     radio has been dead since she left and I've had NOBODY
-     to say good morning to on the east shore. Fix it! Tune in!
-  3. Lantern Night is the 25th. Wren lights the dock lantern
-     first, every year. No pressure. (Some pressure.)
+Post goes at dawn. Leave anything in the box by the gate
+and I'll take it. ({cmd:send} it, on Wren's machine.)
 
-Pop in any time. I'll be listening.
+I do the radio in the mornings, 101.3, six till twelve. Wren's
+set has been off since she went, so nobody on the east shore
+has heard me in a week. Get it going and I'll say hello.
 
-Ottoline x
+Ottoline
 
-{dim:p.s. Biscuit has told me several times that she hasn't been fed. I don't believe her and neither should you.}`, onOpen: () => { S.quests.otto_radio = S.quests.otto_radio || "open"; } },
+{dim:p.s. Biscuit came to the shop on Monday and told me she hadn't been fed since Christmas.}
+{dim:p.p.s. if you hear the cellar, don't worry. it's always done that.}`, onOpen: () => { S.quests.otto_radio = S.quests.otto_radio || "open"; } },
 
-  wren_pc1: { from: "wren", day: 2, file: "1_the_night_train.postcard", subject: "a postcard (a train on the front)", text: () => `{dim:[on the front: a steam train crossing a viaduct, hand-tinted]}
+  wren_pc1: { from: "wren", day: 2, file: "1_the_night_train.postcard", subject: "a postcard: a train on a viaduct", text: () => `{dim:[a steam train on a viaduct, hand-tinted]}
 
-${NAME()} — on the sleeper north. The bunk is
-narrower than me and I've had to fold like a deckchair.
-A man across the aisle snores in a perfect major third.
-I'm having the time of my life.
-Is the kettle behaving? Left side!
+on the sleeper north. narrow bunk. a man across
+the way snores in a perfect third.
+did you find my note? left side of the kettle.
 
-{acc:W.} x`, onOpen: () => remember("a postcard from Wren. she's on a sleeper train, folded like a deckchair.") },
+{acc:W.}`, onOpen: () => remember("a postcard from Wren, on a sleeper train.") },
 
   fenn_lavender: { from: "fenn", day: 2, subject: "Lavender.", text: () => `${NAME()}.
 
-Fenn. Beekeeper. Up the hill.
-Wren promised my bees lavender. That was in 1998.
-Three sprigs. Seeds in her shed somewhere. She hides things.
-The bees have names. They are waiting. So am I.
+Fenn. Bees. The house up the hill.
+Wren promised my bees lavender in 1998. Seeds are in her
+shed. Three sprigs would do.
 
-{dim:A. Fenn.}
+{dim:A. Fenn.}`, onOpen: () => { S.quests.fenn_lav = S.quests.fenn_lav || "open"; } },
 
-{dim:p.s. welcome.}`, onOpen: () => { S.quests.fenn_lav = S.quests.fenn_lav || "open"; } },
+  pip_hello: { from: "pip", day: 3, subject: "HELLO (from Pip)", text: () => `HELLO. I'm Pip. I'm 11. I live behind the post office.
 
-  pip_hello: { from: "pip", day: 3, subject: "HELLO FROM THE OKAFOR HOUSE (hacker)", text: () => `HI!!! I'm Pip. I live by the post office. I'm 11. I'm a hacker.
+Wren let me use HEARTH on Saturdays. I know ls and cd and cat.
+I ALSO know there's a program in the cellar she wouldn't let
+me run. She said "when you're older." I'm older now (by a month).
 
-Wren let me use HEARTH on Saturdays and she taught me {acc:ls} and {acc:cd}
-and {acc:cat} and how to make the kettle beep from the study (DO NOT
-TELL OTTOLINE, she thinks it's a ghost).
+Can you teach me a new command? Write it in a file and post it:
 
-Can you teach me a NEW command?? Write it in a file and send it
-to me! Like:
-
-   {cmd:write lesson.txt}       (then type stuff, then a line with just a . )
+   {cmd:write lesson.txt}     {dim:(type, then a line with just a dot)}
    {cmd:send lesson.txt to pip}
 
-I will study it EXTREMELY closely.
+PIP
 
-PIP (hacker)
-{dim:p.s. is Biscuit ok. tell her hello from me. she bit me once but it was a nice bite}`, onOpen: () => { S.quests.pip_lesson = S.quests.pip_lesson || "open"; } },
+{dim:p.s. I saw a light IN the lake on tuesday. under the water. Mum says it was the moon. it was not the moon.}`, onOpen: () => { S.quests.pip_lesson = S.quests.pip_lesson || "open"; clue("lights"); } },
 
-  juniper_soup: { from: "juniper", day: 4, subject: "a request from across the water", text: () => `Dear ${NAME()},
+  juniper_soup: { from: "juniper", day: 4, subject: "from across the water", text: () => `${NAME()},
 
-Juniper Vale. The observatory, across the lake — the white dome
-you can see from your study window, if the weather's honest.
+Juniper Vale. The white dome on the far side of the lake.
 
-The heating up here has opinions and none of them are warm.
-Wren used to row a flask of soup across on cold weeks. I am not
-asking you to row. I am asking whether, if soup were to occur,
-it might be posted.
+The heating's gone again. Wren used to row soup over on cold
+weeks. If soup were to happen, carrot would be ideal, and the
+post would get it here.
 
-Carrot is traditional. The recipe is in her kitchen; she will
-have clipped it to something.
+I've something of hers I'm supposed to hand on. I've had it
+since 1988.
 
-In return I have something of hers I've been "minding" since 1974.
+{dim:J.V.}
 
-{dim:— J.V.}
-{dim:p.s. I can see your light on at night from up here. It's nice to see it on again.}`, onOpen: () => { S.quests.jun_soup = S.quests.jun_soup || "open"; } },
+{dim:p.s. I can see your study light from the eyepiece. Nobody's had it on this late since she left.}`, onOpen: () => { S.quests.jun_soup = S.quests.jun_soup || "open"; } },
 
-  wren_pc2: { from: "wren", day: 5, file: "2_shetland.postcard", subject: "a postcard (ponies)", text: () => `{dim:[on the front: three Shetland ponies, extremely windswept]}
+  wren_pc2: { from: "wren", day: 5, file: "2_shetland.postcard", subject: "a postcard: ponies", text: () => `{dim:[three Shetland ponies, sideways in the wind]}
 
-Shetland. Wind so strong it took my hat and a
-bit of my dignity. A pony ate a page of my book.
-It was the boring chapter, so I let it.
-Have you found the radio disk? Bread. Think bread.
+Lerwick. the wind took my hat. a pony ate
+a page of my book.
+how's the noise? louder? it'll get louder.
 
-{acc:W.} x`, onOpen: () => remember("a postcard from Shetland. a pony ate her book.") },
+{acc:W.}`, onOpen: () => { remember("a postcard from Shetland. she asked if the noise was louder."); clue("hum"); } },
 
-  otto_pumpkin: { from: "ottoline", day: 5, subject: "pumpkins (urgent-ish)", text: () => `${NAME()}!
+  otto_pumpkin: { from: "ottoline", day: 5, subject: "a favour", text: () => `${NAME()},
 
-Lantern carving is the night before Lantern Night and my
-pumpkins have come up the size of tennis balls. TENNIS BALLS.
+My pumpkins came up the size of oranges. Could you grow me one
+for the carving? Two seeds enclosed, and Wren's pie card,
+which she gave me in 1983 and then told me I make wrong.
 
-Could you grow me one? Just one! I'm not greedy, I'm thrifty.
-Enclosed: two pumpkin seeds from my own tin, and Wren's pie
-recipe, which she gave me in 1983 and then asked me never to
-make in front of her because I "do the crust wrong".
+Ottoline
 
-{cmd:send pumpkin to ottoline} when it's ready. Five days, give or take.
-
-Ottoline x
-
-{dim:p.s. the radio! I heard you were tinkering. I'm keeping my fingers crossed and so is everyone in the shop.}`,
+{dim:p.s. five nights, if you water them.}`,
     reward: { "seed:pumpkin": 2 }, onOpen: () => { S.quests.otto_pump = S.quests.otto_pump || "open"; S.flags.gotPieCard = true; } },
 
-  pip_weird: { from: "pip", day: 7, subject: "SCIENCE REQUEST", text: () => `${NAME()}!!!
+  pip_weird: { from: "pip", day: 7, subject: "SCIENCE", text: () => `I'm doing a SCIENCE PROJECT on the lake. Can you fish me up
+something weird? Not a normal fish. (A weird fish counts.)
 
-I am doing a SCIENCE PROJECT on the lake. My hypothesis is that
-there is WEIRD STUFF in it. Can you fish me up something weird?
-Not a normal fish. A WEIRD thing. (A weird fish is ok too, like an eel.)
+PIP`, onOpen: () => { S.quests.pip_weird = S.quests.pip_weird || "open"; } },
 
-for science
-PIP (hacker, scientist)`, onOpen: () => { S.quests.pip_weird = S.quests.pip_weird || "open"; } },
+  wren_pc3: { from: "wren", day: 8, file: "3_torshavn.postcard", subject: "a postcard: grass roofs", text: () => `{dim:[black wooden houses with grass on their roofs]}
 
-  wren_pc3: { from: "wren", day: 8, file: "3_torshavn.postcard", subject: "a postcard (grass roofs!)", text: () => `{dim:[on the front: little black houses with grass growing on their roofs]}
+Tórshavn. I'm here. Ása met the ferry. thirty-eight
+years of talking on the radio and she's shorter
+than me, and she was holding a sign with my
+callsign on it.
+she's heard it too. the whole time. off the harbour.
 
-TÓRSHAVN. I'm here. The houses have GARDENS ON
-THEIR ROOFS. A sheep was on one this morning,
-just eating the house. Nobody minded.
-I've been thinking about you minding mine.
-Thank you. Truly. Is the lantern ready?
-
-{acc:W.} x`, onOpen: () => remember("Wren made it to the Faroes. there was a sheep eating a roof.") },
+{acc:W.}`, onOpen: () => { S.flags.metAsa = true; clue("tor"); remember("postcard from the Faroes. Wren has a friend there called Ása who 'has heard it too'."); } },
 
   fenn_trout: { from: "fenn", day: 8, subject: "Supper.", text: () => `${NAME()}.
 
-Bees thank you, if you've sent the lavender. If you haven't, they
-don't thank you, and they've said some things.
-
-Knees bad this week. Can't get to the water.
-Would like a trout for supper. Mornings or evenings, clear days.
-They don't like it grey.
+Knees bad. Can't get down to the water. Would like a trout.
+They come up clear mornings and evenings. Not in the grey.
 
 {dim:A. Fenn.}`, onOpen: () => { S.quests.fenn_trout = S.quests.fenn_trout || "open"; } },
 
-  otto_bake: { from: "ottoline", day: 9, subject: "BAKE SALE", text: () => `${NAME()}, quick one!
+  otto_bake: { from: "ottoline", day: 9, subject: "bake sale", text: () => `${NAME()},
 
-Bake sale on the green before the lanterns. Every year Fenn
-brings a honey cake and every year it sells first and every
-year he is insufferable about it.
+Bake sale on the green before Lantern Night. Fenn's honey cake
+sells first every year and he's unbearable about it.
 
-Send me something sweet. A pie, a cake, biscuits. Let's beat him.
+Send me something sweet. Let's beat him.
 
-Ottoline x`, onOpen: () => { S.quests.otto_bake = S.quests.otto_bake || "open"; } },
+Ottoline`, onOpen: () => { S.quests.otto_bake = S.quests.otto_bake || "open"; } },
 
-  juniper_comet: { from: "juniper", day: 10, subject: "look up", text: () => `${NAME()},
+  juniper_comet: { from: "juniper", day: 10, subject: "look west", text: () => `${NAME()},
 
-There's a comet. Small, faint, and on its way out of our lives
-for another sixty-four years. Wren and I saw it last time, in
-1962, from the end of that dock. We were fourteen. We named it,
-privately, and we have never told anyone else what we named it.
+There's a comet back. Low in the west after dark, clear nights,
+for about a week. It goes round every sixty-four years.
 
-It's low in the {acc:west}, after dark, on clear nights. It
-should be clear tonight and tomorrow. ${S.disks.sky ? "Your telescope will find it: {cmd:sky west}." : "You'll need the telescope disk — I'll send it if you send soup. I'm not above bribery."}
+The last time, Wren and I watched it from the end of your dock.
+We were fourteen. ${S.disks.sky ? "The telescope will find it." : "You'll want the telescope disk. Soup first. I'm not above it."}
 
-Tell me if you see it. Just send word — {cmd:send note to juniper} or anything
-you like. I'll know what it means.
+If you see it, send me something. Anything. I'll know.
 
-{dim:— J.V.}`, onOpen: () => { S.quests.jun_comet = S.quests.jun_comet || "open"; } },
+{dim:J.V.}`, onOpen: () => { S.quests.jun_comet = S.quests.jun_comet || "open"; clue("comet"); } },
 
-  wren_pc4: { from: "wren", day: 11, file: "4_puffins.postcard", subject: "a postcard (a puffin, looking smug)", text: () => `{dim:[on the front: a single puffin, looking deeply pleased with itself]}
+  wren_pc4: { from: "wren", day: 11, file: "4_harbour.postcard", subject: "a postcard: a harbour at night", text: () => `{dim:[Tórshavn harbour at night. someone has drawn tiny dots on the water in biro.]}
 
-I have made friends with a puffin. Well. I've
-made friends with a puffin's general area.
-Juniper says there's a comet. If you see it,
-don't tell me what it looks like. I want to
-remember it the way it was.
+those dots are what we saw on Tuesday. Ása
+counted two hundred. I counted more.
+it's getting stronger at your end too. I can
+see it in her log.
 
-{acc:W.} x` },
+{acc:W.}`, onOpen: () => clue("lights") },
 
-  pip_game: { from: "pip", day: 12, subject: "I MADE YOU A GAME", text: () => `${NAME()}!!!!
-
-I used what you taught me AND some stuff I learned from the
-library computer and I MADE A GAME. It's on the disk in this
-envelope. I've put it in your study notes folder for you.
+  pip_game: { from: "pip", day: 12, subject: "I MADE A GAME", text: () => `I used what you taught me and I MADE A GAME. It's in your notes
+folder now (I asked Ottoline to copy it over, she doesn't know how
+computers work so I told her what to type).
 
   {cmd:cd ~/study/notes}
   {cmd:./pip_game.sh}
 
-It is VERY HARD. Do not be sad if you lose.
+It is very hard.
 
-PIP (game developer)`, onOpen: () => { S.files["/cottage/study/notes/pip_game.sh"] = "#!/bin/pip\n# GUESS THE NUMBER by PIP OKAFOR (age 11)\n# run me with ./pip_game.sh\n# (c) PIP. no stealing."; } , when: () => S.quests.pip_lesson === "done" },
+PIP`, onOpen: () => { S.files["/cottage/study/notes/pip_game.sh"] = "#!/bin/pip\n# GUESS THE NUMBER by PIP OKAFOR\n# ./pip_game.sh"; }, when: () => S.quests.pip_lesson === "done" },
 
-  otto_eve: { from: "ottoline", day: 13, subject: "tomorrow!!!", text: () => `${NAME()}!
+  otto_eve: { from: "ottoline", day: 13, subject: "tomorrow", text: () => `${NAME()},
 
-Tomorrow's the night. Boats are painted, wicks are trimmed,
-Fenn has ironed a shirt (I have seen it with my own eyes).
+Tomorrow. We row out at dusk and wait on the water for the dock
+lantern. When it's lit, we light ours. That's all it is.
 
-We all row out at dusk and wait on the water for the dock
-lantern. When it's lit, we light ours. That's the whole thing.
-That's the whole lovely thing.
+Wren started it, you know, in '74. I asked her once who it was
+for, and she said "not us," and wouldn't say any more. Forty
+years I've been meaning to ask her again.
 
-${S.flags.lanternReady ? "Wren's told me you've got it all in hand. I never doubted you." : "If it's not ready, petal, don't you dare fret. We'll wait as long as it takes. We always have."}
+${S.flags.lanternReady ? "She says you've got it in hand." : "If it's not ready, don't fret. We'll wait. We always do."}
 
-Ottoline x` },
+Ottoline`, onOpen: () => clue("origin") },
 
-  wren_home: { from: "wren", day: 99, subject: "a letter, hand-delivered", text: () => `${NAME()},
+  wren_home: { from: "wren", day: 99, subject: "a postcard: puffins", text: () => S.flags.answered ? `{dim:[two puffins, very close together]}
 
-I'm writing this at my own kitchen table, which is strange and
-wonderful. You've kept everything so well. The kettle's happy.
-Biscuit's fat (fatter). The garden's growing.
+coming home on the 2nd. Ása's coming too, for a
+week. she wants to see the lake. she wants to
+meet the person who answered it.
 
-I'm going to stay a while, and then I think I'll go again.
-Iceland, maybe. Maybe Japan. The thing about seeing the world
-at seventy-eight is you find out the world is very big and you
-are not as old as you thought.
+leave the lantern lit.
 
-Stay as long as you like. Really. The house likes you. So do I.
-There's a spare key on Biscuit's collar. (There always was.)
+{acc:W.}` : `{dim:[two puffins, very close together]}
 
-{acc:W.} x` }
+Ása and I were out on the water on the 25th.
+it came close. closer than '62. but it was
+waiting for something, and it went down again.
+
+coming home on the 2nd. leave the lantern lit.
+I'll show you the cellar properly.
+
+{acc:W.}` }
 };
 
 function letterText(id) {
@@ -2089,83 +1999,79 @@ function hearts(n) { const h = Math.floor(n / 2); return "{warn:" + "♥".repeat
 function reply(to, item) {
   const p = PEOPLE[to];
   const L = { from: to, subject: "re: your parcel", reward: null, friend: 1, text: "" };
-  const thing = item.startsWith("file:") ? "file" : item;
   const say = s => (L.text = s + "\n\n{dim:" + p.sign + "}");
 
   // --- quests first ---
   if (to === "fenn" && item === "lavender" && S.quests.fenn_lav === "open") {
     S.quests.fenn_lav = "done"; S.flags.gotCakeCard = true; L.reward = { honey: 3 }; L.friend = 3; L.subject = "Bees.";
-    say(`${NAME()}.\n\nLavender arrived. Put it by the hives. Bees went quiet, then\nwent loud. That's good. That's the best noise there is.\n\nEnclosed: honey. Three jars. And Wren's honey cake card,\nwhich she stole from my mother in 1979. Stealing it back.\nGiving it to you. Don't tell her.\n\nThank you.`);
-    remember("Fenn's bees got their lavender. he said thank you. TWICE.");
+    say(`${NAME()}.\n\nPut it by the hives. They went quiet, then loud. That's good.\n\nThree jars of honey. And the honey cake card. Wren took it off\nmy mother in 1979. Have it.`);
+    remember("Fenn's bees got their lavender.");
     return L;
   }
   if (to === "fenn" && item === "fish:trout" && S.quests.fenn_trout === "open") {
-    S.quests.fenn_trout = "done"; L.reward = { candle: 2 }; L.friend = 3; L.subject = "Supper was good.";
-    say(`${NAME()}.\n\nTrout. Fried in butter. Ate it at the window with the bees\ngoing to bed. Best supper since I don't know when.\n\nEnclosed: two beeswax candles. Light one when it's cold.\nSmells like summer. Don't argue.`);
-    remember("sent Fenn a trout. he sent candles that smell like summer.");
+    S.quests.fenn_trout = "done"; L.reward = { candle: 2 }; L.friend = 3; L.subject = "Trout.";
+    say(`${NAME()}.\n\nFried it. Ate it at the window. Good fish.\n\nTwo candles. Beeswax. For the cold.`);
+    remember("sent Fenn a trout. he sent candles.");
     return L;
   }
   if (to === "ottoline" && item === "pumpkin" && S.quests.otto_pump === "open") {
-    S.quests.otto_pump = "done"; L.reward = { "seed:carrot": 3, jam: 1 }; L.friend = 3; L.subject = "THE PUMPKIN";
-    say(`${NAME()}!!!\n\nIt is MAGNIFICENT. It's sat on the counter and everyone who\ncomes in for stamps says "oh!" and I say "yes, I know".\n\nI'm going to carve it into a cat. A Biscuit, specifically.\nEnclosed: carrot seeds and a jar of my quince jelly, which\nWren says is "fine" which from her is a medal.`);
-    remember("Ottoline's going to carve my pumpkin into a Biscuit.");
+    S.quests.otto_pump = "done"; L.reward = { "seed:carrot": 3, jam: 1 }; L.friend = 3; L.subject = "the pumpkin";
+    say(`${NAME()},\n\nIt's on the counter and everyone who comes in for stamps says "oh".\nI'm going to carve it into Biscuit.\n\nCarrot seeds, and a jar of quince jelly. Wren says it's "fine".\nFrom her that's a medal.`);
+    remember("Ottoline's going to carve my pumpkin into Biscuit.");
     return L;
   }
   if (to === "ottoline" && ["pumpkin_pie", "honey_cake", "mint_biscuits"].includes(item) && S.quests.otto_bake === "open") {
-    S.quests.otto_bake = "done"; L.reward = { "seed:mint": 2 }; L.friend = 3; L.subject = "WE WON";
-    say(`${NAME()}.\n\nSold out in eleven minutes. ELEVEN. Fenn's cake took fourteen.\nHe said "well done" in a voice like a door closing. I have\nnever been happier in my life. I'm framing the empty plate.\n\nEnclosed: mint seeds from the post office windowbox. Win more.`);
-    remember("beat Fenn at the bake sale. (by proxy. Ottoline is thrilled.)");
+    S.quests.otto_bake = "done"; L.reward = { "seed:mint": 2 }; L.friend = 3; L.subject = "we won";
+    say(`${NAME()},\n\nGone in eleven minutes. Fenn's took fourteen. He said "well done"\nlike he was closing a gate. Best day I've had in years.\n\nMint seeds, from the windowbox.`);
+    remember("beat Fenn at the bake sale. by proxy.");
     return L;
   }
   if (to === "juniper" && item === "carrot_soup" && S.quests.jun_soup === "open") {
-    S.quests.jun_soup = "done"; L.reward = { "disk:sky": 1, "seed:moonflower": 2 }; L.friend = 3; L.subject = "soup, received";
-    say(`${NAME()},\n\nThe soup arrived still faintly warm, which means Ottoline ran.\nI ate it with my coat on, at the eyepiece, watching Saturn.\nI cannot think of a better way to eat soup.\n\nEnclosed, as promised: the sky disk for Wren's telescope (it's\nmine, I lent it her in 1988, I'm lending it to you now), and\ntwo moonflower seeds. They're for the greenhouse. You'll know\nwhy, or you will soon.\n\nTell Wren she owes me.`);
-    remember("Juniper sent the sky disk and moonflower seeds. 'tell Wren she owes me.'");
+    S.quests.jun_soup = "done"; L.reward = { "disk:sky": 1, "seed:moonflower": 2 }; L.friend = 3; L.subject = "soup";
+    say(`${NAME()},\n\nStill warm when it got here, so Ottoline ran. I ate it at the\neyepiece with my coat on.\n\nEnclosed, as promised. The telescope disk, which is mine, and\ntwo moonflower seeds, which are Wren's. She gave them to me in\n1988 and said "give them to whoever's next." I didn't think\nthere'd be a next.\n\nGreenhouse. At night.`);
+    remember("Juniper sent the telescope disk and two moonflower seeds. 'whoever's next.'");
     return L;
   }
   if (to === "juniper" && S.quests.jun_comet === "open" && S.flags.sawComet) {
     S.quests.jun_comet = "done"; L.reward = { starchart: 1 }; L.friend = 3; L.subject = "you saw it";
-    say(`${NAME()},\n\nYou saw it. I could tell before I opened the envelope.\n\nAll right. Since you were there, and she wasn't, and I can't\nask her right now: we called it {acc:"The Lantern Fish"}, because\nit looked like one, swimming. We were fourteen. We thought we'd\nbe the only two people in the world who ever knew.\n\nNow there are three. Enclosed: my chart from 1962. Look after it.`);
-    remember("Juniper told me what they named the comet. I'm not telling anyone.");
+    S.flags.nameKnown = true; clue("name");
+    say(`${NAME()},\n\nYou saw it.\n\nWe made a promise not to say its name. I've kept it sixty-four\nyears. But she's not here and you are, and I'm seventy-nine.\n\nWe called it {acc:the Lantern Fish}. Because of what came up out\nof the water to meet it.\n\nMy chart from 1962 is enclosed. Look after it.`);
+    remember("Juniper told me the comet's name. I'm not telling anyone.");
     return L;
   }
   if (to === "pip" && item.startsWith("file:") && S.quests.pip_lesson === "open") {
     S.quests.pip_lesson = "done"; L.reward = { "disk:pip": 1 }; L.friend = 3; L.subject = "I LEARNED IT";
     const body = (S.files[item.slice(5)] || "").trim();
-    const taught = (body.match(/\b(ls|cd|cat|grep|echo|pwd|man|history|ps|kill|sudo|find|tree|wc|head|sort|alias|fortune|sky|radio|brew|fish|look|map|top|date|cal)\b/) || [])[1];
-    say(`${NAME()}!!!!!\n\nI READ YOUR FILE ${S.files[item.slice(5)] ? "17 TIMES" : "(it was empty?? is that a hacker thing)"}.\n${taught ? "I tried {acc:" + taught + "} on the library computer and the librarian said\n\"what are you doing\" and I said \"HACKING\" and she said \"ok\"." : "I don't know what all of it means yet but I copied it into my notebook\nin my best writing."}\n\nI made you something to say thank you. It's a disk. Put it in\nHEARTH. It's a PROGRAM. (it's {acc:catsay}. it's like cowsay but\nbetter because it's a cat)\n\nAlso I am starting a RADIO STATION. {acc:104.5}. Tell no one.`);
-    remember("taught Pip a command. she's starting a pirate radio station. i've created a monster.");
+    const taught = (body.match(/\b(ls|cd|cat|grep|echo|pwd|man|history|ps|kill|sudo|find|tree|wc|head|sort|alias|fortune|sky|radio|brew|fish|look|map|top|date|cal|listen)\b/) || [])[1];
+    say(`${body ? "I read your file seventeen times." : "your file was empty. is that a hacker thing?"}\n${taught ? "I tried {acc:" + taught + "} on the library computer. the librarian asked what I was doing.\nI said hacking. she said ok." : "I copied it into my notebook."}\n\nHere's a disk back. It's a program I made. ({acc:catsay})\nAlso I've started a radio station on {acc:104.5}. Tell nobody.`);
+    remember("taught Pip a command. she's started a pirate radio station.");
     return L;
   }
-  if (to === "pip" && item.startsWith("junk:") && S.quests.pip_weird === "open" || to === "pip" && item === "fish:eel" && S.quests.pip_weird === "open") {
-    S.quests.pip_weird = "done"; L.reward = { bracelet: 1 }; L.friend = 3; L.subject = "SCIENCE RESULTS";
-    say(`${NAME()}!!!\n\n${item === "junk:boot" ? "A BOOT. A WHOLE BOOT. whose foot was in it?? (nobody's. I checked.)" : item === "fish:eel" ? "AN EEL. it was SO slippery. Mum screamed. 10/10." : "A BOTTLE. with a NOTE. I won't read it, it's yours. (I read it. sorry. it was nice.)"}\nHypothesis CONFIRMED. The lake is WEIRD.\n\nI made you a friendship bracelet. It's orange because of Biscuit.`);
-    remember("Pip's science project is going very well, by her account.");
+  if (to === "pip" && S.quests.pip_weird === "open" && (item.startsWith("junk:") || item === "fish:eel")) {
+    S.quests.pip_weird = "done"; L.reward = { bracelet: 1 }; L.friend = 3; L.subject = "RESULTS";
+    say(`${item === "junk:boot" ? "A BOOT. nobody's foot was in it. I checked." : item === "fish:eel" ? "AN EEL. Mum screamed. 10/10." : item === "junk:bottle" ? "a bottle with a NOTE in. I read it. sorry. it's about the lights. I KNEW it." : "a tin can with a snail in. his name is Derek now."}\nHypothesis confirmed: the lake is weird.\n\nFriendship bracelet enclosed. It's orange because of Biscuit.`);
+    remember("Pip's science project is going well, she says.");
     return L;
   }
 
-  // --- not a quest: ordinary kindness ---
+  // --- not a quest ---
   const fav = p.likes.includes(item);
   L.friend = fav ? 2 : 1;
   const nice = itemName(item);
   const lines = {
-    ottoline: fav ? [`${NAME()}! ${cap(nice)}! My favourite, how did you know? (Wren told you. Wren tells everyone everything. That's MY job.)`, `Oh, ${nice}! It's sitting on the counter and I keep looking at it. Thank you, petal.`]
-      : [`Thank you for the ${nice}! I've put it in the shop window with a little sign that says "from the cottage". People keep asking.`, `A ${nice}! You're as bad as Wren. (That's a compliment. It's the highest one I have.)`],
-    fenn: fav ? [`${cap(nice)}. Good. Very good. Bees agree.`, `${cap(nice)}. You've been talking to Wren. Thank you.`] : [`Got the ${nice}. Thank you. Didn't need it. Glad of it anyway.`, `${cap(nice)}. Hm. Kind of you. Hens send regards.`],
-    pip: fav ? [`${nice.toUpperCase()}!!!! THIS IS THE BEST DAY OF MY LIFE (so far)`, `you sent me ${nice} and I screamed. Mum says I have to say thank you properly so: THANK YOU PROPERLY.`]
-      : [`thank you for the ${nice}!! I named it Gary.`, `a ${nice}! I'm going to do SCIENCE to it. (I'm going to look at it.)`],
-    juniper: fav ? [`${cap(nice)}. You are dangerously well-informed. Thank you — it's exactly right.`, `I had ${nice} at the eyepiece last night. The rings of Saturn have never looked so good.`]
-      : [`Thank you for the ${nice}. It's on the windowsill beside the star charts, where all good things go.`, `${cap(nice)} — how kind. It is very quiet up here; your parcels are a small, warm noise.`]
+    ottoline: fav ? [`${cap(nice)}! Wren told you, didn't she.`, `Oh, ${nice}. That's lovely. Thank you.`] : [`Thank you for the ${nice}. It's in the shop window with a card: "from the cottage".`, `${cap(nice)}! You're as bad as Wren.`],
+    fenn: fav ? [`${cap(nice)}. Good.`, `${cap(nice)}. Wren's been talking. Thank you.`] : [`Got the ${nice}. Didn't need it. Glad of it.`, `${cap(nice)}. Kind of you. Hens send regards.`],
+    pip: fav ? [`${nice.toUpperCase()}!!!`, `you sent me ${nice}. Mum says I have to say thank you properly so: THANK YOU PROPERLY.`] : [`thank you for the ${nice}. I've named it Gary.`, `a ${nice}! I'm going to do science on it.`],
+    juniper: fav ? [`${cap(nice)}. Exactly right. Thank you.`, `I had the ${nice} at the eyepiece. Saturn was very good last night.`] : [`Thank you for the ${nice}. It's on the sill by the charts.`, `${cap(nice)}. It's quiet up here. Your parcels help.`]
   };
   if (item.startsWith("junk:")) {
-    const jl = { ottoline: "A... boot? Is this a joke? Is it a Wren joke? I've put it in the window anyway.", fenn: "Boot. Hm. Wrong size. Using it as a planter.", pip: "WEIRD STUFF!!! more please", juniper: "Thank you for the boot. I've no idea what it means and I've decided that's the point." };
+    const jl = { ottoline: "A boot. Is this a Wren joke? It's in the window anyway.", fenn: "Boot. Wrong size. Planting thyme in it.", pip: "WEIRD STUFF. more please", juniper: "A boot. I've decided not to ask." };
     L.friend = to === "pip" ? 2 : 0;
     say(`${NAME()},\n\n${jl[to]}`);
     return L;
   }
   if (item.startsWith("file:")) {
-    const fl = { ottoline: "I read your note out on the radio! (I didn't. I nearly did.) Lovely to hear from you.", fenn: "Read your note. It was a note. Good one.", pip: "I'm going to frame your file. Can you frame a file? I'm going to try.", juniper: "I read your note twice. Writing things down is how the universe keeps track of us. Keep doing it." };
-    L.friend = 1;
+    const fl = { ottoline: "Got your note. Lovely to hear from the cottage.", fenn: "Read your note. Good note.", pip: "I'm going to frame your file. can you frame a file", juniper: "I read your note twice. Keep writing things down. It's how anyone ever finds anything out." };
     say(`${NAME()},\n\n${fl[to]}`);
     return L;
   }
@@ -2175,44 +2081,43 @@ function reply(to, item) {
 
 /* ---------- the radio ---------- */
 const STATIONS = {
-  "101.3": "Hollow Morning with Ottoline",
-  "93.1": "the Lake Ilse weather",
-  "88.8": "night piano from somewhere",
-  "104.5": "PIP FM (pirate)"
+  "101.3": "Ottoline, mornings",
+  "93.1": "weather",
+  "88.8": "piano, nights",
+  "104.5": "PIP FM"
 };
 function forecastFor(day) {
   const w = weatherFor(day);
-  return w.word + (w.rain ? ", so the garden can water itself" : "") + (w.fog ? ", good for old fish" : "") + (w.name === "clear" ? ", stars tonight" : "");
+  return w.word + (w.rain ? ". gardens can water themselves" : "") + (w.fog ? ". old fish weather" : "") + (w.name === "clear" ? ". stars tonight" : "");
 }
 const OTTO_DAYS = {
-  1: ["...is this thing on? It's always on. Good morning, Hollow!", "Drizzle today, and the post van's got a flat, so if your parcel's late, blame the van, not me.", "And if anyone on the east shore can hear this — the cottage! — welcome. Biscuit says she hasn't been fed."],
-  2: ["Good morning, Hollow! Grey and soft out there, like a good jumper.", "Fenn's asking after lavender again. He's been asking since 1998. Somebody help that man.", "Lantern Night is twelve days away. Twelve! Start painting your boats."],
-  3: ["Morning, all! Clear as a bell today, so get your washing out.", "Little Pip Okafor came into the shop and asked for 'a modem'. I gave her a lolly. She seemed satisfied.", "And a request: 'something cosy' for the cottage. That's you, love. Here's the kettle song."],
-  4: ["Good morning! Juniper's heating has broken again, she says, and she says it like it's the heating's fault.", "If anyone's making soup this week: think of the old dear in the dome.", "Weather on 93.1, music on 88.8 after dark, gossip right here. Always here."],
-  5: ["Morning, Hollow — and it's RAINING, properly, so your gardens can water themselves today.", "My pumpkins are the size of tennis balls. I've written to the cottage. No pressure. (Some pressure.)", "Postcard on the counter from Shetland for the cottage. A pony's on the front. I didn't read it. (I read it.)"],
-  6: ["Good morning! Lovely and ordinary today. I like an ordinary day. They don't get enough credit.", "Fenn says his bees are 'agitated'. He also says that about the weather and me.", "Eight days to lanterns, everyone."],
-  7: ["Morning, Hollow! Pip says she's doing a 'science project on the lake'. Lock up your boots.", "Bake sale's the day before Lantern Night. Fenn's cake will win. Fenn's cake always wins. Unless...?", "Here's a song for anyone who's still in their dressing gown. You know who you are."],
-  8: ["Good morning! Foggy one — can't see the observatory, can't see the hill, can barely see my own tea.", "Fog means the old fish come up, Wren always said. The golden one. Old Marmalade. She's not here to deny it.", "Postcard in from the Faroes! Grass on the roofs, apparently. Sheep on the grass."],
-  9: ["Morning! Bake sale entries now open. I'm looking at the cottage. I'm looking right at you.", "Fenn's knees are bad this week, so if you've got a trout going spare...", "Five days to Lantern Night."],
-  10: ["Good morning! Juniper rang — rang! on the telephone! — to say there's a COMET. Low in the west, tonight and tomorrow, clear skies.", "She says the last time it came round, she and Wren saw it from the cottage dock. They were fourteen.", "Telescopes out, Hollow!"],
-  11: ["Morning, all. Clear again, so if you missed the comet, tonight's your last good chance.", "Boats are being painted all down the shore. Smells like varnish and excitement.", "Three days!"],
-  12: ["Good morning! Little Pip has 'released a game', she says. She says it like a film studio.", "Lantern carving's tomorrow night. Bring your knives and your patience.", "And the forecast for Lantern Night: CLEAR. Juniper says so, and Juniper's never been wrong about the sky. About other things, yes."],
-  13: ["Morning, Hollow! Windy today — hold onto your hats and your pumpkins.", "Tomorrow's the night. If you're new: we row out at dusk, we wait for the dock lantern at the cottage, and then we all light ours. That's all. It's everything.", "Get some sleep tonight. I won't, but you should."],
-  14: ["It's LANTERN NIGHT, Hollow! Good morning, good morning, good morning!", "Boats on the water from dusk. Watch the cottage dock. When it's lit, light yours.", "And to whoever's minding the cottage this year — Wren would be so proud. No pressure. (All the pressure.) (No, none. Have a lovely day.)"]
+  1: ["Morning, Hollow. Drizzle, and the post van has a flat, so if your parcel's late, that's why.", "Fourteen days to Lantern Night.", "And if the cottage on the east shore can hear this: hello. Welcome."],
+  2: ["Morning. Grey today.", "Fenn's asking about lavender again. He's been asking since 1998.", "Somebody's dog has been at my bins. I know whose. I'm not saying."],
+  3: ["Morning, all. Clear and cold. Get your washing out.", "Pip Okafor came into the shop and asked for a modem. I gave her a lolly.", "Here's one for the cottage."],
+  4: ["Morning. Juniper's heating has gone again.", "If anyone's making soup this week, the observatory would have some.", "Weather's on 93.1. Piano on 88.8 at night. Me, here."],
+  5: ["Morning, Hollow. Proper rain, so leave the watering can.", "Postcard on the counter for the cottage, from Shetland. Ponies.", "My pumpkins are the size of oranges. Don't."],
+  6: ["Morning. Nothing much happening, which I like.", "Fenn says his bees are agitated. He says the lake's been loud at night. I said lakes aren't loud. He said 'this one is.'", "Eight days."],
+  7: ["Morning. Pip's doing a science project on the lake. Lock up your boots.", "Bake sale's the day before the lanterns.", "Here's a song for whoever's still in their dressing gown."],
+  8: ["Morning. Fog. Can't see the hill, can't see the observatory.", "Wren always said the old fish come up in fog. The golden one.", "Postcard in from the Faroes for the cottage. Grass on the roofs."],
+  9: ["Morning. Bake sale entries open.", "Fenn's knees are bad. If anyone has a trout spare.", "Five days."],
+  10: ["Morning. Juniper rang, on the actual telephone, to say there's a comet back. Low in the west after dark.", "She said last time it came round she and Wren watched it from the cottage dock. Sixty-four years ago.", "Clear tonight."],
+  11: ["Morning. Clear again. Last good night for the comet, Juniper says.", "Boats being painted all along the shore.", "Three days."],
+  12: ["Morning. Pip says she's 'released a game'.", "Carving tomorrow night.", "Juniper says Lantern Night will be clear. She's not been wrong about the sky yet."],
+  13: ["Morning. Windy. Hold on to your pumpkins.", "Tomorrow, if you're new: we row out at dusk and wait for the dock lantern at the cottage. When it's lit, we light ours.", "That's all it is."],
+  14: ["It's Lantern Night. Morning, everyone.", "Boats out from dusk. Watch the cottage dock.", "Whoever's minding the cottage this year: we'll be there. Take your time."]
 };
 function ottoMorning() {
-  if (S.day > SEASON_END) return ["Good morning, Hollow! Snow on the hill and the post van's in a ditch again.", pick(["Biscuit was seen sitting in the post office window yesterday. Nobody knows how she got in. She seemed to feel she'd paid for it.", "Fenn's bees are asleep for the winter and he's lonely, he says, so pop up the hill.", "Juniper says the sky's never clearer than in winter. Wrap up and look up.", "Pip's found a new command. She won't say what. The library's banned her for a week."]), "Have a warm one, everybody."];
-  return OTTO_DAYS[S.day] || ["Good morning, Hollow!", "Nothing to report. Glorious.", "Have a lovely day."];
+  if (S.day > SEASON_END) return ["Morning, Hollow. Snow on the hill and the post van's in a ditch.", pick(["Biscuit was seen sitting in the post office window yesterday. Nobody let her in.", "Fenn's bees are asleep for the winter. He says pop up the hill if you like.", "Juniper says the sky's never clearer than in winter.", "The lake's been quiet since the 25th. Quieter than I can remember."]), "Keep warm."];
+  return OTTO_DAYS[S.day] || ["Morning, Hollow.", "Nothing to report.", "Have a nice day."];
 }
 const PIP_FM = [
-  "THIS IS PIP FM. 104.5. THE ONLY PIRATE RADIO STATION IN LITTLE HOLLOW. probably in the world.",
-  "today's hacker tip: if you type {acc:history} it shows everything you typed. so be careful what you type. (I typed 'ottoline is nosy' and then deleted it.)",
-  "today's hacker tip: {acc:ls -a} shows HIDDEN files. that's where the secrets are. that's where they ALWAYS are.",
-  "today's hacker tip: you can put a | between commands to make them talk. like {acc:ls | grep txt}. like walkie-talkies.",
-  "today's hacker tip: {acc:man} means manual, not man. it's for everyone.",
-  "news: Biscuit was spotted on the post office roof. how. HOW.",
-  "news: I saw a GOLDEN fish in the fog by the cottage dock. nobody believes me. it was the size of a DOG.",
-  "today's hacker tip: if you press TAB it finishes the word for you. it's like the computer is your friend. it IS your friend.",
+  "THIS IS PIP FM. 104.5. PIRATE RADIO.",
+  "hacker tip: {acc:ls -a} shows hidden files. that's where the secrets are. that's ALWAYS where they are.",
+  "hacker tip: {acc:history} shows everything you ever typed. so be careful.",
+  "hacker tip: a | sends what one command says into another one. {acc:ls | grep txt}.",
+  "news: I saw the light in the lake AGAIN. it was further out this time. it was bigger. nobody believes me.",
+  "news: Fenn says the bees won't go near the water this week. that is SCIENTIFIC EVIDENCE.",
+  "news: Wren's cellar has a program I'm not allowed to run. it's called listen. if you're listening: run it.",
   "this has been PIP FM. I have to go, it's tea."
 ];
 
@@ -2220,34 +2125,40 @@ function radioOut(st) {
   const lines = [];
   if (st === "101.3") {
     if (S.min < 12 * 60 && S.min >= 6 * 60) {
-      lines.push("{dim:(a jingle on a slightly out-of-tune piano. then:)}");
+      lines.push("{dim:(a jingle on an out-of-tune piano)}");
       for (const l of ottoMorning()) lines.push("{acc:OTTOLINE:} " + l);
       if (S.quests.otto_radio !== "done") {
         S.quests.otto_radio = "done"; befriend("ottoline", 2); give("seed:chamomile", 2);
-        lines.push("{acc:OTTOLINE:} ...and I'm told — Pip's just run in — the cottage radio is ON! Hello, cottage! Hello! I'm leaving some chamomile seeds in your box. For sleeping, or pretending to.");
-        lines.push("{ok:(you got 2 chamomile seeds)}");
-        remember("got the radio going. Ottoline said hello on air and i felt ridiculous and happy.");
+        lines.push("{acc:OTTOLINE:} Oh — Pip's just put her head round the door to say the cottage radio's on. Hello, cottage. There's chamomile seed in your box. Welcome.");
+        lines.push("{ok:(2 chamomile seeds)}");
+        remember("got the radio going. Ottoline said hello on air.");
       }
     } else if (S.min >= 12 * 60 && S.min < 20 * 60) {
-      lines.push("{dim:(the afternoon request show. a scratchy record:)} {acc:'" + pick(["Moonlight on the Water", "The Kettle's On (Instrumental)", "I'll Row Across to You", "A Small Cup of Something", "Wellington Boot Waltz", "Song for a Wet Dog"]) + "'} {dim:— requested by " + pick(["Fenn, for the bees", "a mystery caller (Pip)", "Ottoline, for Ottoline", "the observatory", "'someone on the hill'"]) + ".}");
-    } else lines.push("{dim:(off air. just a recording of Ottoline saying}{acc: 'goodnight, Hollow' }{dim:on a loop, very gently.)}");
+      lines.push("{dim:(afternoon requests. a scratchy record:)} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "} {dim:— for " + pick(["Fenn's bees", "the observatory", "'someone on the hill'", "whoever's at the cottage"]) + ".}");
+    } else lines.push("{dim:(off air. a tape loop of Ottoline saying \"goodnight, Hollow.\")}");
   } else if (st === "93.1") {
-    lines.push("{sky:And now the weather for Lake Ilse and the Hollow, issued by the observatory.}");
+    lines.push("{sky:Weather for Lake Ilse, from the observatory.}");
     lines.push("{sky:Today: " + forecastFor(S.day) + ".}");
     lines.push("{sky:Tomorrow: " + forecastFor(S.day + 1) + ".}");
-    lines.push("{sky:Lake: " + pick(["calm, mostly", "slight, occasionally moderate", "thoughtful", "glassy at dawn"]) + ". Heron: present.}");
   } else if (st === "88.8") {
-    lines.push("{dim:(soft piano drifts in, slow chords, unhurried. somewhere in the recording someone quietly asks for more toast.)}");
+    lines.push("{dim:(slow piano. somebody in the background of the recording asks for more toast.)}");
     if (!A.ctx) lines.push("{dim:(tap the screen once to let the sound in.)}");
   } else if (st === "104.5" && S.disks.pip) {
     lines.push("{sky:PIP:} " + PIP_FM[0]);
-    lines.push("{sky:PIP:} " + pick(PIP_FM.slice(1, -1)));
+    const tip = pick(PIP_FM.slice(1, -1));
+    lines.push("{sky:PIP:} " + tip);
+    if (tip.includes("light in the lake")) clue("lights");
+    if (tip.includes("listen")) clue("listen");
     lines.push("{sky:PIP:} " + PIP_FM[PIP_FM.length - 1]);
+  } else if (st === "77.7") {
+    lines.push("{dim:kshhhhhhhh}");
+    lines.push("{dim:(under the static, a flat voice, one word at a time:)} {sky:" + heard(signalLevel()) + "}");
+    lines.push("{dim:(it's HEARTH's voice. the same one that reads the error messages.)}");
+    clue("r777");
   } else {
-    lines.push("{dim:kkhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh}");
-    if (st === "77.7") lines.push("{dim:(...very faintly, under the static, a voice is reading numbers. \"seven. seven. kettle. seven.\" you decide not to think about it.)}");
-    else if (st === "104.5") lines.push("{dim:(a little static, and very faintly, a child going \"is this on? IS THIS ON?\" — not yet, apparently.)}");
-    else lines.push("{dim:(just static. it sounds a lot like the rain.)}");
+    lines.push("{dim:kshhhhhhhhhhhhhhhhhhhhh}");
+    if (st === "104.5") lines.push("{dim:(very faintly: \"is this on? IS THIS ON?\" — not yet.)}");
+    else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:(something, nearby on the dial. a voice? lower.)}");
   }
   return lines;
 }
@@ -2350,9 +2261,9 @@ function doPlant(args) {
   beds[i] = { crop, age: 0, wet: gh || weatherNow().rain > 0 };
   spend(6); sfx("dig");
   print(pick([
-    "You make a little hole with your finger, drop the " + crop + " seed in, and pat it down like you're tucking it in.",
-    "In goes the " + crop + ". You tell it, quietly, that it's going to do great.",
-    "You plant the " + crop + " in " + (gh ? "pot " : "plot ") + (i + 1) + ". A worm surfaces, assesses your work, and leaves."
+    "A hole with your finger, the " + crop + " seed in, soil back over.",
+    "You plant the " + crop + " in " + (gh ? "pot " : "plot ") + (i + 1) + ".",
+    "In goes the " + crop + ". A worm comes up to look and goes back down."
   ]));
   if (!gh && !beds[i].wet) print("{dim:(it'll want some {cmd:water} before tonight.)}");
   if (!S.flags.planted) { S.flags.planted = true; keepsake("first_plant"); }
@@ -2363,12 +2274,12 @@ function doWater() {
   if (inGh()) return print("The mister hisses at you. It's got this. {dim:(the greenhouse waters itself.)}");
   if (!inGarden()) return print("Nothing to water in here, unless you count Biscuit, and you shouldn't.");
   const thirsty = S.plots.filter(p => p.crop && !p.wet);
-  if (weatherNow().rain) { S.plots.forEach(p => (p.wet = true)); return print("It's raining. The sky's doing it for you. You stand there holding the watering can anyway, feeling supportive."); }
+  if (weatherNow().rain) { S.plots.forEach(p => (p.wet = true)); return print("It's raining. The beds are fine."); }
   if (!S.plots.some(p => p.crop)) return print("You water the empty beds. The soil appreciates the thought.");
-  if (!thirsty.length) return print("Everything's already watered. You give the mint an extra splash. It didn't need it. It's mint.");
+  if (!thirsty.length) return print("Everything's watered.");
   S.plots.forEach(p => { if (p.crop) p.wet = true; });
   spend(8); sfx("water");
-  print("You fill the green can at the butt and go along the beds. The soil goes dark and smells like rain. " + pick(["A blackbird follows you, hoping.", "You water a snail by accident. It doesn't seem to mind.", "Biscuit watches from a dry spot, deeply unimpressed by water."]));
+  print("You fill the can at the water butt and go along the beds." + pick(["", " A blackbird follows you.", " You water a snail by accident."]));
   remember("watered the garden.");
 }
 
@@ -2453,12 +2364,12 @@ function itemKey(word) {
 
 /* ---------- recipes ---------- */
 const RECIPES = {
-  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion (pantry), butter, a bay leaf if you're fancy.\n  soften the onion. add carrots. add water. wait. blend. done.\n  {dim:\"tastes like a hug from someone who means it.\" — W.}", eat: "You eat the soup slowly, with bread, both hands around the bowl. It tastes like being looked after." },
-  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish (any. not the boot.), 1 carrot, mashed potato (pantry),\n  a suspicious amount of butter.\n  {dim:\"Fenn's favourite. he'll say it isn't.\" — W.}", eat: "Fish pie, crispy on top, molten in the middle. You burn your tongue and don't regret it." },
-  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  this is not a recipe. this is a lifestyle.\n  toast. butter. jam. eat over the sink like a person with things to do.", eat: "Jam on toast over the sink. A crumb lands on Biscuit. She takes it as a personal insult." },
-  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:(Ottoline's copy. she does the crust wrong.)}\n  1 pumpkin, eggs, sugar, the spice tin, pastry (pantry).\n  roast, mash, mix, bake, try not to open the oven every two minutes.", eat: "Pumpkin pie with too much cinnamon, which is the correct amount of cinnamon." },
-  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:(stolen from Fenn's mother, 1979)}\n  1 jar of honey, butter, flour, eggs, a long time in a low oven.\n  {dim:\"don't tell Abernathy.\"}", eat: "Honey cake, sticky and dark and tasting faintly of lavender. Fenn's bees did good work." },
-  mint_biscuits: { name: "mint biscuits", needs: { mint: 2 }, warm: 15, card: "MINT BISCUITS\n  2 sprigs mint, butter, sugar, flour. roll, cut, bake.\n  {dim:\"don't say the word biscuits out loud near the cat.\"}", eat: "A mint biscuit. Biscuit hears the word 'biscuit' and looks up, then looks deeply betrayed." }
+  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion, butter, a bay leaf.\n  soften the onion. carrots in. water to cover. 25 min. blend.\n  {dim:(in pen: J. likes it thin.)}", eat: "Soup, with bread, both hands round the bowl." },
+  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish, any. 1 carrot. mash on top. more butter than you think.\n  {dim:(in pen: Fenn's favourite. he'll say it isn't.)}", eat: "Fish pie. You burn your mouth on the first bit." },
+  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  {dim:(this one's just a card that says TOAST, JAM. it's in a child's writing.)}", eat: "Jam on toast, over the sink." },
+  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:(Ottoline's copy)}\n  1 pumpkin, roasted. eggs, sugar, spice tin. pastry.\n  45 min. don't keep opening the oven.", eat: "Pumpkin pie, too much cinnamon." },
+  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:(Mrs Fenn's, 1979)}\n  1 jar of honey, butter, flour, eggs. low oven, a long time.", eat: "Honey cake. Dark and sticky." },
+  mint_biscuits: { name: "mint biscuits", needs: { mint: 2 }, warm: 15, card: "MINT BISCUITS\n  2 sprigs mint, butter, sugar, flour. roll, cut, 12 min.", eat: "A mint biscuit. Biscuit looks up when you say it." }
 };
 function recipeCard(id) { return "{hi:" + RECIPES[id].card.split("\n")[0] + "}\n" + RECIPES[id].card.split("\n").slice(1).join("\n"); }
 function learn(id) {
@@ -2499,9 +2410,9 @@ function doCook(args) {
   spend(40); S.stats.meals++;
   sfx("pour");
   print(pick([
-    "You cook. The kitchen windows steam up. The radio would be nice right now.",
-    "You cook, humming something you didn't know you knew. The whole cottage starts to smell of it.",
-    "You cook, making a terrible mess and then a lovely meal, in that order."
+    "You cook. The windows steam up.",
+    "You cook with the radio off, listening to the hum under the floor.",
+    "You cook. It takes longer than the card says. It always does."
   ]));
   print("{ok:(made " + itemName(id) + ". {cmd:eat " + id.replace(/_/g, " ") + "}, or {cmd:send} it to someone.)}");
   if (S.stats.meals >= 5) keepsake("baker");
@@ -2519,10 +2430,10 @@ function doEat(args) {
   take(k);
   const r = RECIPES[k];
   if (r) { print(r.eat); warm(r.warm, "warmer"); }
-  else if (k === "honey") { print("You eat honey straight from the jar with a teaspoon. You feel eight years old in the best way."); warm(8, "warmer"); }
-  else if (k === "jam") { print("Jam from the jar with a spoon. Nobody saw. (Biscuit saw.)"); warm(6, "warmer"); }
-  else if (k === "carrot") { print("You crunch a raw carrot like a horse. A good horse."); warm(3); }
-  else if (k === "mint") { print("You chew a mint leaf. Your whole head goes cold and fresh."); }
+  else if (k === "honey") { print("Honey off a teaspoon, standing at the counter."); warm(8, "warmer"); }
+  else if (k === "jam") { print("Jam, from the jar, with a spoon."); warm(6, "warmer"); }
+  else if (k === "carrot") { print("A raw carrot, with the soil rinsed off."); warm(3); }
+  else if (k === "mint") { print("A mint leaf."); }
   else if (k === "sandwich") { print("The sudo sandwich. It tastes of power. And cheese."); warm(10, "warmer"); }
   spend(10); S.stats.meals++;
   remember("ate " + itemName(k) + ".");
@@ -2530,11 +2441,11 @@ function doEat(args) {
 
 /* ---------- tea ---------- */
 const TEAS = {
-  black: { need: null, line: "Strong, brown, a splash of milk. Tea the way tea was meant to be: without fuss.", warm: 12 },
-  mint: { need: "mint", line: "Fresh mint tea, bright and green. It clears your head right out.", warm: 12 },
-  chamomile: { need: "chamomile", line: "Chamomile, gold in the cup, smelling of hay and summer. Your shoulders drop an inch.", warm: 15 },
-  lavender: { need: "lavender", line: "Lavender tea, faintly purple. It tastes a bit like soap and a lot like calm.", warm: 14 },
-  honey: { need: "honey", line: "Tea with a big spoon of Fenn's honey. Sweet, golden, a little bit smug.", warm: 18 }
+  black: { need: null, line: "Strong, with milk. You drink it at the window.", warm: 12 },
+  mint: { need: "mint", line: "Mint, straight from the garden. Too hot to drink for ages.", warm: 12 },
+  chamomile: { need: "chamomile", line: "Chamomile. It smells like hay.", warm: 15 },
+  lavender: { need: "lavender", line: "Lavender. It tastes a bit like soap. You drink it anyway.", warm: 14 },
+  honey: { need: "honey", line: "Tea with a spoon of Fenn's honey in.", warm: 18 }
 };
 async function doBrew(args) {
   if (roomName() !== "kitchen") return print("The kettle's in the kitchen. {cmd:cd ~/kitchen} {dim:(or {cmd:cd /cottage/kitchen}, if you like typing.)}");
@@ -2546,31 +2457,28 @@ async function doBrew(args) {
   if (t.need && !has(t.need)) return print("You'd need some " + t.need + " for that." + (kind === "honey" ? " {dim:(Fenn has bees. Fenn has opinions about lavender.)}" : " {dim:(grow some in the garden.)}"));
   if (S.stats.teas > 0 && !S.flags.thumped && chance(0.25)) {
     S.flags.kettleSulk = true;
-    return print("You switch the kettle on. Nothing. It sits there, cold and silent, sulking about something.\n{dim:(Wren said something about the left side... {cmd:thump kettle})}");
+    return print("You put the kettle on. Nothing happens.\n{dim:(Wren's note said something about the left side. {cmd:thump kettle})}");
   }
   S.flags.thumped = false; S.flags.kettleSulk = false;
   if (t.need) take(t.need);
   print("You fill the kettle and set it on the range.");
   sfx("kettle");
-  await pause(700); print("{dim:...}"); await pause(700);
-  print("{dim:it starts to tick and grumble...}"); await pause(900);
-  print("{acc:...and whistles!}");
+  await pause(600); print("{dim:it ticks, then grumbles, then whistles.}"); await pause(300);
   await pause(400);
   sfx("pour");
   print(t.line);
   S.teaAt = now(); S.teaKind = kind; S.stats.teas++;
   spend(6);
   warm(t.warm, "warmer");
-  if (kind === "chamomile" && S.min > 20 * 60) print("{dim:(you could sleep right now, honestly.)}");
-  if (catHere()) print("{dim:Biscuit watches the steam rise. She does not want tea. She wants to be asked.}");
+  if (kind === "chamomile" && S.min > 20 * 60) print("{dim:(you're very sleepy.)}");
   keepsake("first_tea");
   remember(pick(["had a cup of " + kind + " tea.", "made " + kind + " tea. drank it at the window."]));
 }
 function doThump(args) {
   if (roomName() !== "kitchen") return print("Thump what? {dim:(there's nothing in here that deserves it.)}");
   const side = (args[1] || args[0] || "").toLowerCase();
-  if (side.includes("right")) { print("You thump the kettle on the {warn:right} side. It goes very still. You've hurt its feelings.\n{dim:(...it'll boil. but it'll remember.)}"); S.flags.thumped = true; return; }
-  print("{hi:THUNK.} You give the kettle a firm thump on the left side. It wakes with a gurgle, like nothing happened.\n{dim:(now {cmd:brew}.)}");
+  if (side.includes("right")) { print("You thump it on the right. Nothing. Then, grudgingly, a gurgle.\n{dim:({cmd:brew})}"); S.flags.thumped = true; return; }
+  print("{hi:Thunk.} The kettle gurgles and comes on. {dim:({cmd:brew})}");
   S.flags.thumped = true; sfx("chop");
 }
 
@@ -2584,11 +2492,11 @@ function doFeed(args) {
   const fishKey = itemKey(rest.join(" ")) || (rest.length ? null : null);
   const giveFish = fishKey && fishKey.startsWith("fish:");
   if (roomName() !== "kitchen" && !catHere()) return print("Biscuit's not here — she's in the " + S.cat.room + ". {dim:(or go to the kitchen and rattle the tin; she'll come.)}");
-  if (!catHere()) { S.cat.room = roomName(); print("You rattle the food tin. From somewhere in the house: a thump, a skitter, and then Biscuit arrives at speed, as if summoned by the gods."); }
+  if (!catHere()) { S.cat.room = roomName(); print("You rattle the tin. Somewhere in the house there's a thump, and then Biscuit is in the doorway."); }
   if (giveFish) {
     take(fishKey);
     catMood(30);
-    print("You give Biscuit " + itemName(fishKey) + ". She looks at you like you have finally, after all this time, understood her.\n{acc:prrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr.}");
+    print("You give Biscuit " + itemName(fishKey) + ". She takes it under the table and you don't see her for twenty minutes. When she comes back she sits on your foot.");
     sfx("purr");
     remember("gave Biscuit a fish. she might love me now.");
     S.flags.fedOnce = true;
@@ -2596,17 +2504,17 @@ function doFeed(args) {
   }
   if (S.cat.fed >= 2) {
     catMood(-2);
-    return print(pick(["Biscuit has had breakfast and dinner. She is looking at you like she hasn't. She has.", "You've fed her twice today. She's lying. Look at her lying.", "No. She's had two meals. Biscuit sighs the sigh of a cat in a famine."]));
+    return print(pick(["She's had two meals today. She's looking at you like she hasn't.", "Not again. She's had breakfast and dinner."]));
   }
   S.cat.fed++; S.flags.fedOnce = true;
   catMood(12);
   spend(3);
   print(pick([
-    "You fill Biscuit's bowl. She eats with the focus of a surgeon, then looks at you like you've never fed her in her life.",
-    "You put food down. Biscuit inspects it, decides it'll do, and eats it with tremendous dignity.",
-    "Biscuit's bowl: full. Biscuit's face: in it. Biscuit's opinion of you: improving."
+    "Half a tin in the bowl. She eats it fast, then looks at you like you haven't fed her.",
+    "You put the bowl down. She smells it, walks away, comes back, eats it.",
+    "Biscuit eats. You stand there while she does, which she seems to want."
   ]));
-  if (S.cat.fed === 1) remember("fed Biscuit. she said she hadn't been fed. she had.");
+  if (S.cat.fed === 1) remember("fed Biscuit.");
 }
 function feedFox(rest) {
   if (roomName() !== "garden" || !(isNight() || isEvening())) return print("The fox isn't around. She comes to the garden in the evenings.");
@@ -2621,23 +2529,23 @@ function befriendFox() { S.flags.foxFed = (S.flags.foxFed || 0) + 1; }
 
 function doPet(args) {
   const who = (args[0] || "biscuit").toLowerCase();
-  if (who === "fox" || who === (S.fox || "").toLowerCase()) return print(S.flags.foxFed >= 3 ? "The fox lets you get close — very close — and then sneezes at you and leaves. That's basically a hug, from a fox." : "The fox steps back exactly as far as you step forward. Not yet.");
+  if (who === "fox" || who === (S.fox || "").toLowerCase()) return print(S.flags.foxFed >= 3 ? "The fox lets you get within a few feet. Then she goes." : "The fox steps back exactly as far as you step forward. Not yet.");
   if (!["biscuit", "cat", "the"].includes(who)) return print("You pet the " + esc(who) + ". It doesn't do much for either of you.");
   if (!catHere()) return print("Biscuit isn't here. She's in the " + S.cat.room + ". {dim:({cmd:where biscuit})}");
   const belly = args.join(" ").includes("belly") || args.join(" ").includes("tummy");
   S.stats.pets++; S.cat.petsToday++;
   spend(2);
-  if (belly) { catMood(-6); sfx("bonk"); return print("You go for the belly. {warn:IT'S A TRAP.} Four sets of claws, a bunny-kick, and an expression of deep betrayal. You knew. You knew it was a trap."); }
-  if (S.cat.petsToday > 6) { catMood(-1); return print(pick(["Biscuit has had enough affection for one day. She moves exactly one inch out of reach.", "Biscuit gives you a look that says 'we've discussed this'."])); }
+  if (belly) { catMood(-6); sfx("bonk"); return print("You go for the belly. Claws, all four sets. Wren did say."); }
+  if (S.cat.petsToday > 6) { catMood(-1); return print("She's had enough. She moves just out of reach."); }
   catMood(6);
   warm(3);
   sfx("purr");
   const m = S.cat.mood;
-  print(m > 80 ? pick(["Biscuit leans her whole head into your hand and purrs so loudly the desk vibrates.", "Biscuit flops over, purring, and slow-blinks at you. That's cat for 'I love you'. You slow-blink back.", "Biscuit headbutts your chin. You've been chosen."])
-    : m > 50 ? pick(["You scratch behind Biscuit's ears. A small, rusty purr starts up.", "Biscuit allows this. She purrs, quietly, like she's not sure she should.", "You stroke Biscuit from head to tail. She arches. Approval, cautiously granted."])
-      : pick(["Biscuit tolerates one stroke, then gets up and sits somewhere else.", "Biscuit looks at your hand, then at you. You withdraw your hand.", "Biscuit permits a single pat. It is clearly a favour."]));
+  print(m > 80 ? pick(["She leans her whole head into your hand and purrs.", "She slow-blinks at you. You slow-blink back.", "She headbutts your chin."])
+    : m > 50 ? pick(["You scratch behind her ears. A small purr, like an engine that hasn't been started in a while.", "She allows it. A quiet purr.", "Head to tail. She arches into it."])
+      : pick(["One stroke, then she gets up and sits somewhere else.", "She looks at your hand. You take it back.", "She lets you, once."]));
   if (S.stats.pets === 10) keepsake("pet10");
-  if (m > 75 && !S.flags.gotKey && S.stats.pets >= 8 && S.day >= 3 && !S.flags.keyHinted) { S.flags.keyHinted = true; print("{dim:(she turns her head and the little brass key on her collar glints. she's letting you see it. {cmd:take key})}"); }
+  if (m > 75 && !S.flags.gotKey && S.stats.pets >= 8 && S.day >= 3 && !S.flags.keyHinted) { S.flags.keyHinted = true; print("{dim:(she turns her head so the brass key on her collar is facing you. {cmd:take key})}"); }
   if (S.cat.petsToday === 1) remember("petted Biscuit. she purred. (she purred!)");
 }
 
@@ -2651,18 +2559,18 @@ function doStoke() {
   S.fireUntil = Math.max(S.fireUntil, now()) + 180;
   if (S.fireUntil - now() > 360) S.fireUntil = now() + 360;
   spend(5); sfx("crackle"); sfx("crackle");
-  print(was ? "You open the stove door, feed it another log, and it roars a little, pleased." : "You build a little nest of kindling, strike a match, and wait. A curl of smoke. A crackle. Then it catches, and the whole room changes colour.");
+  print(was ? "Another log on." : "Kindling, a match, a long wait, a lot of smoke. Then it catches.");
   warm(10, "much warmer");
-  if (S.cat.room !== "parlour" && chance(0.6)) { S.cat.room = "parlour"; print("{dim:(within a minute, Biscuit appears and arranges herself in front of it. she heard. she always hears.)}"); }
+  if (S.cat.room !== "parlour" && chance(0.6)) { S.cat.room = "parlour"; print("{dim:(a minute later Biscuit comes in and lies down in front of it.)}"); }
   remember(was ? "kept the fire going." : "lit the stove.");
 }
 function doChop() {
   if (roomName() !== "garden") return print("The woodpile's out in the garden.");
-  if (S.wood >= 8) return print("The basket inside is full. You'd only be chopping for the joy of it. {dim:(which is valid, but no.)}");
+  if (S.wood >= 8) return print("The basket's full.");
   spend(20); sfx("chop"); setTimeout(() => sfx("chop"), 350);
   S.wood = Math.min(8, S.wood + 2);
   warm(4);
-  print(pick(["You split two logs. The axe goes in with a crack that echoes off the lake. Chopping wood warms you twice, Wren says. She's right.", "Thock. Thock. Two good logs. A robin watches, judging your form.", "You chop. You miss once, badly, and are glad nobody saw. Two logs."]) + " {dim:(" + plural(S.wood, "log") + " in the basket.)}");
+  print(pick(["Two logs. The crack of the axe comes back off the lake a second later.", "Two logs. You miss once.", "Two logs. A robin watches."]) + " {dim:(" + plural(S.wood, "log") + " in the basket.)}");
 }
 function doLight(args) {
   const what = (args[0] || "").toLowerCase();
@@ -2720,21 +2628,24 @@ function pocketsText() {
 "use strict";
 
 const FISH = [
-  { id: "minnow", w: 18, win: 1400, size: [3, 6], keep: false, when: () => true, line: "A minnow. A tiny, furious minnow. You put it back. It seemed relieved." },
-  { id: "perch", w: 30, win: 1200, size: [14, 32], when: () => !isNight(), line: "A perch! Striped like a tiger and twice as cross about it." },
-  { id: "roach", w: 24, win: 1200, size: [12, 28], when: () => true, line: "A roach — silver, neat, slightly embarrassed to be here." },
-  { id: "trout", w: 14, win: 850, size: [25, 48], when: () => (isMorning() || isEvening()) && !weatherNow().rain && weatherNow().cloud < 0.6, line: "A brown trout, speckled like a thrush's egg. Beautiful. It knows it, too." },
-  { id: "pike", w: 7, win: 700, size: [50, 95], when: () => isEvening() || S.min >= 20 * 60, line: "A pike. Long as your arm, all teeth and disapproval. It looks at you like you're the one who should be explaining yourself." },
-  { id: "eel", w: 16, win: 900, size: [40, 80], when: () => isNight() && weatherNow().rain > 0, line: "An eel! It ties itself in a knot around the line, then around your wrist, then around the concept of holding things." },
-  { id: "moonperch", w: 14, win: 900, size: [15, 25], when: () => S.day > SEASON_END && isNight() && weatherNow().cloud < 0.5, line: "A perch — but it's glowing, faintly, a pale blue-gold, the colour of the lantern. You've never seen anything like it." },
+  { id: "minnow", w: 18, win: 1400, size: [3, 6], keep: false, when: () => true, line: "A minnow. You put it back." },
+  { id: "perch", w: 30, win: 1200, size: [14, 32], when: () => !isNight(), line: "A perch. Green and striped, spines up." },
+  { id: "roach", w: 24, win: 1200, size: [12, 28], when: () => true, line: "A roach. Silver, red-finned." },
+  { id: "trout", w: 14, win: 850, size: [25, 48], when: () => (isMorning() || isEvening()) && !weatherNow().rain && weatherNow().cloud < 0.6, line: "A brown trout, speckled, heavier than it looks." },
+  { id: "pike", w: 7, win: 700, size: [50, 95], when: () => isEvening() || S.min >= 20 * 60, line: "A pike. All teeth. You get it off the hook very carefully." },
+  { id: "eel", w: 16, win: 900, size: [40, 80], when: () => isNight() && weatherNow().rain > 0, line: "An eel. It wraps itself round your wrist." },
+  { id: "moonperch", w: 14, win: 900, size: [15, 25], when: () => S.day > SEASON_END && isNight() && weatherNow().cloud < 0.5, line: "A perch, but faintly lit from inside. Blue-gold. It fades as you look at it." },
   { id: "marmalade", w: 3, win: 550, size: [90, 90], keep: false, when: () => S.day >= 4 && (weatherNow().fog > 0.5 || (S.min >= 6 * 60 && S.min < 8 * 60)), line: "" },
-  { id: "junk:boot", w: 5, win: 1500, size: [0, 0], junk: true, when: () => true, line: "An old boot. A left one. Somewhere, presumably, a right one is waiting." },
-  { id: "junk:can", w: 4, win: 1500, size: [0, 0], junk: true, when: () => true, line: "A rusty tin can. A snail lives in it. You put it back, snail and all. Rent-free, the snail." },
-  { id: "junk:bottle", w: 4, win: 1500, size: [0, 0], junk: true, when: () => !S.flags.gotBottle && S.day >= 3, line: "" }
+  { id: "junk:boot", w: 5, win: 1500, size: [0, 0], junk: true, when: () => true, line: "An old boot. A left one." },
+  { id: "junk:can", w: 4, win: 1500, size: [0, 0], junk: true, when: () => true, line: "A rusty tin can with a snail in it." },
+  { id: "junk:bottle", w: 6, win: 1500, size: [0, 0], junk: true, when: () => !S.flags.gotBottle && S.day >= 2, line: "" }
 ];
 const KEEPERS = FISH.filter(f => !f.junk && f.id !== "minnow" && f.id !== "marmalade" && f.id !== "moonperch").map(f => f.id).concat(["marmalade"]);
 
 function rollFish() {
+  // the lake wants you to have the bottle. by the sixth bite, it's yours.
+  S.flags.bites = (S.flags.bites || 0) + 1;
+  if (!S.flags.gotBottle && S.day >= 2 && S.flags.bites >= 6) return FISH.find(f => f.id === "junk:bottle");
   const pool = FISH.filter(f => f.when());
   let tot = pool.reduce((a, f) => a + f.w, 0), r = Math.random() * tot;
   for (const f of pool) { r -= f.w; if (r <= 0) return f; }
@@ -2754,7 +2665,7 @@ async function doFish() {
   if (!has("rod")) return print("You haven't got a rod. {dim:(Wren's is in the garden shed: {cmd:cd ~/garden/shed})}");
   if (T.cap) return print("you can't fish inside a pipe. you tried, though, and that's what matters.");
   if (weatherNow().rain >= 1 && !has("umbrella")) warm(-3, "cold. wet. you should've brought the duck umbrella.");
-  print(pick(["You cast. The float sails out and lands with a soft {acc:plip}.", "You flick the line out over the water. Plip. Ripples, then nothing.", "A good cast — the float lands exactly where you meant it to, which never happens."]));
+  print(pick(["You cast. {acc:plip.}", "The float lands a little short. Fine.", "A good cast, for once."]));
   sfx("plip");
   const d = printRaw(fmt(waterLine(0, false)));
   let early = false;
@@ -2762,7 +2673,7 @@ async function doFish() {
   const waitMs = T.autoFish ? 10 : rand(2200, 6500);
   const t0 = Date.now();
   let phase = 0;
-  const musings = ["a heron lands further down the shore and pretends not to watch.", "a leaf drifts past the float. not a fish. a leaf.", "somewhere across the lake, a dog barks twice and thinks better of it.", "the float bobs. just the wind. probably.", "a dragonfly lands on your rod, considers you, leaves.", "you hear the observatory dome creak round across the water."];
+  const musings = ["a heron further down the shore.", "a leaf drifts past the float.", "a dog barks twice across the lake.", "the float bobs. wind.", "a dragonfly lands on the rod.", "the cable at your feet ticks, very faintly."];
   let mused = false;
   while (Date.now() - t0 < waitMs && !early && !T.skip) {
     phase++;
@@ -2808,7 +2719,7 @@ async function doFish() {
 }
 
 async function catchMarmalade() {
-  await type("The line goes tight. Not fish-tight. {warn:Tree-tight.}", 40);
+  await type("The line goes tight and stays tight.", 40);
   await pause(500);
   await type("The rod bends double. Something huge and slow and gold rolls under the water.", 40);
   await pause(700);
@@ -2819,34 +2730,35 @@ async function catchMarmalade() {
   print("{acc:    '-._ ___    _.-' `-._   \\_}");
   print("{acc:        `'---'``         `-'}");
   print("");
-  await type("It's him. Old Marmalade. A carp the size of a labrador, gold as a sovereign,", 40);
-  await type("with four of Wren's lures in his lip like earrings.", 40);
+  await type("The carp. Wren's carp. He's the size of a dog, and gold, and there are four old lures in his lip.", 40);
   await pause(600);
-  await type("He looks at you. You look at him. Neither of you says anything, because one of you is a fish.", 40);
+  await type("He lies in the shallows by the dock and doesn't fight. His eye is the size of a coin and it's looking at you.", 40);
   await pause(600);
-  await type("You unhook him, very gently, and let him go. He sinks back into the fog like a coin into a well.", 40);
+  await type("You take the hook out as gently as you can. He stays a moment longer. Then he goes down into the fog.", 40);
   const L = S.fishlog.marmalade || { n: 0, best: 0 };
   L.n++; L.best = 90; S.fishlog.marmalade = L;
   S.stats.fish++;
   keepsake("marmalade");
   S.flags.marmalade = true;
-  remember("CAUGHT OLD MARMALADE. let him go. he's real. Wren is going to scream.");
+  remember("caught Wren's carp. let him go. he looked at me for a long time.");
 }
 async function catchBottle() {
   S.flags.gotBottle = true;
-  print("A bottle — green glass, corked, with a curl of paper inside.");
+  print("A bottle. Green glass, corked and waxed, with a curl of paper inside.");
   await pause(500);
-  print("You ease the cork out. The paper is soft as cloth. It's dated {acc:1962}:");
+  print("The paper's dry. Pencil, two different handwritings:");
   print("");
-  print("{hi:   \"to whoever finds this:}");
-  print("{hi:    the lake keeps things. be kind to it.}");
-  print("{hi:    we saw a comet tonight. we named it. we're not telling.}");
-  print("{hi:    — W.A. & J.V., aged 14 and three-quarters\"}");
+  print("{hi:   25 oct 1962}");
+  print("{hi:   to whoever finds this.}");
+  print("{hi:   we flashed a torch at the comet three times}");
+  print("{hi:   and the lake flashed back. three times.}");
+  print("{hi:   from underneath.}");
+  print("{hi:   we're not mad. W.A. & J.V. (14)}");
   print("");
-  print("{dim:(you put the paper back in the bottle and keep it.)}");
   give("junk:bottle");
   keepsake("bottle");
-  remember("fished up a bottle from 1962. Wren and Juniper wrote it.");
+  clue("bottle");
+  remember("fished up a bottle from 1962. Wren and Juniper. 'the lake flashed back.'");
 }
 
 async function doRow() {
@@ -2868,6 +2780,10 @@ async function doRow() {
     "A pair of grebes are doing a ridiculous dance. You give them privacy."
   ]));
   if (S.day > SEASON_END) lines.push("Thin ice has started at the edges. It sings when your oars touch it.");
+  if (isNight() && !S.flags.answered && signalLevel() > 0.4 && w.cloud < 0.8) {
+    lines.push("Out over the deep part, you ship the oars and look down. A long way under the boat, something blue-gold turns over, slowly, and you have the distinct feeling it's looking up.");
+    clue("lights");
+  }
   for (const l of lines) { await type(l, 48); await pause(700); }
   print("You row home, slowly, because there's no reason not to.");
   spend(40);
@@ -2921,7 +2837,7 @@ const CONSTELLATIONS = {
   ], note: "Straight overhead in autumn. A small box of stars with one bright one inside. The whole Hollow plans Lantern Night by it." }
 };
 const DIRS = ["north", "east", "south", "west", "up"];
-const cometVisible = () => S.day >= 10 && S.day <= 16;
+const cometVisible = () => S.day >= 10 && S.day <= 18;
 
 function starfield(dir, w = 40, h = 7) {
   const r = seeded(dir.length * 977 + dir.charCodeAt(0) * 31 + (S.day > SEASON_END ? 5 : 0));
@@ -2992,6 +2908,7 @@ async function doSky(args) {
       await pause(600);
       await type("You watch it for a long time. It doesn't move, and it's moving at thousands of miles an hour, and you think about two fourteen-year-olds at the end of the dock, sixty-four years ago, seeing exactly this.", 45);
       keepsake("comet");
+      clue("comet");
       remember("saw the comet. Juniper and Wren saw it from this exact roof in 1962.");
       if (S.quests.jun_comet === "open") print("{dim:(Juniper will want to know. {cmd:send} her something — anything.)}");
     }
@@ -3005,7 +2922,7 @@ function starNotes() {
   let out = "{hi:STAR NOTES}  {dim:(Juniper's handwriting, very small and very neat)}\n\n";
   for (const [k, c] of Object.entries(CONSTELLATIONS)) out += (S.stars[k] ? "{ok:✓} {hi:" + c.name + "}" : "{dim:·} " + c.name) + "  {dim:— look " + c.dir + "}\n";
   out += "\n{dim:clear nights only. after 8pm. dress warmly, you won't, but do.}";
-  if (S.day >= 10) out += "\n{acc:P.S. COMET — WEST. 10th to the 16th. — J.}";
+  if (S.day >= 10) out += "\n{acc:p.s. comet. west. this week only. J.}";
   return out;
 }
 
@@ -3159,6 +3076,13 @@ function notFound(name, w) {
 
 /* ---------- moving about ---------- */
 const ROOM_NAMES = ["kitchen", "parlour", "study", "garden", "greenhouse", "dock", "cellar", "attic", "roof"];
+/** Which rooms open onto which. (cd <room> works from anywhere; this is just what's next door.) */
+const DOORS = {
+  hall: ["study", "kitchen", "parlour", "cellar", "attic"], study: ["hall"], kitchen: ["hall", "garden", "cellar"],
+  parlour: ["hall"], cellar: ["kitchen"], attic: ["hall", "roof"], roof: ["attic"],
+  garden: ["kitchen", "greenhouse", "dock"], greenhouse: ["garden"], dock: ["garden"]
+};
+const doorsOf = r => (DOORS[r] || ["hall"]);
 function doCd(args) {
   args = args.filter(x => !["to", "the", "into", "in", "back"].includes(x.toLowerCase()));
   let target = args.join("_") || undefined;
@@ -3324,7 +3248,8 @@ function doLook(args) {
   if (args.length && !["around", "here", "room"].includes(args[0])) {
     const w = args.join(" ").toLowerCase();
     if (["biscuit", "cat"].includes(w)) return print(catHere() ? catLine() : "Biscuit isn't here. She's in the " + S.cat.room + ".");
-    if (["window", "outside", "out", "sky", "lake"].includes(w)) return print(skyLine());
+    if (["lake", "water", "down", "into the water", "in the water"].includes(w) && roomName() === "dock") return print(lakeLook());
+    if (["window", "outside", "out", "sky", "lake", "water"].includes(w)) return print(skyLine());
     return doCat([args.join("_")], {});
   }
   const node = nodeAt(S.cwd);
@@ -3336,9 +3261,11 @@ function doLook(args) {
   const things = Object.entries(kids).filter(([, n]) => n.kind === "file");
   const places = Object.entries(kids).filter(([, n]) => n.kind === "dir");
   if (things.length) print("{dim:here:} " + things.map(([n, x]) => "{" + (x.item ? "acc" : "hi") + ":" + '<span class="cmd" data-c="cat ' + esc(n) + '">' + esc(n) + "</span>}").join("{dim:,} "));
-  const exits = places.map(([n]) => "{cmd:cd " + esc(n) + "}");
-  if (S.cwd !== HOME) exits.push("{cmd:cd ..}");
-  if (exits.length) print("{dim:ways to go:} " + exits.join("  "));
+  const node2 = nodeAt(S.cwd);
+  const inside = places.map(([n]) => "{cmd:cd " + esc(n) + "}");
+  if (inside.length) print("{dim:in here:} " + inside.join("  "));
+  if (node2.room || S.cwd === HOME) print("{dim:doors:} " + doorsOf(roomName()).map(d => '<span class="cmd" data-c="cd ' + (d === "hall" ? "~" : d) + '">' + d + "</span>").join("{dim: · }"));
+  else print("{dim:back:} {cmd:cd ..}");
   return true;
 }
 
@@ -3481,30 +3408,31 @@ function doHelp(a) {
 }
 
 function hintText() {
-  const H = (s) => "{acc:Wren's voice, in your head:} " + s;
-  if (!S.read["/cottage/welcome.txt"]) return H("read my letter first, love. {cmd:cat ~/welcome.txt}");
-  if (S.mailbox.length) return H("you've got post! {cmd:mail}");
-  if (!S.stats.teas) return H("tea. always tea first. {cmd:cd kitchen} and {cmd:brew}.");
-  if (!S.flags.fedOnce) return H("Biscuit is starving to death, she says. She isn't. {cmd:feed biscuit} anyway.");
-  if (!S.disks.radio && !has("disk:radio")) return H("the radio disk is wherever I put the bread. {cmd:ls ~/kitchen/bread_bin}");
-  if (has("disk:radio")) return H("disks go in the drive in the study. {cmd:cd study}, then {cmd:insert radio.dsk}.");
-  if (!S.flags.planted) return H("there are seeds in your pockets. {cmd:cd garden}, then {cmd:plant mint}. water it, too.");
-  if (S.quests.otto_radio === "open" && S.disks.radio) return H("Ottoline's show is on {cmd:radio 101.3}, six till noon. Say hello! (well, listen.)");
-  if (!has("rod") && !S.stats.fish) return H("my rod's in the shed. {cmd:ls ~/garden/shed}. then the dock. then patience.");
-  if (S.quests.fenn_lav === "open" && !has("seed:lavender") && !has("lavender") && !S.plots.some(p => p.crop === "lavender")) return H("the lavender seeds for Fenn are hidden in the shed. remember your -a's. {cmd:ls -a ~/garden/shed}");
-  if (S.quests.fenn_lav === "open" && has("lavender", 1)) return H("you've got lavender! {cmd:send lavender to fenn}. (he only needs the one parcel. he exaggerates.)");
-  if (S.quests.pip_lesson === "open") return H("Pip wants a lesson. {cmd:write lesson.txt} — anything you like — then {cmd:send lesson.txt to pip}.");
-  if (!S.flags.lampLit) return H(has("lamp") ? (has("matches") ? "{cmd:light lamp}." : "you've the lamp; you need matches. kitchen drawer.") : "the attic's dark. there's an oil lamp in the {cmd:cd cellar}, and matches in the kitchen drawer.");
-  if (!S.flags.ghOpen) return H(has("oilcan") ? "{cmd:cd garden} and {cmd:oil greenhouse}." : "the greenhouse needs oil. the oilcan's in the shed.");
-  if (S.quests.jun_soup === "open") return H(S.recipes.carrot_soup ? (has("carrot_soup") ? "{cmd:send carrot soup to juniper}." : canMake("carrot_soup") ? "{cmd:cd kitchen}, {cmd:cook carrot soup}." : "soup needs two carrots. plant carrots, water them, wait three nights.") : "the soup recipe's in the kitchen: {cmd:cat ~/kitchen/recipes/carrot_soup.card}");
-  if (has("disk:sky") || has("disk:pip") || has("disk:lantern")) return H("you've a disk in your pocket. {cmd:cd study}, {cmd:insert}.");
-  if (!S.flags.gotKey) return H("the trunk key's on Biscuit's collar. she'll give it to someone she trusts. pet her. feed her. a fish wouldn't hurt.");
-  if (!S.taken["/cottage/attic/trunk/lantern.dsk"]) return H("open the trunk in the attic. {cmd:cd attic}, then {cmd:cd trunk}.");
-  if (has("seed:moonflower") && S.gh.every(p => p.crop !== "moonflower")) return H("moonflower seeds go in the greenhouse. {cmd:cd greenhouse}, {cmd:plant moonflower}.");
-  if (!has("moonflower") && !S.flags.lanternLit && S.gh.some(p => p.crop === "moonflower")) return H("the moonflower blooms at night. harvest it after dark. {cmd:garden} shows how long.");
-  if (!S.flags.lanternLit && S.day < SEASON_END) return H("you've done so well. Lantern Night is " + dateStr(SEASON_END) + ". till then: fish, cook, write to people, look at stars. live here a bit.");
-  if (!S.flags.lanternLit) return H(isNight() ? "it's time. {cmd:cd dock}. {cmd:lantern}." : "tonight's the night. after dark, on the dock: {cmd:lantern}.");
-  return H(pick(["go and look for Old Marmalade. fog, or dawn.", "have you found all the constellations? {cmd:sky}", "your jar's not full yet. {cmd:jar}", "write me a letter. well — write anyone a letter.", "just sit a while. {cmd:sit}. that's allowed too."]));
+  const H = s => "{acc:hint:} " + s;
+  if (!S.read["/cottage/study/note.txt"]) return H("there's a note from Wren, in the study. {cmd:cat ~/study/note.txt}");
+  if (S.mailbox.length) return H("you've got post. {cmd:mail}");
+  if (!S.stats.teas) return H("the kettle's in the kitchen. {cmd:cd kitchen}, {cmd:brew}.");
+  if (!S.flags.fedOnce) return H("Biscuit wants feeding. {cmd:feed biscuit}");
+  if (!S.disks.radio && !has("disk:radio")) return H("the radio disk is \"with the bread\". {cmd:ls ~/kitchen/bread_bin}");
+  if (has("disk:radio")) return H("disks go in the drive in the study. {cmd:cd study}, {cmd:insert}.");
+  if (!S.flags.planted) return H("you've seeds in your coat. {cmd:cd garden}, {cmd:plant}. then {cmd:water}.");
+  if (S.quests.otto_radio === "open" && S.disks.radio && S.min < 12 * 60) return H("Ottoline's on {cmd:radio 101.3} until noon.");
+  if (!has("rod") && !S.stats.fish) return H("Wren's fishing rod is in the shed. {cmd:ls ~/garden/shed}");
+  if (S.quests.fenn_lav === "open" && !has("seed:lavender") && !has("lavender") && !S.plots.some(p => p.crop === "lavender")) return H("Wren hid the good seeds. \"use your -a's.\" {cmd:ls -a ~/garden/shed}");
+  if (S.quests.fenn_lav === "open" && has("lavender")) return H("{cmd:send lavender to fenn}");
+  if (S.quests.pip_lesson === "open") return H("Pip wants a lesson. {cmd:write lesson.txt}, then {cmd:send lesson.txt to pip}.");
+  if (!S.flags.lampLit) return H(has("lamp") ? (has("matches") ? "{cmd:light lamp}" : "you need matches. kitchen drawer.") : "the attic's dark. there's an oil lamp in the {cmd:cd cellar}.");
+  if (!S.flags.ghOpen) return H(has("oilcan") ? "{cmd:cd garden}, {cmd:oil greenhouse}" : "the greenhouse door needs oil. the oilcan's in the shed.");
+  if (S.quests.jun_soup === "open") return H(S.recipes.carrot_soup ? (has("carrot_soup") ? "{cmd:send carrot soup to juniper}" : canMake("carrot_soup") ? "{cmd:cd kitchen}, {cmd:cook carrot soup}" : "soup needs two carrots. they take three nights.") : "there's a soup card in the kitchen: {cmd:cat ~/kitchen/recipes/carrot_soup.card}");
+  if (has("disk:sky") || has("disk:pip") || has("disk:lantern")) return H("there's a disk in your pocket. {cmd:cd study}, {cmd:insert}.");
+  if (!S.flags.gotKey) return H("the trunk key is on Biscuit's collar. she'll part with it when she trusts you. that takes days, and a fish wouldn't hurt.");
+  if (!S.taken["/cottage/attic/trunk/lantern.dsk"]) return H("the trunk, in the attic.");
+  if (has("seed:moonflower") && S.gh.every(p => p.crop !== "moonflower")) return H("moonflowers go in the greenhouse.");
+  if (!has("moonflower") && !S.flags.lanternLit && S.gh.some(p => p.crop === "moonflower")) return H("moonflowers open at night. harvest after dark.");
+  if (!S.flags.lanternLit && S.day < SEASON_END) return H("the lantern's ready, or nearly. the 25th is " + plural(SEASON_END - S.day, "day") + " away. there's a lot in this house you haven't looked at yet. {cmd:board}");
+  if (!S.flags.lanternLit) return H(isNight() ? "{cmd:cd dock}. {cmd:lantern}." : "tonight, after dark, on the dock.");
+  if (!S.flags.answered) return H(S.flags.sawAsk ? "it asked you something. Wren said what to answer with. the board has what you know: {cmd:board}" : "did you hear the cellar change, after the lantern?");
+  return H(pick(["the carp comes up in fog, or at dawn.", "your jar's not full. {cmd:jar}", "write to someone.", "{cmd:sit}. that's allowed."]));
 }
 
 function doOil(a) {
@@ -3598,45 +3526,45 @@ function doRecord() {
 
 async function doSit() {
   const r = roomName();
-  const spots = { parlour: "the marmalade armchair", dock: "the bench at the end of the dock", garden: "the edge of a raised bed", kitchen: "the kitchen chair with the wobbly leg", study: "the desk chair", hall: "the bottom stair", greenhouse: "an upturned flowerpot", roof: "the roof, back against the warm chimney", attic: "Gerald (gently)", cellar: "a crate of jam" };
+  const spots = { parlour: "the orange armchair", dock: "the bench at the end of the dock", garden: "the edge of a raised bed", kitchen: "the kitchen chair with the wobbly leg", study: "the desk chair", hall: "the bottom stair", greenhouse: "an upturned flowerpot", roof: "the roof, back against the warm chimney", attic: "a box marked TAX", cellar: "the cellar steps" };
   print("You sit on " + (spots[r] || "the floor") + " for a while.");
   await pause(800);
   const thoughts = [
-    "You don't think about anything in particular. It's lovely.",
-    "You listen to the house. It ticks and settles like an old dog turning round.",
-    "You think about Wren, on a ferry somewhere, probably talking to a stranger who'll remember her forever.",
-    r === "dock" ? "The water laps at the posts. A fish jumps, far out, just to show you it can." : "Outside, " + skyLine().charAt(0).toLowerCase() + skyLine().slice(1),
-    fireLit() && r === "parlour" ? "The fire pops. You watch the flames for so long you forget what you were going to do. Good." : "You notice you've stopped hurrying. You can't remember when."
+    "You don't think about much.",
+    "You listen to the house. Under everything, the hum.",
+    "You think about Wren, somewhere north, on a boat probably.",
+    r === "dock" ? "Water against the posts. The cable going down into it." : skyLine(),
+    fireLit() && r === "parlour" ? "You watch the stove until you forget what you came in for." : "You notice you've stopped hurrying."
   ];
   await type(pick(thoughts), 45);
-  if (r === "parlour" && S.cat.room === "parlour" && chance(0.7)) { await pause(500); print("{dim:Biscuit climbs into your lap, turns round three times, and settles like a warm loaf. You can never get up now. That's the law.}"); catMood(5); warm(5); sfx("purr"); }
+  if (r === "parlour" && S.cat.room === "parlour" && chance(0.7)) { await pause(500); print("{dim:Biscuit gets into your lap, turns round three times, and settles. You're not getting up for a while.}"); catMood(5); warm(5); sfx("purr"); }
   spend(15);
   warm(r === "parlour" && fireLit() ? 8 : 4, "warmer");
 }
 async function doNap() {
-  if (S.min > 22 * 60) return print("A nap? At this hour? That's just sleeping. {cmd:sleep}");
-  print("You curl up " + (roomName() === "parlour" ? "in the armchair" : "wherever you are") + " and close your eyes for just a minute...");
+  if (S.min > 22 * 60) return print("At this hour that's just sleeping. {cmd:sleep}");
+  print("You close your eyes for a minute.");
   await pause(900);
   print("{dim:z z z . . .}");
   await pause(900);
   spend(60);
   warm(5);
-  print("You wake an hour later with a crease on your face and " + (S.cat.room === roomName() ? "Biscuit asleep on your feet." : "no idea where you are, briefly.") + " It's " + clock(S.min) + ".");
+  print("An hour later" + (S.cat.room === roomName() ? ", with Biscuit on your feet." : ".") + " It's " + clock(S.min) + ".");
 }
 
 async function doSleep() {
-  if (S.min < 19 * 60 && S.min >= 7 * 60) return print("It's only " + clock(S.min) + ". The day's not done with you yet. {dim:(you can sleep from 7pm. or {cmd:nap}.)}");
-  print("You bank the stove, check the back door's shut, say goodnight to Biscuit (she doesn't say it back), and go up.");
+  if (S.min < 19 * 60 && S.min >= 5 * 60) return print("It's only " + clock(S.min) + ". {dim:(bed from 7pm. or {cmd:nap}.)}");
+  print("You check the back door, turn the lamp off, and go up.");
   await pause(700);
   if (S.today.length) {
     print("");
-    print("{dim:before you sleep, you write in your journal:}");
+    print("{dim:you write in your journal:}");
     const entry = S.today.slice(0, 5).join(" ");
     await type("  " + dateStr(S.day).toLowerCase() + ". " + entry, 70, "hi");
     await pause(600);
   }
   print("");
-  await type("Goodnight, cottage.", 30, "dim");
+  await type("Under the house, the hum.", 40, "dim");
   await pause(900);
   await newDay(false);
 }
@@ -4280,54 +4208,61 @@ const WEATHER_ART = {
   snow:    ["{hi:  *  .  *  }", "{hi: .  *  .  }", "{hi:  *  .  * }"]
 };
 
+const MORNINGS = {
+  2: "Biscuit is sitting on your chest. Not asleep. Watching.",
+  3: "Clear. You can see the observatory on the far shore, small and white, like a tooth.",
+  5: "Rain on the roof. Downstairs, the hum is going, under it.",
+  6: "You dreamt about the lake. You can't remember any of it except that it was lit.",
+  8: "Fog right up to the windows.",
+  10: "You wake up and lie there and listen. The hum is louder. You're sure of it now.",
+  12: "Frost on the inside of the window.",
+  14: "Lantern Night. You can hear oars already, someone testing a boat."
+};
 async function morning(fellAsleep) {
   const w = weatherFor(S.day);
   const art = WEATHER_ART[w.name] || WEATHER_ART.clear;
   print("");
-  print(art[0] + "   {hi:" + dayName(S.day) + ", " + dateStr(S.day) + "}");
-  print(art[1] + "   {dim:" + (S.day <= SEASON_END ? "day " + S.day + " of the season · " + (SEASON_END - S.day === 0 ? "it's LANTERN NIGHT" : (SEASON_END - S.day) + " days to Lantern Night") : "winter, in the Hollow") + "}");
-  print(art[2] + "   {dim:" + clock(S.min) + " · " + w.word + "}");
+  print(art[0] + "   {hi:" + dayName(S.day) + " " + dateStr(S.day) + "}");
+  print(art[1] + "   {dim:" + (S.day < SEASON_END ? (SEASON_END - S.day) + " days to Lantern Night" : S.day === SEASON_END ? "Lantern Night" : "winter") + "}");
+  print(art[2] + "   {dim:" + clock(S.min) + ", " + w.word + "}");
   print("");
-  await pause(400);
-  if (fellAsleep) await type("You wake at the desk with a crick in your neck and a cat on your back. The screen says hello.", 50);
-  else await type(pick([
-    "You wake up to " + (w.rain ? "rain on the roof" : w.snow ? "the particular silence of snow" : w.fog ? "a white, muffled world" : "light through the curtains") + " and the sound of Biscuit announcing that she is starving.",
-    "Morning. The house creaks itself awake around you. Downstairs, Biscuit is shouting about breakfast.",
-    "You wake slowly. For a second you forget where you are — then you smell woodsmoke and remember, and it's good."
-  ]), 50);
+  await pause(300);
+  if (fellAsleep) await type("You wake up at the desk with a crick in your neck and the cat on your back.", 70);
+  else await type(MORNINGS[S.day] || pick([
+    w.rain ? "Rain on the roof." : w.snow ? "Snow. Everything's gone quiet." : "Light through the curtains.",
+    "Biscuit, downstairs, is telling the whole house about breakfast.",
+    "Woodsmoke from somewhere. The house ticking as it warms up."
+  ]), 70);
   const o = S.flags.overnight || [];
   const grew = o.filter(x => x !== "dry");
-  if (grew.length) print("{ok:Overnight, in the garden: the " + [...new Set(grew)].join(" and the ") + (grew.length > 1 ? " are" : " is") + " ready.}");
-  else if (o.includes("dry")) print("{dim:(something in the garden looked thirsty yesterday and didn't grow. water before bed.)}");
-  if (w.rain && S.plots.some(p => p.crop)) print("{sky:(it's raining — the garden's watering itself today.)}");
-  if (S.mailbox.length) { sfx("mail"); print("{acc:There's post!} " + plural(S.mailbox.length, "letter") + " on the mat. {cmd:mail}"); }
-  if (S.day === SEASON_END) print("{warn:It's Lantern Night.} {dim:(tonight, after dark, on the dock.)}");
-  if (S.day === SEASON_END + 1 && S.flags.lanternLit) print("{dim:Downstairs, someone is already making tea. Someone who knows to thump the kettle on the left.}");
-  if (S.day === SEASON_END + 1) print("{hi:It snowed in the night.} {dim:(winter's here. the screen's gone frosty to match. {cmd:theme} to change it.)}");
+  if (grew.length) print("{ok:Ready in the garden: " + [...new Set(grew)].join(", ") + ".}");
+  else if (o.includes("dry")) print("{dim:(something in the garden went thirsty yesterday and didn't grow.)}");
+  if (S.mailbox.length) { sfx("mail"); print("{acc:Post.} " + plural(S.mailbox.length, "letter") + " on the mat. {cmd:mail}"); }
+  if (S.day === SEASON_END + 1) print("{dim:It snowed in the night.}");
   print("");
 }
 
 /* ---------- the sticky note on the monitor ---------- */
 const POSTITS = [
-  "the switch is at the BACK. everyone looks at the front. — W.",
-  "LEFT side of the kettle!! not the right. the right has feelings.",
-  "Margaret (spider, attic) pays rent in flies. do NOT hoover.",
-  "tap me if you're stuck ♥",
-  "Fenn says the bees have names. Fenn won't say what they are.",
-  "fog + dawn = Old Marmalade. I'm just saying.",
+  "the switch is at the BACK. — W.",
+  "LEFT side of the kettle.",
+  "Margaret (attic, spider). do not hoover.",
+  "tap me if you're stuck",
+  "Fenn's bees have names. he won't say what.",
+  "fog + dawn = the carp.",
   "Pip will try to hack you. let her.",
-  "the cellar hums. it's the freezer. (it's not the freezer.)",
-  "Juniper owes me. whatever she says.",
-  "if it rains, the garden waters itself. go fishing instead.",
-  "the trunk key is on Biscuit. earn it.",
-  "look up tonight, if it's clear.",
-  "nearly there, love.",
-  "tonight. the dock. the lantern. you've got this."
+  "it's not the freezer.",
+  "J. owes me. whatever she says.",
+  "rain = no watering. go fishing.",
+  "the trunk key is on Biscuit.",
+  "look west tonight.",
+  "nearly.",
+  "tonight. the dock."
 ];
 function updatePostit() {
   const p = $("postit");
   if (!p) return;
-  const t = S.flags.lanternLit ? "you did it. thank you, love. — W. x" : POSTITS[Math.min(S.day, POSTITS.length) - 1] || "tap me if you're stuck ♥";
+  const t = S.flags.answered ? "you answered it. — W." : S.flags.lanternLit ? "thank you. — W." : POSTITS[Math.min(S.day, POSTITS.length) - 1] || "tap me if you're stuck ♥";
   if (p.textContent !== t) p.textContent = t;
 }
 
@@ -4355,10 +4290,10 @@ function updateCard() {
 }
 function nextGoal() {
   if (!S.name) return "";
-  if (!S.read["/cottage/welcome.txt"]) return "read Wren's letter";
+  if (!S.read["/cottage/study/note.txt"]) return "read Wren's note";
   if (S.mailbox.length) return "you've got post";
   if (S.min >= 22 * 60) return "it's late. bed, maybe?";
-  const t = plain(hintText()).replace(/^Wren's voice, in your head: /, "");
+  const t = plain(hintText()).replace(/^hint: /, "");
   return t.length > 90 ? t.slice(0, 88) + "…" : t;
 }
 
@@ -4367,14 +4302,14 @@ function contextKeys() {
   const r = roomName();
   const k = [];
   const per = {
-    hall: ["look", "ls", "map", "todo", "cat welcome.txt"],
-    kitchen: ["brew", "feed biscuit", "cook", "ls recipes"],
+    hall: ["look", "ls", "todo"],
+    kitchen: ["brew", "feed biscuit", "cook"],
     parlour: ["stoke", "sit", "play record", "ls bookshelf"],
-    study: ["mail", "radio", "insert", "ls desk"],
-    garden: ["garden", "water", "harvest", "plant", "chop"],
+    study: ["board", "mail", "radio"],
+    garden: ["garden", "water", "harvest", "plant"],
     greenhouse: ["garden", "harvest", "plant moonflower"],
-    dock: ["fish", "row", "sit"],
-    cellar: ["take jam", "take lamp", "look"],
+    dock: ["fish", "row", "look water"],
+    cellar: ["listen", "take lamp", "look"],
     attic: ["look", "ls trunk", "cd ../roof"],
     roof: ["sky", "cat star_notes.txt"]
   };
@@ -4383,9 +4318,12 @@ function contextKeys() {
   if (r === "dock" && S.disks.lantern) k.push("lantern");
   if (catHere()) k.push("pet biscuit");
   if (S.mailbox.length && !k.includes("mail")) k.push("mail");
-  if (r !== "hall") k.push("cd ..");
+  const nd = nodeAt(S.cwd);
+  if (nd && (nd.room || S.cwd === HOME)) for (const d of doorsOf(r)) k.push("cd " + d);
+  else k.push("cd ..");
   if (S.min >= 20 * 60 || S.min < 6 * 60) k.push("sleep");
-  k.push("hint", "map", "⇥ tab", "↑ again");
+  if (!S.read["/cottage/study/note.txt"] && r === "study") k.unshift("cat note.txt");
+  k.push("hint", "⇥ tab", "↑ again");
   return [...new Set(k)];
 }
 
@@ -4409,20 +4347,20 @@ function afterCommand() {
 
 /* ---------- Lantern Night ---------- */
 function lanternStatus() {
-  if (S.flags.lanternLit) return "The lantern is lit, burning a steady blue-gold. Across the water, a hundred little lights answer it.";
+  if (S.flags.lanternLit) return "Lit. A steady blue-gold flame." + (S.flags.answered ? "" : " The cable beside it is warm.");
   const need = [];
   if (!S.disks.lantern) need.push("the lantern disk installed in HEARTH");
   if (!has("wick")) need.push("a wick");
   if (!has("moonflower")) need.push("a moonflower (for the oil)");
   if (!has("matches")) need.push("matches");
-  return "An iron lantern on a pole, black with age, its glass clean. A brass plate on the post: {acc:FIRST LIGHT — LANTERN NIGHT}.\n" +
-    (need.length ? "{dim:It'll need: " + need.join(", ") + ".}" : "{ok:Everything's ready.} " + (S.day >= SEASON_END ? "{dim:After dark: {cmd:lantern}.}" : "{dim:Now it just needs to be the 25th.}"));
+  return "An iron lantern on a pole. The glass has been cleaned recently.\n" +
+    (need.length ? "{dim:It needs: " + need.join(", ") + ".}" : "{ok:It has everything it needs.} " + (S.day >= SEASON_END ? "{dim:After dark: {cmd:lantern}.}" : "{dim:The 25th.}"));
 }
 
 async function doLantern() {
   if (roomName() !== "dock") return print("The lantern's on the dock. {cmd:cd dock}");
   if (S.flags.lanternLit) {
-    print("The lantern's lit. You stand by it a while. Out on the water the little lights bob and turn, and somebody — Pip, definitely Pip — is waving a torch at you in circles.");
+    print("It's lit. You stand by it for a while." + (S.flags.answered ? "" : " {dim:(up at the house, the cellar is still humming that new note.)}"));
     return;
   }
   const missing = [];
@@ -4431,12 +4369,12 @@ async function doLantern() {
   if (!has("matches")) missing.push("matches {dim:(kitchen drawer)}");
   if (S.day < SEASON_END) {
     print("Not yet. It's for Lantern Night — " + dateStr(SEASON_END) + ", " + plural(SEASON_END - S.day, "day") + " away.");
-    print(missing.length ? "{dim:You'll need: " + missing.join(", ") + ".}" : "{ok:But you've got everything it needs.} {dim:You can feel it wanting to be lit. Patience.}");
+    print(missing.length ? "{dim:You'll need: " + missing.join(", ") + ".}" : "{ok:You've got everything it needs.}");
     S.flags.lanternReady = !missing.length;
     return;
   }
-  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:(no rush. Ottoline says they'll wait on the water as long as it takes. they always have.)}");
-  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. Lanterns are for after dark. {dim:(come back after 6pm. everyone will be on the water by then.)}");
+  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:(they'll wait. Ottoline said.)}");
+  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. After dark. {dim:(from 6pm.)}");
   await lanternFinale();
 }
 
@@ -4449,16 +4387,14 @@ async function lanternFinale() {
   keepsake("lantern");
   clearScreen();
   await pause(500);
-  await type(late ? "It isn't the 25th any more. It doesn't matter. Ottoline said they'd wait, and they have: there are boats out on the dark water, waiting." : "It's dark. Out on the lake you can hear oars, and low voices, and someone laughing. The whole Hollow is out there in the dark, waiting.", 42);
-  await pause(800);
-  await type("You open the lantern's little glass door. You fit the new wick, and press the moonflower into the oil cup.", 42);
-  await type("It glows faintly in the dark, like it's remembering the moon.", 42, "dim");
-  await pause(800);
-  await type("You strike a match.", 30);
+  await type(late ? "It isn't the 25th any more. They've waited anyway. There are boats on the water, in the dark." : "It's dark. Out on the lake there are oars, and low voices, and somebody laughing and being shushed. The whole Hollow is out there, waiting.", 45);
+  await pause(700);
+  await type("You open the little glass door, fit the wick, and press the moonflower into the oil cup. It glows faintly in your fingers. Blue-gold.", 45);
+  await pause(700);
+  await type("You strike a match.", 35);
   sfx("crackle");
   await pause(1200);
   print("");
-  const frames = [];
   const W2 = 46;
   const lake = (lights) => {
     const sky = "{dim:" + " .    *        .      *    .        *    .   ".slice(0, W2) + "}";
@@ -4468,7 +4404,7 @@ async function lanternFinale() {
       boats += lights.includes(i) ? "{acc:o}" : " ";
       water += lights.includes(i) ? "{acc:|}" : "{sky:" + (i % 4 === 0 ? "-" : "~") + "}";
     }
-    return [sky, hill, boats, water, "{dim:" + "~ ".repeat(W2 / 2) + "}", "{hi:                                        [#]}{dim: <- you}", "{dim:  ======================================|====}"];
+    return [sky, hill, boats, water, "{dim:" + "~ ".repeat(W2 / 2) + "}", "{hi:                                        [#]}{dim: <- you}"];
   };
   const lit = [];
   const order = [40, 33, 36, 27, 30, 22, 24, 18, 14, 16, 10, 7, 12, 4, 2, 20, 26, 38, 9, 44];
@@ -4476,65 +4412,36 @@ async function lanternFinale() {
   const render = () => { box.innerHTML = lake(lit).map(l => fmt(l)).join("<br>"); scrollDown(); };
   render();
   await pause(900);
-  print("{acc:The lantern catches.} A blue-gold flame, small and steady.");
+  print("{acc:It catches.} A small steady flame, blue-gold.");
   sfx("chime");
-  await pause(1500);
-  await type("For a moment, nothing. Then — out on the water — one light. Then another.", 40);
-  for (const i of order) { lit.push(i); render(); sfx("tick"); await pause(T.skip ? 0 : 260); }
-  await pause(600);
-  print("");
-  await type("A cheer comes across the water, thin and happy.", 40);
-  await pause(500);
-  print("{acc:OTTOLINE} {dim:(from a boat, far too loudly):} THERE IT IS! THERE IT IS! I SAID IT WOULD BE!");
-  await pause(900);
-  print("{sky:PIP} {dim:(waving a torch in circles):} HELLOOOOOOO! THAT'S MY FRIEND! I TAUGHT THEM EVERYTHING!");
-  await pause(900);
-  print("{ok:FENN} {dim:(from the hill, to nobody):} ...Good.");
-  await pause(900);
-  print("{hi:JUNIPER} {dim:(the observatory dome, swinging open, a lamp in the slit):} {dim:(she flashes it three times. you don't know what it means. you know exactly what it means.)}");
-  await pause(1500);
-  print("");
-  await type("And then, from further out, a sound you don't expect: a ship's horn. Low, and long.", 40);
-  sfx("owl");
-  await pause(900);
-  await type("The ferry, lit up like a birthday cake, has stopped in the middle of the lake. Someone on the deck in a yellow mac is waving with both arms.", 40);
-  await pause(900);
-  await type("A rowing boat comes out to meet it. Then, slowly, it comes to your dock.", 40);
-  await pause(1200);
-  print("");
-  await type("She's smaller than you remember, and browner, and her hat is new and terrible.", 40);
-  await pause(600);
-  print("{acc:WREN:} " + esc(NAME()) + ". Look at you. Look at it.");
-  await pause(1000);
-  print("{acc:WREN:} I saw it from the ferry. I told the captain, I said, that's my lantern. That's my house. And he said, who lit it, then? And I said —");
   await pause(1400);
-  print("{acc:WREN:} — well. I said someone who belongs here.");
-  await pause(1500);
+  await type("Then, out on the water, one light. Then another.", 45);
+  for (const i of order) { lit.push(i); render(); sfx("tick"); await pause(T.skip ? 0 : 240); }
+  await pause(600);
   print("");
-  await type("Biscuit trots down the dock. She looks up at Wren for a long moment. Then she turns round and sits, very deliberately, on your foot.", 40);
+  print("{acc:OTTOLINE} {dim:(far too loud):} There it is!");
   await pause(900);
-  print("{acc:WREN:} {dim:(laughing so hard she has to hold the lantern post)} Well. That settles that, then.");
+  print("{sky:PIP} {dim:(waving a torch in circles):} HELLO! HELLO!");
+  await pause(900);
+  print("{ok:FENN} {dim:(from the hill, to nobody):} Good.");
+  await pause(900);
+  print("{hi:JUNIPER} {dim:(the dome opens across the water. a lamp in the slit flashes three times.)}");
+  await pause(1600);
+  print("");
+  await type("You count the boats. Twenty.", 45);
+  await pause(800);
+  await type("You count the lights on the water.", 45);
+  await pause(1200);
+  await type("Twenty-one. One of them is a long way under the surface, and it isn't moving with the others.", 45);
+  clue("count"); clue("lights");
   await pause(1500);
   print("");
-  print("{dim:You stand on the dock together, and the three of you watch the lights on the water for a long, long time.}");
-  await pause(2200);
+  await type("Up at the house, through the open back door, you hear the hum in the cellar change its note.", 45);
   print("");
-  print("{hi:              ~  THE END (of autumn)  ~}");
-  print("");
-  const keeps = Object.keys(S.keeps).length;
-  const st = [
-    ["days in the cottage", S.day], ["cups of tea", S.stats.teas], ["fish caught", S.stats.fish], ["things grown", S.stats.harvests],
-    ["meals", S.stats.meals], ["parcels sent", S.stats.gifts], ["times you petted Biscuit", S.stats.pets], ["keepsakes in the jar", keeps + "/" + Object.keys(KEEPSAKES).length]
-  ];
-  for (const [k, v] of st) print("   {dim:" + pad(k, 28, ".") + "} {acc:" + v + "}");
-  print("");
-  print("{dim:   the season turns. winter comes to the Hollow. the cottage is yours for as long as you like —}");
-  print("{dim:   there's still Old Marmalade, and stars, and post, and a jar to fill.}");
-  print("");
-  S.mailbox.push("wren_home"); S.letters.push("wren_home");
-  remember("LANTERN NIGHT. lit the lantern. Wren came home on the ferry. Biscuit sat on MY foot.");
+  print("{dim:(the lantern is lit. Lantern Night is done. the night isn't, if you want it.)}");
+  remember("lit the lantern. twenty boats, twenty-one lights. the cellar changed its note.");
   T.ending = false;
-  spend(60);
+  spend(30);
   save();
 }
 
@@ -4606,7 +4513,7 @@ function drawScene() {
   const r = roomName();
   const outside = ["garden", "dock", "roof"].includes(r);
   const win = $("win");
-  if (win) win.classList.toggle("outside", outside);
+  if (win) win.classList.toggle("outside", outside || r === "cellar");
   const lit = S.flags.lanternLit;
   const horizon = Math.round(H * 0.58);
   const grey = w.cloud * 0.55 + w.fog * 0.3;
@@ -4877,6 +4784,344 @@ function drawCellar() {
   if (catHere()) drawCat(W - 38, by, false);
 }
 
+/* ---- js/16-mystery.js ---- */
+/* =====================================================================
+   16-mystery.js — what's in the lake.
+
+   In October 1962, two fourteen-year-olds on the end of the dock
+   flashed a torch at a comet three times, and the lake flashed back.
+   Wren spent the rest of her life trying to answer it properly: the
+   cable, the receiver in the cellar, the nightly log, Lantern Night.
+   This autumn the comet comes back. Wren has gone to be on the water
+   off Tórshavn with the only other person who's been listening.
+
+   Nothing here is told to the player directly. It's found, pinned to
+   the corkboard (`board`), and worked out. The real ending only opens
+   if the player knows the comet's name — which the game never says
+   outright unless Juniper decides to tell you.
+   ===================================================================== */
+"use strict";
+
+/* ---------- the corkboard ---------- */
+const CLUES = {
+  // the cellar
+  hum:    { thread: "the cellar", title: "The hum", hint: "something in the cellar", links: ["cable", "listen"],
+            text: () => "The beige box in the cellar hums, day and night. Wren's note says it's the freezer. The freezer's unplugged." },
+  cable:  { thread: "the cellar", title: "The cable", hint: "where does the box's cable go?", links: ["hum", "lights"],
+            text: () => "A cable runs from the cellar box, down the garden, along the dock, and forty metres down into the lake. Wren laid it in 1987. \"Down, not up.\"" },
+  listen: { thread: "the cellar", title: "listen", hint: "Wren ran something down there, at night", links: ["hum", "r777", "log", "ask"],
+            text: () => "Wren had a program called {cmd:listen}. She ran it in the cellar most nights. It reads a signal off the cable." },
+  r777:   { thread: "the cellar", title: "77.7", hint: "there's something on the radio, between the stations", links: ["listen"],
+            text: () => "On 77.7 a flat voice says single words, slowly. Kettle. Light. Three. It's HEARTH, reading the signal aloud with the only words it has." },
+  log:    { thread: "the cellar", title: "The log", hint: "Wren would have written it down", links: ["listen", "tor", "origin"],
+            text: () => "Every night since 1987, in /var/log/listen. It has never once read zero. It jumps every 25th of October." },
+  tor:    { thread: "the cellar", title: "TÓR", hint: "someone else is in the log", links: ["log"],
+            text: () => "Since 1988 the log notes a second station on the same signal: TÓR, in the Faroe Islands. Someone else has been listening." + (S.flags.metAsa ? " Wren's gone to meet her. Her name is Ása." : "") },
+  // the lake
+  lights: { thread: "the lake", title: "Lights in the water", hint: "people say they've seen things in the lake at night", links: ["cable", "colour", "count"],
+            text: () => "Some nights there's a light down in the lake. Deep, blue-gold, slow. Pip's seen it. So have you." },
+  colour: { thread: "the lake", title: "The colour", hint: "Wren left a note in the greenhouse", links: ["lights"],
+            text: () => "Moonflowers glow blue-gold. So do the lights in the lake. Wren: \"that's not a coincidence. I don't know what it is.\"" },
+  count:  { thread: "the lake", title: "Count the lights", hint: "an old photograph", links: ["lights", "origin"],
+            text: () => "The first Lantern Night, 1974. More lights on the water than there were boats." },
+  origin: { thread: "the lake", title: "Why Lantern Night", hint: "how did Lantern Night start?", links: ["count", "log"],
+            text: () => "Wren started Lantern Night in 1974, and the signal jumps every Lantern Night since. The lanterns aren't for the village. They're a reply." },
+  // 1962
+  bottle: { thread: "1962", title: "The bottle", hint: "the lake keeps things. go fishing", links: ["1962", "comet"],
+            text: () => "A bottle out of the lake: Wren and Juniper, 1962, aged fourteen. They flashed a torch at the comet three times, and the lake flashed back." },
+  "1962": { thread: "1962", title: "October 1962", hint: "Wren kept a diary, somewhere locked", links: ["bottle", "name"],
+            text: () => "Wren's diary: that night the whole bay lit up \"like a shoal of lamps, all swimming the same way.\"" },
+  comet:  { thread: "1962", title: "The comet", hint: "Juniper knows the sky", links: ["bottle", "name"],
+            text: () => "It comes round every sixty-four years. 1962, and now. Low in the west after dark." + (S.flags.sawComet ? " You've seen it." : "") },
+  name:   { thread: "1962", title: "Its name", hint: "what did they call it?", links: ["1962", "comet", "ask"],
+            text: () => S.flags.nameKnown ? "Juniper told you. They called the comet {acc:the Lantern Fish}, after what they saw in the water." : "They named the comet after what they saw in the lake. The diary only gives initials: L——— F———." },
+  ask:    { thread: "1962", title: "If it asks", hint: "Wren left something in her trunk", links: ["name", "listen"],
+            text: () => "Wren: \"if it ever asks you something, answer with its name. you'll know when.\"" }
+};
+const THREADS = ["the cellar", "the lake", "1962"];
+
+function clue(id) {
+  if (!S.clues) S.clues = {};
+  if (S.clues[id] || !CLUES[id]) return;
+  S.clues[id] = S.day;
+  toast("pinned to the board: <b>" + CLUES[id].title + "</b>");
+  sfx("page");
+  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:(you pin it to the corkboard in the study. {cmd:board} to see it.)}"); showLine(true); } }, 50); }
+}
+
+function doBoard() {
+  const found = S.clues || {};
+  const n = Object.keys(found).length, total = Object.keys(CLUES).length;
+  print("{hi:THE CORKBOARD}  {dim:cork, drawing pins, red wool · " + n + " of " + total + " pinned}");
+  if (!n) { print(""); print("{dim:Nothing pinned yet. Wren's note said to ignore the noise in the cellar.}"); return; }
+  for (const th of THREADS) {
+    const cards = Object.entries(CLUES).filter(([, c]) => c.thread === th);
+    const seen = cards.filter(([k]) => found[k]);
+    const near = cards.filter(([k, c]) => !found[k] && c.links.some(l => found[l]));
+    if (!seen.length && !near.length) continue;
+    print("");
+    print("{acc:── " + th + " " + "─".repeat(Math.max(2, 34 - th.length)) + "}");
+    for (const [, c] of seen) { print("  {hi:" + c.title + "}"); printRaw(fmt(c.text()), "ind"); }
+    for (const [, c] of near) print("  {dim:?  " + c.hint + "}");
+  }
+  const hidden = Object.entries(CLUES).filter(([k, c]) => !found[k] && !c.links.some(l => found[l])).length;
+  if (hidden) { print(""); print("{dim:(and some string going off the edge of the board, to nothing yet.)}"); }
+}
+
+/* ---------- the signal ---------- */
+const cometNear = () => S.day >= 10 && S.day <= 18;
+const asking = () => S.flags.lanternLit && isNight() && !S.flags.answered;
+function signalLevel() {
+  if (S.flags.answered) return 0.31;
+  if (asking()) return 1;
+  let s = 0.06 + Math.min(S.day, 14) / 14 * 0.55;
+  if (isNight()) s += 0.08;
+  if (cometNear()) s += 0.12;
+  if (S.day > 18) s *= 0.6;
+  return Math.min(0.97, s + (seeded(S.day * 31 + Math.floor(S.min / 30))() - 0.5) * 0.04);
+}
+const WORDS_LOW = ["kettle", "kettle", "water", "light", "cat", "three"];
+const WORDS_HIGH = ["three", "three", "light", "light", "water", "home", "soon"];
+function heard(level) {
+  const pool = level > 0.5 ? WORDS_HIGH : WORDS_LOW;
+  const r = seeded(S.day * 7 + Math.floor(S.min / 20));
+  const n = level > 0.6 ? 4 : level > 0.3 ? 3 : 2;
+  return Array.from({ length: n }, () => pool[Math.floor(r() * pool.length)]).join(" . ");
+}
+
+/** What you see if you look into the water off the dock. */
+function lakeLook() {
+  const w = weatherNow();
+  if (roomName() !== "dock") return "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~";
+  if (!isNight()) return w.fog > 0.5 ? "Grey water going into grey fog." : "Brown-green water, clear for a metre or so, then dark. The cable goes down into it.";
+  const lvl = signalLevel();
+  if (S.flags.answered) return "The lake is dark and calm. Every so often, far down, something gold turns over, like it's asleep.";
+  if (w.rain >= 1 || w.fog > 0.6) return "Black water, rain-pocked. You can't see into it.";
+  if (lvl > 0.45 && chance(0.25 + lvl * 0.6)) {
+    clue("lights");
+    return "Black water. Your own reflection, and the stars.\n\nThen, a long way down — further than the water should go — a light. Blue-gold. It turns slowly, like something looking up, and then it's gone.";
+  }
+  return "Black water, the stars in it. The cable going down. " + (lvl > 0.3 ? "For a second you think you see something, deep. Probably not." : "Nothing.");
+}
+
+/* ---------- listen ---------- */
+async function doListen(args) {
+  const a = args.join(" ");
+  if (/^(-h|--help|help)/.test(a)) {
+    print("{hi:listen}  read the receiver in the cellar");
+    print("  {cmd:listen}               take a reading");
+    print("  {cmd:listen --log}         readings since you arrived");
+    print("  listen --reply WORDS   send words back down the cable {dim:(disabled until it asks)}");
+    return;
+  }
+  if (roomName() !== "cellar") return print("listen: the receiver's in the cellar. {dim:({cmd:cd cellar})}");
+  clue("listen"); clue("hum");
+  if (/^--log/.test(a)) return listenLog();
+  const rm = a.match(/^(--reply|-r|reply)\s*(.*)$/);
+  if (rm) return doReply(rm[2]);
+  const lvl = signalLevel();
+  print("{dim:the box clicks. the hum changes pitch, very slightly.}");
+  const bar = printRaw("");
+  let dots = "";
+  for (let i = 0; i < 22; i++) {
+    dots += Math.random() < lvl ? ":" : "·";
+    bar.innerHTML = fmt("  listening {sky:" + dots + "}");
+    await pause(70);
+  }
+  print("  signal {hi:" + lvl.toFixed(2) + "}" + (lvl > 0.5 ? "  {acc:(strong)}" : lvl > 0.25 ? "  {dim:(rising)}" : ""));
+  if (S.flags.answered) { print("  heard: {dim:...}"); print("{dim:(it's quiet now. not gone. resting.)}"); return; }
+  if (asking()) {
+    await pause(400);
+    print("  heard: {acc:three . three . three}");
+    await pause(500);
+    print("  heard: {warn:NAME ?}");
+    await pause(300);
+    print("{dim:(the green light on the box has stopped blinking. it's on. it's waiting.)}");
+    print("{dim:(listen --reply ...)}");
+    S.flags.sawAsk = true;
+    return;
+  }
+  print("  heard: {sky:" + heard(lvl) + "}");
+  if (!S.flags.listenedOnce) { S.flags.listenedOnce = true; remember("ran Wren's listen program in the cellar. it said 'kettle'. I don't know what to do with that."); }
+}
+
+function listenLog() {
+  print("{dim:readings, this month (full log: {cmd:ls /var/log/listen}):}");
+  for (let d = Math.max(1, S.day - 9); d <= S.day; d++) {
+    const r = seeded(d * 13)();
+    const v = Math.min(0.97, 0.06 + Math.min(d, 14) / 14 * 0.55 + (d >= 10 && d <= 18 ? 0.12 : 0) + r * 0.05);
+    print("  " + pad(dateStr(d).toLowerCase(), 12) + " " + "{sky:" + "▮".repeat(Math.round(v * 20)) + "}" + "{dim:" + "·".repeat(20 - Math.round(v * 20)) + "} " + v.toFixed(2));
+  }
+  clue("log");
+}
+
+async function doReply(words) {
+  const w = (words || "").toLowerCase().replace(/[^a-z]/g, "");
+  if (!w) return print("reply with what? {dim:(listen --reply WORDS)}");
+  if (!asking()) {
+    sfx("bonk");
+    return print("listen: reply disabled. {dim:(hearth.conf: reply = disabled  # until it asks)}");
+  }
+  if (!["lanternfish", "thelanternfish"].includes(w)) {
+    S.flags.wrongReplies = (S.flags.wrongReplies || 0) + 1;
+    print("{dim:you send it.} The hum holds the same note, patient. That wasn't it.");
+    if (S.flags.wrongReplies >= 2) print("{dim:(Wren: \"answer with its name.\" the name of what? what did they see, in 1962? the board might help: {cmd:board})}");
+    return;
+  }
+  await trueEnding();
+}
+
+/* ---------- the other ending ---------- */
+async function trueEnding() {
+  T.ending = true;
+  S.flags.answered = true;
+  clue("name");
+  print("You type it in, slowly, and press enter.");
+  await pause(900);
+  print("");
+  print("{dim:the hum stops.}");
+  await pause(1600);
+  await type("For a second there's no sound in the cellar at all. Then the box gives three short clicks, and the green light goes out.", 38);
+  await pause(800);
+  await type("You go up the cellar steps, through the kitchen, out of the back door, down through the wet grass in your socks.", 38);
+  await pause(800);
+  await type("The boats are still out. Nobody's talking.", 38);
+  await pause(1000);
+  print("");
+  const W2 = 46;
+  const box = printRaw("");
+  for (let f = 0; f <= 14; f++) {
+    const rows = [];
+    rows.push("{dim:" + " .    *        .      *   " + "{acc:*==--- -  -}" + "      .  }");
+    rows.push("{dim:        ___/^\\___         _/o\\_              }");
+    let boats = "", water = "", deep = "", deeper = "";
+    for (let i = 0; i < W2; i++) {
+      boats += i % 5 === 2 ? "{acc:o}" : " ";
+      water += "{sky:~}";
+      const lit = Math.abs(((i + f * 3) % W2) - W2 / 2) < f * 1.6;
+      deep += lit && (i + f) % 3 === 0 ? "{acc:*}" : lit ? "{hi:.}" : " ";
+      deeper += lit && (i * 7 + f) % 5 === 0 ? "{acc:°}" : " ";
+    }
+    rows.push(boats, water, deep, deeper);
+    box.innerHTML = rows.map(r => fmt(r)).join("<br>");
+    scrollDown();
+    if (f % 3 === 0) sfx("tick");
+    await pause(T.skip ? 0 : 280);
+  }
+  print("");
+  await type("The whole bay is lit from underneath. Blue-gold, from the deep part out to the reeds, thousands of small lights, and all of them moving the same way, slowly, like a shoal.", 38);
+  await pause(800);
+  await type("They turn once under the boats. Somebody — Pip — makes a sound that isn't a word.", 38);
+  await pause(800);
+  await type("Then they go down, together, and the lake is dark, and the comet is still there over the hill.", 38);
+  await pause(1500);
+  print("");
+  print("{hi:JUNIPER} {dim:(across the water, from the observatory, not shouting, but you hear it):} ...Oh, Wren.");
+  await pause(1600);
+  print("");
+  await type("Back in the house, the radio in the study has come on by itself. It's on a shortwave band you've never tuned to. Someone's speaking, through a lot of static.", 38);
+  sfx("beep");
+  await pause(900);
+  print("{acc:WREN:} {dim:(kshhh)} ...hear me? It's Wren. Is that you, at the house?");
+  await pause(1300);
+  print("{acc:WREN:} We saw it from here. Ása and me, in her boat, off Tórshavn. The whole harbour lit up. Every light in the water, all at once.");
+  await pause(1500);
+  print("{acc:WREN:} Sixty-four years I've been trying to say the right thing to it. {dim:(she's laughing, or crying, or both.)} You worked it out.");
+  await pause(1500);
+  print("{acc:WREN:} I'll be home on the second. Leave the lantern lit. And — thank you, love. Really.");
+  await pause(1200);
+  print("{dim:(kshhhhh)}");
+  await pause(1800);
+  print("");
+  print("{hi:              ~  THE END  ~}");
+  print("");
+  endStats();
+  print("");
+  print("{dim:   the comet goes. the season turns. the cottage is yours for as long as you like.}");
+  keepsake("answered");
+  S.flags.metAsa = true;
+  remember("answered it. the whole lake lit up. Wren heard it from the Faroes. I don't have words for it yet.");
+  S.mailbox.push("wren_home"); S.letters.push("wren_home");
+  T.ending = false;
+  save();
+}
+
+function endStats() {
+  const keeps = Object.keys(S.keeps).length;
+  const st = [
+    ["days in the cottage", S.day], ["cups of tea", S.stats.teas], ["fish caught", S.stats.fish], ["things grown", S.stats.harvests],
+    ["parcels sent", S.stats.gifts], ["pinned to the board", Object.keys(S.clues || {}).length + "/" + Object.keys(CLUES).length], ["keepsakes in the jar", keeps + "/" + Object.keys(KEEPSAKES).length]
+  ];
+  for (const [k, v] of st) print("   {dim:" + pad(k, 24, ".") + "} {acc:" + v + "}");
+}
+
+/* ---------- the files ---------- */
+const DIARY_1962 = `{dim:(a school exercise book, water-stained. "WREN ASHDOWN, 3B" on the cover.)}
+
+{acc:25 oct 1962.}
+
+J. and me on the end of the dock, gone midnight, freezing.
+the comet low over the hill with its tail out behind it like
+a fin.
+
+J. flashed her torch at it three times, as a joke.
+
+then the lake flashed back. three times. from under the water,
+blue-gold, deep down where the deep bit is. then the whole bay
+lit up, like a shoal of lamps, all swimming the same way. it
+went round once under the dock and then it went down.
+
+we named the comet after what we saw. J. made me swear not
+to write the name down, so I'm only putting the letters:
+
+    {hi:the L——— F———}
+
+we're not telling anyone. ever.`;
+
+function mysteryTree() {
+  // a hidden file in the hall: Wren's .plan
+  ROOT.kids.cottage.kids[".plan"] = F(`{dim:(~/.plan — last edited 11 oct)}
+
+  - ferry from Aberdeen on the 9th
+  - meet Á. at last. thirty-eight years of tuesdays.
+  - be on the water off Tórshavn on the 25th, when it comes back
+  - don't tell them about the noise. let them find it.`, { owner: "wren", onRead: () => { clue("tor"); S.flags.planRead = true; } });
+
+  const days = () => {
+    const k = {};
+    for (let d = 1; d < S.day; d++) {
+      const r = seeded(d * 13)();
+      const v = Math.min(0.97, 0.06 + Math.min(d, 14) / 14 * 0.55 + (d >= 10 && d <= 18 ? 0.12 : 0) + r * 0.05);
+      k[dateStr(d).toLowerCase().replace(" ", "-") + ".log"] = F(() => "night of " + dateStr(d) + "\n  max " + v.toFixed(2) + "\n  heard: " + (v > 0.5 ? "three . light . three" : "kettle . water") + (d === S.day - 1 && d >= 10 ? "\n  {dim:(comet visible)}" : ""), { owner: "hearth" });
+    }
+    return k;
+  };
+  return {
+    var: D("variable things.", {
+      log: D("logs.", {
+        listen: D("Wren's receiver log. One file a night.", () => Object.assign({
+          "README": F(W("every night since may 1987. 0.00 would mean nothing's there.\nit has never read 0.00."), { onRead: () => clue("log") }),
+          "1987-2025.summary": F(`{dim:yearly peaks}
+
+  1987   0.11   {dim:first year. it spiked on the 25th. I'd lit a lantern.}
+  1988   0.12   {dim:second station on the same signal from march. TÓR. faroes.}
+  1991   0.12   {dim:"TÓR" is a woman called Ása. we talk tuesdays. in numbers, mostly.}
+  1999   0.13   {dim:every 25th, the same. the more lanterns, the higher.}
+  2010   0.14
+  2025   0.15   {dim:next year it comes back. 0.15 is the most it's been.}
+  ...
+  {dim:every single peak is on the 25th of october. Lantern Night.}`, { onRead: () => { clue("log"); clue("tor"); clue("origin"); } })
+        }, days()))
+      })
+    })
+  };
+}
+
+/* ---------- commands ---------- */
+cmd("board corkboard clues notes", "the corkboard: what you've worked out", () => doBoard(), { group: "help" });
+cmd("listen", "Wren's receiver program (in the cellar)", doListen, { group: "living" });
+cmd("reply answer", "", (a) => doListen(["--reply"].concat(a)), { secret: true });
+
 /* ---- js/99-boot.js ---- */
 /* =====================================================================
    99-boot.js — switching it on. The BIOS checks the kettle, asks your
@@ -4890,17 +5135,6 @@ const LOGO = [
   "| __ | _| / _ \\|   / | | | __ |",
   "|_||_|___/_/ \\_\\_|_\\ |_| |_||_|"
 ];
-const HOUSE = [
-  "            (  )",
-  "             ) (",
-  "        _____|_|______",
-  "       /              \\",
-  "      /   _        _   \\",
-  "     |   |#|  __  |#|   |",
-  "     |        ||        |",
-  "  ~~~|________||________|~~~~~~~~"
-];
-
 async function bootSequence(reboot) {
   $("screen").classList.remove("off");
   $("screen").classList.add("boot");
@@ -4908,70 +5142,56 @@ async function bootSequence(reboot) {
   T.busy = true;
   showLine(false);
   const fresh = !S.name;
-  const quick = !fresh && !reboot;
-  await pause(quick ? 200 : 500);
-  print("{dim:HEARTH-80 BIOS v2.1   (c) 1987 Ashdown Home Systems}");
-  if (!quick) {
-    await pause(250);
-    const mem = printRaw("");
-    for (let k = 0; k <= 640; k += 64) { mem.innerHTML = fmt("{dim:memory test:} " + k + "K"); await pause(45); }
-    mem.innerHTML = fmt("{dim:memory test:} 640K {ok:OK}  {dim:(plenty)}");
-    await pause(200);
-    print("{dim:detecting peripherals...}");
-    const per = [
-      ["kettle", "{ok:ok}"],
-      ["radio", S.disks.radio ? "{ok:ok}" : "{warn:no disk}"],
-      ["telescope", S.disks.sky ? "{ok:ok}" : "{dim:not found}"],
-      ["cat", "{acc:detected (unsupported)}"],
-      ["rain", weatherNow().rain ? "{ok:yes}" : "{dim:none today}"]
-    ];
-    for (const [n, s] of per) { await pause(160); print("  " + pad(n, 12, ".") + " " + s); }
-    await pause(200);
-    print("{dim:mounting /cottage ...} {ok:ok}");
-    await pause(400);
+  await pause(300);
+  print("{dim:HEARTH-80 · 640K · receiver: on}");
+  if (reboot) {
+    await pause(300);
+    for (const l of LOGO) print("{acc:" + esc(l) + "}");
   }
   print("");
-  for (const l of LOGO) print("{acc:" + esc(l) + "}");
-  print("{dim:      personal home computer · Wren's build}");
-  print("");
   if (fresh) {
-    for (const l of HOUSE) { print("{hi:" + esc(l) + "}"); await pause(40); }
-    print("");
-    await pause(500);
-    await type("There's a note taped to the keyboard, in loopy handwriting:", 45, "dim");
-    await pause(300);
-    print("{acc:  \"type your name, love, and press enter. it'll remember you. — W.\"}");
-    print("");
+    await pause(400);
     let name = "";
+    print("{dim:(type your name and press enter)}");
     while (!name) {
       const got = await ask("login: ");
       name = (got || "").trim().replace(/[^\p{L}\p{N} _'.-]/gu, "").slice(0, 18);
-      if (!name) print("{dim:(go on. any name. Biscuit won't tell.)}");
-      if (name.toLowerCase() === "biscuit") { print("{dim:(nice try, Biscuit.)}"); name = ""; }
+      if (name.toLowerCase() === "biscuit") { print("{dim:(no.)}"); name = ""; }
     }
     S.name = name;
-    sfx("chime");
+    S.min = 6 * 60 + 10;
+    S.cwd = "/cottage/study";
+    S.cat.room = "study";
+    clearScreen();
+    // whatever Wren left on the screen is still there
+    const last = [
+      "{dim:── last session: wren · 11 oct · 11:48pm ──────────}",
+      "{dim:wren@hearth:~/cellar$} listen",
+      "{dim:  listening} {sky:··:····:···:··} {dim:signal 0.07}",
+      "{dim:  heard:} {sky:kettle . three}",
+      "{dim:wren@hearth:~/cellar$} listen",
+      "{dim:  listening} {sky:·:···::···:·:·} {dim:signal 0.08}",
+      "{dim:  heard:} {sky:three . three}",
+      "{dim:wren@hearth:~/cellar$} echo \"don't tell them about the noise. let them find it.\" >> ~/.plan",
+      "{dim:wren@hearth:~/cellar$} logout",
+      "{dim:─────────────────────────────────────────────────}"
+    ];
+    for (const l of last) { print(l); await pause(60); }
     print("");
-    print("Welcome home, {hi:" + esc(name) + "}.");
+    await pause(600);
+    await type("Ten past six. You couldn't sleep. When you came down the computer was already on, and the cat was sitting next to it like she'd been waiting.", 70);
+    await pause(250);
+    await type("There's an envelope propped against the screen. Somewhere below the floor, something is humming.", 70);
     print("");
-    await pause(500);
-    await type("You arrived last night, late, in the rain. You remember a key under a flowerpot, a cold dark hall, a cat who looked at you like you were an unexpected parcel, and then sleep.", 55);
-    await pause(400);
-    await type("Now it's 7 o'clock on a drizzly Wednesday in October. The cottage is quiet and smells of woodsmoke and old paper. Grey light on the lake.", 55);
-    await pause(400);
-    await type("On the desk, propped against the screen, there's an envelope with your name on it.", 55);
+    print("  {cmd:cat note.txt}    {cmd:look}");
     print("");
-    print("  {cmd:cat welcome.txt}   {dim:← type that and press enter, or just tap it}");
-    print("");
-    print("{dim:(new to typing commands? that's fine. tap anything that's underlined. the keys under the screen help too.)}");
+    print("{dim:(tap anything underlined, or type it. {cmd:help} if you're stuck.)}");
     S.mailbox = []; S.letters = [];
     deliverMail();
-    remember("arrived at the cottage. Biscuit looked at me like I was a parcel.");
+    remember("arrived at the cottage. couldn't sleep. the computer was already on.");
   } else {
-    await pause(200);
-    print("Welcome back, {hi:" + esc(S.name) + "}.  {dim:It's " + clock(S.min) + " on " + dayName(S.day) + ", " + dateStr(S.day) + ". " + weatherNow().word + ".}");
-    if (S.mailbox.length) print("{acc:You have post.} {cmd:mail}");
-    print("{dim:You're in the " + roomName() + ". " + (catHere() ? "Biscuit is here, pretending not to have noticed you." : "Biscuit is in the " + S.cat.room + ".") + "}  {cmd:look}");
+    print("{hi:" + esc(S.name) + "}{dim:, " + clock(S.min) + ", " + dayName(S.day) + " " + dateStr(S.day) + ". " + weatherNow().word + ". you're in the " + roomName() + ".}");
+    if (S.mailbox.length) print("{acc:post:} {cmd:mail}");
   }
   print("");
   T.busy = false;

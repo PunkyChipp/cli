@@ -37,12 +37,12 @@ function itemKey(word) {
 
 /* ---------- recipes ---------- */
 const RECIPES = {
-  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion (pantry), butter, a bay leaf if you're fancy.\n  soften the onion. add carrots. add water. wait. blend. done.\n  {dim:\"tastes like a hug from someone who means it.\" — W.}", eat: "You eat the soup slowly, with bread, both hands around the bowl. It tastes like being looked after." },
-  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish (any. not the boot.), 1 carrot, mashed potato (pantry),\n  a suspicious amount of butter.\n  {dim:\"Fenn's favourite. he'll say it isn't.\" — W.}", eat: "Fish pie, crispy on top, molten in the middle. You burn your tongue and don't regret it." },
-  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  this is not a recipe. this is a lifestyle.\n  toast. butter. jam. eat over the sink like a person with things to do.", eat: "Jam on toast over the sink. A crumb lands on Biscuit. She takes it as a personal insult." },
-  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:(Ottoline's copy. she does the crust wrong.)}\n  1 pumpkin, eggs, sugar, the spice tin, pastry (pantry).\n  roast, mash, mix, bake, try not to open the oven every two minutes.", eat: "Pumpkin pie with too much cinnamon, which is the correct amount of cinnamon." },
-  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:(stolen from Fenn's mother, 1979)}\n  1 jar of honey, butter, flour, eggs, a long time in a low oven.\n  {dim:\"don't tell Abernathy.\"}", eat: "Honey cake, sticky and dark and tasting faintly of lavender. Fenn's bees did good work." },
-  mint_biscuits: { name: "mint biscuits", needs: { mint: 2 }, warm: 15, card: "MINT BISCUITS\n  2 sprigs mint, butter, sugar, flour. roll, cut, bake.\n  {dim:\"don't say the word biscuits out loud near the cat.\"}", eat: "A mint biscuit. Biscuit hears the word 'biscuit' and looks up, then looks deeply betrayed." }
+  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion, butter, a bay leaf.\n  soften the onion. carrots in. water to cover. 25 min. blend.\n  {dim:(in pen: J. likes it thin.)}", eat: "Soup, with bread, both hands round the bowl." },
+  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish, any. 1 carrot. mash on top. more butter than you think.\n  {dim:(in pen: Fenn's favourite. he'll say it isn't.)}", eat: "Fish pie. You burn your mouth on the first bit." },
+  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  {dim:(this one's just a card that says TOAST, JAM. it's in a child's writing.)}", eat: "Jam on toast, over the sink." },
+  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:(Ottoline's copy)}\n  1 pumpkin, roasted. eggs, sugar, spice tin. pastry.\n  45 min. don't keep opening the oven.", eat: "Pumpkin pie, too much cinnamon." },
+  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:(Mrs Fenn's, 1979)}\n  1 jar of honey, butter, flour, eggs. low oven, a long time.", eat: "Honey cake. Dark and sticky." },
+  mint_biscuits: { name: "mint biscuits", needs: { mint: 2 }, warm: 15, card: "MINT BISCUITS\n  2 sprigs mint, butter, sugar, flour. roll, cut, 12 min.", eat: "A mint biscuit. Biscuit looks up when you say it." }
 };
 function recipeCard(id) { return "{hi:" + RECIPES[id].card.split("\n")[0] + "}\n" + RECIPES[id].card.split("\n").slice(1).join("\n"); }
 function learn(id) {
@@ -83,9 +83,9 @@ function doCook(args) {
   spend(40); S.stats.meals++;
   sfx("pour");
   print(pick([
-    "You cook. The kitchen windows steam up. The radio would be nice right now.",
-    "You cook, humming something you didn't know you knew. The whole cottage starts to smell of it.",
-    "You cook, making a terrible mess and then a lovely meal, in that order."
+    "You cook. The windows steam up.",
+    "You cook with the radio off, listening to the hum under the floor.",
+    "You cook. It takes longer than the card says. It always does."
   ]));
   print("{ok:(made " + itemName(id) + ". {cmd:eat " + id.replace(/_/g, " ") + "}, or {cmd:send} it to someone.)}");
   if (S.stats.meals >= 5) keepsake("baker");
@@ -103,10 +103,10 @@ function doEat(args) {
   take(k);
   const r = RECIPES[k];
   if (r) { print(r.eat); warm(r.warm, "warmer"); }
-  else if (k === "honey") { print("You eat honey straight from the jar with a teaspoon. You feel eight years old in the best way."); warm(8, "warmer"); }
-  else if (k === "jam") { print("Jam from the jar with a spoon. Nobody saw. (Biscuit saw.)"); warm(6, "warmer"); }
-  else if (k === "carrot") { print("You crunch a raw carrot like a horse. A good horse."); warm(3); }
-  else if (k === "mint") { print("You chew a mint leaf. Your whole head goes cold and fresh."); }
+  else if (k === "honey") { print("Honey off a teaspoon, standing at the counter."); warm(8, "warmer"); }
+  else if (k === "jam") { print("Jam, from the jar, with a spoon."); warm(6, "warmer"); }
+  else if (k === "carrot") { print("A raw carrot, with the soil rinsed off."); warm(3); }
+  else if (k === "mint") { print("A mint leaf."); }
   else if (k === "sandwich") { print("The sudo sandwich. It tastes of power. And cheese."); warm(10, "warmer"); }
   spend(10); S.stats.meals++;
   remember("ate " + itemName(k) + ".");
@@ -114,11 +114,11 @@ function doEat(args) {
 
 /* ---------- tea ---------- */
 const TEAS = {
-  black: { need: null, line: "Strong, brown, a splash of milk. Tea the way tea was meant to be: without fuss.", warm: 12 },
-  mint: { need: "mint", line: "Fresh mint tea, bright and green. It clears your head right out.", warm: 12 },
-  chamomile: { need: "chamomile", line: "Chamomile, gold in the cup, smelling of hay and summer. Your shoulders drop an inch.", warm: 15 },
-  lavender: { need: "lavender", line: "Lavender tea, faintly purple. It tastes a bit like soap and a lot like calm.", warm: 14 },
-  honey: { need: "honey", line: "Tea with a big spoon of Fenn's honey. Sweet, golden, a little bit smug.", warm: 18 }
+  black: { need: null, line: "Strong, with milk. You drink it at the window.", warm: 12 },
+  mint: { need: "mint", line: "Mint, straight from the garden. Too hot to drink for ages.", warm: 12 },
+  chamomile: { need: "chamomile", line: "Chamomile. It smells like hay.", warm: 15 },
+  lavender: { need: "lavender", line: "Lavender. It tastes a bit like soap. You drink it anyway.", warm: 14 },
+  honey: { need: "honey", line: "Tea with a spoon of Fenn's honey in.", warm: 18 }
 };
 async function doBrew(args) {
   if (roomName() !== "kitchen") return print("The kettle's in the kitchen. {cmd:cd ~/kitchen} {dim:(or {cmd:cd /cottage/kitchen}, if you like typing.)}");
@@ -130,31 +130,28 @@ async function doBrew(args) {
   if (t.need && !has(t.need)) return print("You'd need some " + t.need + " for that." + (kind === "honey" ? " {dim:(Fenn has bees. Fenn has opinions about lavender.)}" : " {dim:(grow some in the garden.)}"));
   if (S.stats.teas > 0 && !S.flags.thumped && chance(0.25)) {
     S.flags.kettleSulk = true;
-    return print("You switch the kettle on. Nothing. It sits there, cold and silent, sulking about something.\n{dim:(Wren said something about the left side... {cmd:thump kettle})}");
+    return print("You put the kettle on. Nothing happens.\n{dim:(Wren's note said something about the left side. {cmd:thump kettle})}");
   }
   S.flags.thumped = false; S.flags.kettleSulk = false;
   if (t.need) take(t.need);
   print("You fill the kettle and set it on the range.");
   sfx("kettle");
-  await pause(700); print("{dim:...}"); await pause(700);
-  print("{dim:it starts to tick and grumble...}"); await pause(900);
-  print("{acc:...and whistles!}");
+  await pause(600); print("{dim:it ticks, then grumbles, then whistles.}"); await pause(300);
   await pause(400);
   sfx("pour");
   print(t.line);
   S.teaAt = now(); S.teaKind = kind; S.stats.teas++;
   spend(6);
   warm(t.warm, "warmer");
-  if (kind === "chamomile" && S.min > 20 * 60) print("{dim:(you could sleep right now, honestly.)}");
-  if (catHere()) print("{dim:Biscuit watches the steam rise. She does not want tea. She wants to be asked.}");
+  if (kind === "chamomile" && S.min > 20 * 60) print("{dim:(you're very sleepy.)}");
   keepsake("first_tea");
   remember(pick(["had a cup of " + kind + " tea.", "made " + kind + " tea. drank it at the window."]));
 }
 function doThump(args) {
   if (roomName() !== "kitchen") return print("Thump what? {dim:(there's nothing in here that deserves it.)}");
   const side = (args[1] || args[0] || "").toLowerCase();
-  if (side.includes("right")) { print("You thump the kettle on the {warn:right} side. It goes very still. You've hurt its feelings.\n{dim:(...it'll boil. but it'll remember.)}"); S.flags.thumped = true; return; }
-  print("{hi:THUNK.} You give the kettle a firm thump on the left side. It wakes with a gurgle, like nothing happened.\n{dim:(now {cmd:brew}.)}");
+  if (side.includes("right")) { print("You thump it on the right. Nothing. Then, grudgingly, a gurgle.\n{dim:({cmd:brew})}"); S.flags.thumped = true; return; }
+  print("{hi:Thunk.} The kettle gurgles and comes on. {dim:({cmd:brew})}");
   S.flags.thumped = true; sfx("chop");
 }
 
@@ -168,11 +165,11 @@ function doFeed(args) {
   const fishKey = itemKey(rest.join(" ")) || (rest.length ? null : null);
   const giveFish = fishKey && fishKey.startsWith("fish:");
   if (roomName() !== "kitchen" && !catHere()) return print("Biscuit's not here — she's in the " + S.cat.room + ". {dim:(or go to the kitchen and rattle the tin; she'll come.)}");
-  if (!catHere()) { S.cat.room = roomName(); print("You rattle the food tin. From somewhere in the house: a thump, a skitter, and then Biscuit arrives at speed, as if summoned by the gods."); }
+  if (!catHere()) { S.cat.room = roomName(); print("You rattle the tin. Somewhere in the house there's a thump, and then Biscuit is in the doorway."); }
   if (giveFish) {
     take(fishKey);
     catMood(30);
-    print("You give Biscuit " + itemName(fishKey) + ". She looks at you like you have finally, after all this time, understood her.\n{acc:prrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr.}");
+    print("You give Biscuit " + itemName(fishKey) + ". She takes it under the table and you don't see her for twenty minutes. When she comes back she sits on your foot.");
     sfx("purr");
     remember("gave Biscuit a fish. she might love me now.");
     S.flags.fedOnce = true;
@@ -180,17 +177,17 @@ function doFeed(args) {
   }
   if (S.cat.fed >= 2) {
     catMood(-2);
-    return print(pick(["Biscuit has had breakfast and dinner. She is looking at you like she hasn't. She has.", "You've fed her twice today. She's lying. Look at her lying.", "No. She's had two meals. Biscuit sighs the sigh of a cat in a famine."]));
+    return print(pick(["She's had two meals today. She's looking at you like she hasn't.", "Not again. She's had breakfast and dinner."]));
   }
   S.cat.fed++; S.flags.fedOnce = true;
   catMood(12);
   spend(3);
   print(pick([
-    "You fill Biscuit's bowl. She eats with the focus of a surgeon, then looks at you like you've never fed her in her life.",
-    "You put food down. Biscuit inspects it, decides it'll do, and eats it with tremendous dignity.",
-    "Biscuit's bowl: full. Biscuit's face: in it. Biscuit's opinion of you: improving."
+    "Half a tin in the bowl. She eats it fast, then looks at you like you haven't fed her.",
+    "You put the bowl down. She smells it, walks away, comes back, eats it.",
+    "Biscuit eats. You stand there while she does, which she seems to want."
   ]));
-  if (S.cat.fed === 1) remember("fed Biscuit. she said she hadn't been fed. she had.");
+  if (S.cat.fed === 1) remember("fed Biscuit.");
 }
 function feedFox(rest) {
   if (roomName() !== "garden" || !(isNight() || isEvening())) return print("The fox isn't around. She comes to the garden in the evenings.");
@@ -205,23 +202,23 @@ function befriendFox() { S.flags.foxFed = (S.flags.foxFed || 0) + 1; }
 
 function doPet(args) {
   const who = (args[0] || "biscuit").toLowerCase();
-  if (who === "fox" || who === (S.fox || "").toLowerCase()) return print(S.flags.foxFed >= 3 ? "The fox lets you get close — very close — and then sneezes at you and leaves. That's basically a hug, from a fox." : "The fox steps back exactly as far as you step forward. Not yet.");
+  if (who === "fox" || who === (S.fox || "").toLowerCase()) return print(S.flags.foxFed >= 3 ? "The fox lets you get within a few feet. Then she goes." : "The fox steps back exactly as far as you step forward. Not yet.");
   if (!["biscuit", "cat", "the"].includes(who)) return print("You pet the " + esc(who) + ". It doesn't do much for either of you.");
   if (!catHere()) return print("Biscuit isn't here. She's in the " + S.cat.room + ". {dim:({cmd:where biscuit})}");
   const belly = args.join(" ").includes("belly") || args.join(" ").includes("tummy");
   S.stats.pets++; S.cat.petsToday++;
   spend(2);
-  if (belly) { catMood(-6); sfx("bonk"); return print("You go for the belly. {warn:IT'S A TRAP.} Four sets of claws, a bunny-kick, and an expression of deep betrayal. You knew. You knew it was a trap."); }
-  if (S.cat.petsToday > 6) { catMood(-1); return print(pick(["Biscuit has had enough affection for one day. She moves exactly one inch out of reach.", "Biscuit gives you a look that says 'we've discussed this'."])); }
+  if (belly) { catMood(-6); sfx("bonk"); return print("You go for the belly. Claws, all four sets. Wren did say."); }
+  if (S.cat.petsToday > 6) { catMood(-1); return print("She's had enough. She moves just out of reach."); }
   catMood(6);
   warm(3);
   sfx("purr");
   const m = S.cat.mood;
-  print(m > 80 ? pick(["Biscuit leans her whole head into your hand and purrs so loudly the desk vibrates.", "Biscuit flops over, purring, and slow-blinks at you. That's cat for 'I love you'. You slow-blink back.", "Biscuit headbutts your chin. You've been chosen."])
-    : m > 50 ? pick(["You scratch behind Biscuit's ears. A small, rusty purr starts up.", "Biscuit allows this. She purrs, quietly, like she's not sure she should.", "You stroke Biscuit from head to tail. She arches. Approval, cautiously granted."])
-      : pick(["Biscuit tolerates one stroke, then gets up and sits somewhere else.", "Biscuit looks at your hand, then at you. You withdraw your hand.", "Biscuit permits a single pat. It is clearly a favour."]));
+  print(m > 80 ? pick(["She leans her whole head into your hand and purrs.", "She slow-blinks at you. You slow-blink back.", "She headbutts your chin."])
+    : m > 50 ? pick(["You scratch behind her ears. A small purr, like an engine that hasn't been started in a while.", "She allows it. A quiet purr.", "Head to tail. She arches into it."])
+      : pick(["One stroke, then she gets up and sits somewhere else.", "She looks at your hand. You take it back.", "She lets you, once."]));
   if (S.stats.pets === 10) keepsake("pet10");
-  if (m > 75 && !S.flags.gotKey && S.stats.pets >= 8 && S.day >= 3 && !S.flags.keyHinted) { S.flags.keyHinted = true; print("{dim:(she turns her head and the little brass key on her collar glints. she's letting you see it. {cmd:take key})}"); }
+  if (m > 75 && !S.flags.gotKey && S.stats.pets >= 8 && S.day >= 3 && !S.flags.keyHinted) { S.flags.keyHinted = true; print("{dim:(she turns her head so the brass key on her collar is facing you. {cmd:take key})}"); }
   if (S.cat.petsToday === 1) remember("petted Biscuit. she purred. (she purred!)");
 }
 
@@ -235,18 +232,18 @@ function doStoke() {
   S.fireUntil = Math.max(S.fireUntil, now()) + 180;
   if (S.fireUntil - now() > 360) S.fireUntil = now() + 360;
   spend(5); sfx("crackle"); sfx("crackle");
-  print(was ? "You open the stove door, feed it another log, and it roars a little, pleased." : "You build a little nest of kindling, strike a match, and wait. A curl of smoke. A crackle. Then it catches, and the whole room changes colour.");
+  print(was ? "Another log on." : "Kindling, a match, a long wait, a lot of smoke. Then it catches.");
   warm(10, "much warmer");
-  if (S.cat.room !== "parlour" && chance(0.6)) { S.cat.room = "parlour"; print("{dim:(within a minute, Biscuit appears and arranges herself in front of it. she heard. she always hears.)}"); }
+  if (S.cat.room !== "parlour" && chance(0.6)) { S.cat.room = "parlour"; print("{dim:(a minute later Biscuit comes in and lies down in front of it.)}"); }
   remember(was ? "kept the fire going." : "lit the stove.");
 }
 function doChop() {
   if (roomName() !== "garden") return print("The woodpile's out in the garden.");
-  if (S.wood >= 8) return print("The basket inside is full. You'd only be chopping for the joy of it. {dim:(which is valid, but no.)}");
+  if (S.wood >= 8) return print("The basket's full.");
   spend(20); sfx("chop"); setTimeout(() => sfx("chop"), 350);
   S.wood = Math.min(8, S.wood + 2);
   warm(4);
-  print(pick(["You split two logs. The axe goes in with a crack that echoes off the lake. Chopping wood warms you twice, Wren says. She's right.", "Thock. Thock. Two good logs. A robin watches, judging your form.", "You chop. You miss once, badly, and are glad nobody saw. Two logs."]) + " {dim:(" + plural(S.wood, "log") + " in the basket.)}");
+  print(pick(["Two logs. The crack of the axe comes back off the lake a second later.", "Two logs. You miss once.", "Two logs. A robin watches."]) + " {dim:(" + plural(S.wood, "log") + " in the basket.)}");
 }
 function doLight(args) {
   const what = (args[0] || "").toLowerCase();

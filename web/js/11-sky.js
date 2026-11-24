@@ -43,7 +43,7 @@ const CONSTELLATIONS = {
   ], note: "Straight overhead in autumn. A small box of stars with one bright one inside. The whole Hollow plans Lantern Night by it." }
 };
 const DIRS = ["north", "east", "south", "west", "up"];
-const cometVisible = () => S.day >= 10 && S.day <= 16;
+const cometVisible = () => S.day >= 10 && S.day <= 18;
 
 function starfield(dir, w = 40, h = 7) {
   const r = seeded(dir.length * 977 + dir.charCodeAt(0) * 31 + (S.day > SEASON_END ? 5 : 0));
@@ -114,6 +114,7 @@ async function doSky(args) {
       await pause(600);
       await type("You watch it for a long time. It doesn't move, and it's moving at thousands of miles an hour, and you think about two fourteen-year-olds at the end of the dock, sixty-four years ago, seeing exactly this.", 45);
       keepsake("comet");
+      clue("comet");
       remember("saw the comet. Juniper and Wren saw it from this exact roof in 1962.");
       if (S.quests.jun_comet === "open") print("{dim:(Juniper will want to know. {cmd:send} her something — anything.)}");
     }
@@ -127,6 +128,6 @@ function starNotes() {
   let out = "{hi:STAR NOTES}  {dim:(Juniper's handwriting, very small and very neat)}\n\n";
   for (const [k, c] of Object.entries(CONSTELLATIONS)) out += (S.stars[k] ? "{ok:✓} {hi:" + c.name + "}" : "{dim:·} " + c.name) + "  {dim:— look " + c.dir + "}\n";
   out += "\n{dim:clear nights only. after 8pm. dress warmly, you won't, but do.}";
-  if (S.day >= 10) out += "\n{acc:P.S. COMET — WEST. 10th to the 16th. — J.}";
+  if (S.day >= 10) out += "\n{acc:p.s. comet. west. this week only. J.}";
   return out;
 }

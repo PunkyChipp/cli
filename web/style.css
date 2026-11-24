@@ -265,3 +265,4 @@ body[data-theme="paper"] .glass { background: radial-gradient(140% 140% at 50% 5
 .fg { color: var(--fg); }
 #win.outside::after { display: none; }
 #bezel .brand i { font-style: normal; }
+.ln.ind { padding-left: 2.4em; }

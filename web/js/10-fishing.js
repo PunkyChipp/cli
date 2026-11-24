@@ -6,21 +6,24 @@
 "use strict";
 
 const FISH = [
-  { id: "minnow", w: 18, win: 1400, size: [3, 6], keep: false, when: () => true, line: "A minnow. A tiny, furious minnow. You put it back. It seemed relieved." },
-  { id: "perch", w: 30, win: 1200, size: [14, 32], when: () => !isNight(), line: "A perch! Striped like a tiger and twice as cross about it." },
-  { id: "roach", w: 24, win: 1200, size: [12, 28], when: () => true, line: "A roach — silver, neat, slightly embarrassed to be here." },
-  { id: "trout", w: 14, win: 850, size: [25, 48], when: () => (isMorning() || isEvening()) && !weatherNow().rain && weatherNow().cloud < 0.6, line: "A brown trout, speckled like a thrush's egg. Beautiful. It knows it, too." },
-  { id: "pike", w: 7, win: 700, size: [50, 95], when: () => isEvening() || S.min >= 20 * 60, line: "A pike. Long as your arm, all teeth and disapproval. It looks at you like you're the one who should be explaining yourself." },
-  { id: "eel", w: 16, win: 900, size: [40, 80], when: () => isNight() && weatherNow().rain > 0, line: "An eel! It ties itself in a knot around the line, then around your wrist, then around the concept of holding things." },
-  { id: "moonperch", w: 14, win: 900, size: [15, 25], when: () => S.day > SEASON_END && isNight() && weatherNow().cloud < 0.5, line: "A perch — but it's glowing, faintly, a pale blue-gold, the colour of the lantern. You've never seen anything like it." },
+  { id: "minnow", w: 18, win: 1400, size: [3, 6], keep: false, when: () => true, line: "A minnow. You put it back." },
+  { id: "perch", w: 30, win: 1200, size: [14, 32], when: () => !isNight(), line: "A perch. Green and striped, spines up." },
+  { id: "roach", w: 24, win: 1200, size: [12, 28], when: () => true, line: "A roach. Silver, red-finned." },
+  { id: "trout", w: 14, win: 850, size: [25, 48], when: () => (isMorning() || isEvening()) && !weatherNow().rain && weatherNow().cloud < 0.6, line: "A brown trout, speckled, heavier than it looks." },
+  { id: "pike", w: 7, win: 700, size: [50, 95], when: () => isEvening() || S.min >= 20 * 60, line: "A pike. All teeth. You get it off the hook very carefully." },
+  { id: "eel", w: 16, win: 900, size: [40, 80], when: () => isNight() && weatherNow().rain > 0, line: "An eel. It wraps itself round your wrist." },
+  { id: "moonperch", w: 14, win: 900, size: [15, 25], when: () => S.day > SEASON_END && isNight() && weatherNow().cloud < 0.5, line: "A perch, but faintly lit from inside. Blue-gold. It fades as you look at it." },
   { id: "marmalade", w: 3, win: 550, size: [90, 90], keep: false, when: () => S.day >= 4 && (weatherNow().fog > 0.5 || (S.min >= 6 * 60 && S.min < 8 * 60)), line: "" },
-  { id: "junk:boot", w: 5, win: 1500, size: [0, 0], junk: true, when: () => true, line: "An old boot. A left one. Somewhere, presumably, a right one is waiting." },
-  { id: "junk:can", w: 4, win: 1500, size: [0, 0], junk: true, when: () => true, line: "A rusty tin can. A snail lives in it. You put it back, snail and all. Rent-free, the snail." },
-  { id: "junk:bottle", w: 4, win: 1500, size: [0, 0], junk: true, when: () => !S.flags.gotBottle && S.day >= 3, line: "" }
+  { id: "junk:boot", w: 5, win: 1500, size: [0, 0], junk: true, when: () => true, line: "An old boot. A left one." },
+  { id: "junk:can", w: 4, win: 1500, size: [0, 0], junk: true, when: () => true, line: "A rusty tin can with a snail in it." },
+  { id: "junk:bottle", w: 6, win: 1500, size: [0, 0], junk: true, when: () => !S.flags.gotBottle && S.day >= 2, line: "" }
 ];
 const KEEPERS = FISH.filter(f => !f.junk && f.id !== "minnow" && f.id !== "marmalade" && f.id !== "moonperch").map(f => f.id).concat(["marmalade"]);
 
 function rollFish() {
+  // the lake wants you to have the bottle. by the sixth bite, it's yours.
+  S.flags.bites = (S.flags.bites || 0) + 1;
+  if (!S.flags.gotBottle && S.day >= 2 && S.flags.bites >= 6) return FISH.find(f => f.id === "junk:bottle");
   const pool = FISH.filter(f => f.when());
   let tot = pool.reduce((a, f) => a + f.w, 0), r = Math.random() * tot;
   for (const f of pool) { r -= f.w; if (r <= 0) return f; }
@@ -40,7 +43,7 @@ async function doFish() {
   if (!has("rod")) return print("You haven't got a rod. {dim:(Wren's is in the garden shed: {cmd:cd ~/garden/shed})}");
   if (T.cap) return print("you can't fish inside a pipe. you tried, though, and that's what matters.");
   if (weatherNow().rain >= 1 && !has("umbrella")) warm(-3, "cold. wet. you should've brought the duck umbrella.");
-  print(pick(["You cast. The float sails out and lands with a soft {acc:plip}.", "You flick the line out over the water. Plip. Ripples, then nothing.", "A good cast — the float lands exactly where you meant it to, which never happens."]));
+  print(pick(["You cast. {acc:plip.}", "The float lands a little short. Fine.", "A good cast, for once."]));
   sfx("plip");
   const d = printRaw(fmt(waterLine(0, false)));
   let early = false;
@@ -48,7 +51,7 @@ async function doFish() {
   const waitMs = T.autoFish ? 10 : rand(2200, 6500);
   const t0 = Date.now();
   let phase = 0;
-  const musings = ["a heron lands further down the shore and pretends not to watch.", "a leaf drifts past the float. not a fish. a leaf.", "somewhere across the lake, a dog barks twice and thinks better of it.", "the float bobs. just the wind. probably.", "a dragonfly lands on your rod, considers you, leaves.", "you hear the observatory dome creak round across the water."];
+  const musings = ["a heron further down the shore.", "a leaf drifts past the float.", "a dog barks twice across the lake.", "the float bobs. wind.", "a dragonfly lands on the rod.", "the cable at your feet ticks, very faintly."];
   let mused = false;
   while (Date.now() - t0 < waitMs && !early && !T.skip) {
     phase++;
@@ -94,7 +97,7 @@ async function doFish() {
 }
 
 async function catchMarmalade() {
-  await type("The line goes tight. Not fish-tight. {warn:Tree-tight.}", 40);
+  await type("The line goes tight and stays tight.", 40);
   await pause(500);
   await type("The rod bends double. Something huge and slow and gold rolls under the water.", 40);
   await pause(700);
@@ -105,34 +108,35 @@ async function catchMarmalade() {
   print("{acc:    '-._ ___    _.-' `-._   \\_}");
   print("{acc:        `'---'``         `-'}");
   print("");
-  await type("It's him. Old Marmalade. A carp the size of a labrador, gold as a sovereign,", 40);
-  await type("with four of Wren's lures in his lip like earrings.", 40);
+  await type("The carp. Wren's carp. He's the size of a dog, and gold, and there are four old lures in his lip.", 40);
   await pause(600);
-  await type("He looks at you. You look at him. Neither of you says anything, because one of you is a fish.", 40);
+  await type("He lies in the shallows by the dock and doesn't fight. His eye is the size of a coin and it's looking at you.", 40);
   await pause(600);
-  await type("You unhook him, very gently, and let him go. He sinks back into the fog like a coin into a well.", 40);
+  await type("You take the hook out as gently as you can. He stays a moment longer. Then he goes down into the fog.", 40);
   const L = S.fishlog.marmalade || { n: 0, best: 0 };
   L.n++; L.best = 90; S.fishlog.marmalade = L;
   S.stats.fish++;
   keepsake("marmalade");
   S.flags.marmalade = true;
-  remember("CAUGHT OLD MARMALADE. let him go. he's real. Wren is going to scream.");
+  remember("caught Wren's carp. let him go. he looked at me for a long time.");
 }
 async function catchBottle() {
   S.flags.gotBottle = true;
-  print("A bottle — green glass, corked, with a curl of paper inside.");
+  print("A bottle. Green glass, corked and waxed, with a curl of paper inside.");
   await pause(500);
-  print("You ease the cork out. The paper is soft as cloth. It's dated {acc:1962}:");
+  print("The paper's dry. Pencil, two different handwritings:");
   print("");
-  print("{hi:   \"to whoever finds this:}");
-  print("{hi:    the lake keeps things. be kind to it.}");
-  print("{hi:    we saw a comet tonight. we named it. we're not telling.}");
-  print("{hi:    — W.A. & J.V., aged 14 and three-quarters\"}");
+  print("{hi:   25 oct 1962}");
+  print("{hi:   to whoever finds this.}");
+  print("{hi:   we flashed a torch at the comet three times}");
+  print("{hi:   and the lake flashed back. three times.}");
+  print("{hi:   from underneath.}");
+  print("{hi:   we're not mad. W.A. & J.V. (14)}");
   print("");
-  print("{dim:(you put the paper back in the bottle and keep it.)}");
   give("junk:bottle");
   keepsake("bottle");
-  remember("fished up a bottle from 1962. Wren and Juniper wrote it.");
+  clue("bottle");
+  remember("fished up a bottle from 1962. Wren and Juniper. 'the lake flashed back.'");
 }
 
 async function doRow() {
@@ -154,6 +158,10 @@ async function doRow() {
     "A pair of grebes are doing a ridiculous dance. You give them privacy."
   ]));
   if (S.day > SEASON_END) lines.push("Thin ice has started at the edges. It sings when your oars touch it.");
+  if (isNight() && !S.flags.answered && signalLevel() > 0.4 && w.cloud < 0.8) {
+    lines.push("Out over the deep part, you ship the oars and look down. A long way under the boat, something blue-gold turns over, slowly, and you have the distinct feeling it's looking up.");
+    clue("lights");
+  }
   for (const l of lines) { await type(l, 48); await pause(700); }
   print("You row home, slowly, because there's no reason not to.");
   spend(40);

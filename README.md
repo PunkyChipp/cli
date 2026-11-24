@@ -11,9 +11,17 @@ The cottage *is* the filesystem. Rooms are folders. Notes are files. The cat is
 PID 1.
 
 You have two weeks until **Lantern Night**, when the lantern on Wren's dock is
-always the first light on the lake. It's been lit every year since 1974.
-Everything you need is somewhere in the house. Wren isn't great at remembering
-where she put things.
+always the first light on the lake.
+
+And there's a hum coming from the cellar. Wren's note says to ignore it.
+The last thing on the screen when you arrive says *don't tell them about the
+noise. let them find it.*
+
+Grow things, fish, cook, write to the neighbours, look after the cat. And,
+if you want, find out what Wren has been listening to since 1962. Nobody
+will tell you. Whatever you work out gets pinned to the corkboard (`board`).
+The real ending is behind something you have to *know*, not something you
+have to find.
 
 ```
  _  _ ___   _   ___ _____ _  _
@@ -44,7 +52,8 @@ later; the single file is built so it can be wrapped as-is.
 
 ## Things to do
 
-Brew tea (thump the kettle on the **left**) · feed and earn the trust of Biscuit ·
+Pin clues to the corkboard · listen to the cellar · brew tea (thump the
+kettle on the **left**) · feed and earn the trust of Biscuit ·
 grow mint, carrots, lavender, pumpkins, and moonflowers that only bloom at night ·
 fish off the dock, and maybe meet *Old Marmalade* · cook from Wren's recipe
 cards · light the wood stove · listen to Ottoline's morning show on the radio ·
@@ -86,7 +95,7 @@ tools/smoke.js       plays the whole season headlessly, start to finish
 
 ```sh
 npm run build   # rebuild docs/index.html after changing web/
-npm test        # play the full season headlessly (45 checks)
+npm test        # play the full season headlessly, both endings (51 checks)
 ```
 
 Want to add a room, a fish, a neighbour or a command? See **[MODDING.md](MODDING.md)**.

@@ -99,22 +99,23 @@ function idleMoment() {
   lastIdle = Date.now();
   const r = roomName(), w = weatherNow(), m = S.min;
   const pool = [
-    "the house ticks and settles, like an old dog turning round before it lies down.",
-    "somewhere upstairs, a floorboard creaks on its own. it does that.",
-    "the mantel clock chimes " + (Math.floor(m / 60) % 12 || 12) + ", slightly late, as if it had to think about it."
+    "a floorboard upstairs.",
+    "the mantel clock chimes " + (Math.floor(m / 60) % 12 || 12) + ", a bit late.",
+    "under the floor, the hum dips, and comes back.",
+    "the hum. you'd stopped hearing it. now you can't stop."
   ];
-  if (w.rain) pool.push("the rain changes gear — heavier for a moment, then soft again.", "a drip has found its way into the gutter and is practising the same note.");
-  if (w.wind > 0.6) pool.push("the wind gets into the chimney and hums one long low note.");
-  if (w.fog > 0.5) pool.push("a foghorn, very far away, says something to nobody.");
-  if (isNight()) pool.push("an owl, close by. then another, further off, answering.", "a car on the far road sweeps its headlights across the lake and is gone.");
-  else pool.push("a blackbird lands on the windowsill, looks in at you, and leaves, unimpressed.", "across the lake, someone is chopping wood. the sound arrives a second after the axe.");
+  if (w.rain) pool.push("the rain gets heavier for a minute, then eases.", "a drip in the gutter, the same note over and over.");
+  if (w.wind > 0.6) pool.push("wind in the chimney.");
+  if (w.fog > 0.5) pool.push("a foghorn, a long way off.");
+  if (isNight()) pool.push("an owl. another, further off.", "headlights on the far road, sweeping across the lake.");
+  else pool.push("a blackbird on the sill. it looks in, and goes.", "someone across the lake chopping wood. the sound comes a second late.");
   if (teaWarm()) pool.push("the teapot ticks as it cools.");
-  if (fireLit()) pool.push("a log shifts in the stove and sends up a little fountain of sparks.");
-  if (r === "kitchen") pool.push("the fridge shudders, thinks about it, and goes quiet.");
-  if (r === "study") pool.push("HEARTH's fan spins up, considers something, and spins down again.");
-  if (r === "dock") pool.push("a fish jumps, far out. just the ring of it left, spreading.");
-  if (r === "garden") pool.push("a robin follows you along the beds at a respectful distance.");
-  if (S.cat.room === r) pool.push("Biscuit, asleep, runs a little in a dream. whatever she's chasing, she's winning.", "Biscuit yawns enormously and looks embarrassed about it.");
+  if (fireLit()) pool.push("a log settles in the stove.");
+  if (r === "kitchen") pool.push("the fridge shudders and goes quiet.");
+  if (r === "study") pool.push("HEARTH's fan spins up and down again.", "the radio on the shelf crackles once, by itself.");
+  if (r === "dock") pool.push("a fish jumps, far out.", "the cable at your feet ticks.");
+  if (r === "cellar") pool.push("the box's green light blinks three times, and then once.");
+  if (S.cat.room === r) pool.push("Biscuit, asleep, twitches.", "Biscuit yawns.");
   print("{dim:(" + pick(pool) + ")}");
   showLine(true);
 }

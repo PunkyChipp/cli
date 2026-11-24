@@ -65,7 +65,7 @@ function drawScene() {
   const r = roomName();
   const outside = ["garden", "dock", "roof"].includes(r);
   const win = $("win");
-  if (win) win.classList.toggle("outside", outside);
+  if (win) win.classList.toggle("outside", outside || r === "cellar");
   const lit = S.flags.lanternLit;
   const horizon = Math.round(H * 0.58);
   const grey = w.cloud * 0.55 + w.fog * 0.3;

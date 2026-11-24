@@ -77,9 +77,10 @@ async function type(line, waitFor) {
   G.T.autoFish = true;
 
   await step("every command has help text", () => { for (const c of G.commandNames()) expect(typeof c === "string", c); });
-  await step("read Wren's letter", () => type("cat welcome.txt", "Dear Tester"));
-  await step("todo list renders", () => type("todo", "THINGS TO DO"));
-  await step("ls in the hall", () => type("ls", "kitchen/"));
+  await step("start in the study and read Wren's note", async () => { G.S.cwd = "/cottage/study"; await type("cat note.txt", "Tester"); });
+  await step("todo list renders", () => type("todo", "Wren's list"));
+  await step("the board starts empty", () => type("board", "Nothing pinned"));
+  await step("ls in the hall", async () => { await type("cd ~"); await type("ls", "kitchen/"); });
   await step("cd by room name from anywhere", async () => { await type("cd kitchen"); await type("cd dock"); expect(G.S.cwd === "/cottage/dock", G.S.cwd); });
   await step("cd .. and cd -", async () => { await type("cd .."); expect(G.S.cwd === "/cottage", G.S.cwd); await type("cd -"); expect(G.S.cwd === "/cottage/dock", G.S.cwd); });
   await step("typo suggestions", () => type("lok", "did you mean"));
@@ -94,17 +95,25 @@ async function type(line, waitFor) {
   await step("plant + water", async () => { await type("cd ~/garden"); await type("plant lavender"); await type("plant carrot"); await type("plant carrot"); await type("water"); expect(G.S.plots.filter(p => p.crop).length === 3, "not planted"); });
   await step("oil the greenhouse open", async () => { await type("oil greenhouse"); expect(G.S.flags.ghOpen, "still stuck"); await type("cd greenhouse"); expect(G.S.cwd.endsWith("greenhouse"), "can't enter"); });
   await step("fishing", async () => { await type("cd dock"); for (let i = 0; i < 6; i++) { G.T.skip = false; await G.shell("fish"); } expect(G.S.stats.fish > 0 || Object.keys(G.S.inv).some(k => k.startsWith("junk:")), "caught nothing in 4 casts"); });
-  await step("lamp lights the attic", async () => { await type("cd kitchen"); await type("take matches"); await type("cd cellar"); await type("take lamp"); await type("light lamp"); expect(G.S.flags.atticLit, "attic dark"); await type("cd attic", "lamplight"); });
+  await step("lamp lights the attic", async () => { await type("cd kitchen"); await type("take matches"); await type("cd cellar"); await type("take lamp"); await type("light lamp"); expect(G.S.flags.atticLit, "attic dark"); await type("cd attic", "Rafters"); });
   await step("trunk is locked without the key", () => type("cd trunk", "padlocked"));
-  await step("pipes, grep, wc", async () => { const o = await type("ls ~ | grep txt | wc -l"); expect(/\b2\b/.test(o), "expected 2 txt files, got " + o); });
+  await step("pipes, grep, wc", async () => { const o = await type("ls ~/study | grep txt | wc -l"); expect(/\b1\b/.test(o), "expected 1 txt file, got " + o); });
   await step("redirect into a file", async () => { await type("cd ~/study/notes"); await type("echo dear diary > diary.txt"); await type("cat diary.txt", "dear diary"); });
   await step("aliases and ;", async () => { await type("alias hi='echo one; echo two'"); const o = await type("hi"); expect(o.includes("one") && o.includes("two"), o); });
   await step("history expansion !!", async () => { await type("echo again"); G.S.hist.push("echo again"); G.S.hist.push("!!"); const o = await type("!!"); expect(o.includes("again"), o); });
-  await step("grep -r through the house", () => type("grep -r Marmalade ~", "Marmalade"));
+  await step("grep -r through the house", () => type("grep -r carp ~", "carp"));
   await step("man pages", () => type("man fish", "NAME"));
   await step("kill biscuit refuses", () => type("kill -9 biscuit", "nine lives"));
   await step("rm -rf / is a no", () => type("rm -rf /", "No."));
-  await step("sleep is refused in the morning", () => type("sleep", "not done with you"));
+  await step("sleep is refused in the morning", () => type("sleep", "It's only"));
+  await step("mystery: the cellar, listen, the plan, the log, 77.7", async () => {
+    await type("cd cellar"); await type("cat box", "RECEIVER"); await type("listen", "heard:");
+    await type("cat ~/.plan", "Tórshavn"); await type("cat /var/log/listen/1987-2025.summary", "TÓR");
+    G.S.cwd = "/cottage/study"; G.S.disks.radio = true; await type("radio 77.7", "HEARTH");
+    for (const c of ["hum", "listen", "tor", "log", "origin", "r777"]) expect(G.S.clues[c], "clue not pinned: " + c);
+    await type("board", "the cellar");
+  });
+  await step("reply is refused before it asks", async () => { await type("cd cellar"); await type("listen --reply hello", "disabled"); });
   await step("new day: growth + mail", async () => { G.T.skip = true; await G.newDay(false); expect(G.S.day === 2, "day " + G.S.day); expect(G.S.mailbox.length >= 1, "no mail"); });
   await step("read all the post", async () => { while (G.S.mailbox.length) await type("mail"); expect(G.S.quests.fenn_lav === "open", "Fenn's quest not opened"); });
   await step("grow lavender over four nights", async () => { for (let i = 0; i < 4; i++) { G.S.plots.forEach(p => (p.wet = true)); await G.newDay(false); } await type("cd garden"); await type("harvest"); expect(G.has("lavender"), "no lavender"); });
@@ -133,7 +142,8 @@ async function type(line, waitFor) {
   await step("earn the key from Biscuit", async () => {
     G.S.cat.room = "study"; G.S.cat.mood = 90; G.S.stats.pets = 10;
     await type("take key", "brass key"); await type("cd attic"); await type("cd trunk", "click");
-    await type("take lantern.dsk"); await type("take wick"); await type("cat letter_to_whoever.txt", "whoever");
+    await type("take lantern.dsk"); await type("take wick"); await type("cat letter.txt", "answer with its name"); await type("cat diary_1962.txt", "L———");
+    expect(G.S.clues.ask && G.S.clues.name && G.S.clues["1962"], "trunk clues not pinned");
   });
   await step("moonflower in the greenhouse, harvested at night", async () => {
     await type("cd greenhouse"); await type("plant moonflower");
@@ -149,13 +159,20 @@ async function type(line, waitFor) {
   await step("lantern refuses before the night", async () => { await type("cd study"); await type("insert lantern.dsk"); await type("cd dock"); await type("lantern", "Not yet"); });
   await step("LANTERN NIGHT", async () => {
     G.S.day = 14; G.S.min = 21 * 60; G.T.skip = true;
-    await type("lantern", "THE END");
-    expect(G.S.flags.lanternLit, "lantern not lit"); expect(G.S.mailbox.includes("wren_home"), "no letter from Wren");
+    await type("lantern", "Twenty-one");
+    expect(G.S.flags.lanternLit, "lantern not lit");
+  });
+  await step("the cellar asks a question", async () => { await type("cd cellar"); await type("listen", "NAME ?"); });
+  await step("a wrong answer is gently refused", () => type("listen --reply biscuit", "That wasn't it"));
+  await step("THE TRUE ENDING: answer with its name", async () => {
+    G.T.skip = true;
+    await type("reply the lantern fish", "THE END");
+    expect(G.S.flags.answered, "not answered"); expect(G.S.mailbox.includes("wren_home"), "no postcard from Wren");
   });
   await step("winter morning after", async () => {
     await G.newDay(false); expect(G.S.day === 15, "day");
     let all = ""; while (G.S.mailbox.length) all += await type("mail");
-    expect(all.includes("kitchen table"), "no homecoming letter");
+    expect(all.includes("coming home on the 2nd"), "no homecoming postcard");
   });
   await step("save survives a round trip", () => { const s = JSON.parse(store["hearth.save.v1"]); expect(s.flags.lanternLit && s.day === 15, "save mismatch"); });
   await step("every file in the house can be read", async () => {

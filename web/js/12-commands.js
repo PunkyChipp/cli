@@ -147,6 +147,13 @@ function notFound(name, w) {
 
 /* ---------- moving about ---------- */
 const ROOM_NAMES = ["kitchen", "parlour", "study", "garden", "greenhouse", "dock", "cellar", "attic", "roof"];
+/** Which rooms open onto which. (cd <room> works from anywhere; this is just what's next door.) */
+const DOORS = {
+  hall: ["study", "kitchen", "parlour", "cellar", "attic"], study: ["hall"], kitchen: ["hall", "garden", "cellar"],
+  parlour: ["hall"], cellar: ["kitchen"], attic: ["hall", "roof"], roof: ["attic"],
+  garden: ["kitchen", "greenhouse", "dock"], greenhouse: ["garden"], dock: ["garden"]
+};
+const doorsOf = r => (DOORS[r] || ["hall"]);
 function doCd(args) {
   args = args.filter(x => !["to", "the", "into", "in", "back"].includes(x.toLowerCase()));
   let target = args.join("_") || undefined;
@@ -312,7 +319,8 @@ function doLook(args) {
   if (args.length && !["around", "here", "room"].includes(args[0])) {
     const w = args.join(" ").toLowerCase();
     if (["biscuit", "cat"].includes(w)) return print(catHere() ? catLine() : "Biscuit isn't here. She's in the " + S.cat.room + ".");
-    if (["window", "outside", "out", "sky", "lake"].includes(w)) return print(skyLine());
+    if (["lake", "water", "down", "into the water", "in the water"].includes(w) && roomName() === "dock") return print(lakeLook());
+    if (["window", "outside", "out", "sky", "lake", "water"].includes(w)) return print(skyLine());
     return doCat([args.join("_")], {});
   }
   const node = nodeAt(S.cwd);
@@ -324,9 +332,11 @@ function doLook(args) {
   const things = Object.entries(kids).filter(([, n]) => n.kind === "file");
   const places = Object.entries(kids).filter(([, n]) => n.kind === "dir");
   if (things.length) print("{dim:here:} " + things.map(([n, x]) => "{" + (x.item ? "acc" : "hi") + ":" + '<span class="cmd" data-c="cat ' + esc(n) + '">' + esc(n) + "</span>}").join("{dim:,} "));
-  const exits = places.map(([n]) => "{cmd:cd " + esc(n) + "}");
-  if (S.cwd !== HOME) exits.push("{cmd:cd ..}");
-  if (exits.length) print("{dim:ways to go:} " + exits.join("  "));
+  const node2 = nodeAt(S.cwd);
+  const inside = places.map(([n]) => "{cmd:cd " + esc(n) + "}");
+  if (inside.length) print("{dim:in here:} " + inside.join("  "));
+  if (node2.room || S.cwd === HOME) print("{dim:doors:} " + doorsOf(roomName()).map(d => '<span class="cmd" data-c="cd ' + (d === "hall" ? "~" : d) + '">' + d + "</span>").join("{dim: · }"));
+  else print("{dim:back:} {cmd:cd ..}");
   return true;
 }
 
@@ -469,30 +479,31 @@ function doHelp(a) {
 }
 
 function hintText() {
-  const H = (s) => "{acc:Wren's voice, in your head:} " + s;
-  if (!S.read["/cottage/welcome.txt"]) return H("read my letter first, love. {cmd:cat ~/welcome.txt}");
-  if (S.mailbox.length) return H("you've got post! {cmd:mail}");
-  if (!S.stats.teas) return H("tea. always tea first. {cmd:cd kitchen} and {cmd:brew}.");
-  if (!S.flags.fedOnce) return H("Biscuit is starving to death, she says. She isn't. {cmd:feed biscuit} anyway.");
-  if (!S.disks.radio && !has("disk:radio")) return H("the radio disk is wherever I put the bread. {cmd:ls ~/kitchen/bread_bin}");
-  if (has("disk:radio")) return H("disks go in the drive in the study. {cmd:cd study}, then {cmd:insert radio.dsk}.");
-  if (!S.flags.planted) return H("there are seeds in your pockets. {cmd:cd garden}, then {cmd:plant mint}. water it, too.");
-  if (S.quests.otto_radio === "open" && S.disks.radio) return H("Ottoline's show is on {cmd:radio 101.3}, six till noon. Say hello! (well, listen.)");
-  if (!has("rod") && !S.stats.fish) return H("my rod's in the shed. {cmd:ls ~/garden/shed}. then the dock. then patience.");
-  if (S.quests.fenn_lav === "open" && !has("seed:lavender") && !has("lavender") && !S.plots.some(p => p.crop === "lavender")) return H("the lavender seeds for Fenn are hidden in the shed. remember your -a's. {cmd:ls -a ~/garden/shed}");
-  if (S.quests.fenn_lav === "open" && has("lavender", 1)) return H("you've got lavender! {cmd:send lavender to fenn}. (he only needs the one parcel. he exaggerates.)");
-  if (S.quests.pip_lesson === "open") return H("Pip wants a lesson. {cmd:write lesson.txt} — anything you like — then {cmd:send lesson.txt to pip}.");
-  if (!S.flags.lampLit) return H(has("lamp") ? (has("matches") ? "{cmd:light lamp}." : "you've the lamp; you need matches. kitchen drawer.") : "the attic's dark. there's an oil lamp in the {cmd:cd cellar}, and matches in the kitchen drawer.");
-  if (!S.flags.ghOpen) return H(has("oilcan") ? "{cmd:cd garden} and {cmd:oil greenhouse}." : "the greenhouse needs oil. the oilcan's in the shed.");
-  if (S.quests.jun_soup === "open") return H(S.recipes.carrot_soup ? (has("carrot_soup") ? "{cmd:send carrot soup to juniper}." : canMake("carrot_soup") ? "{cmd:cd kitchen}, {cmd:cook carrot soup}." : "soup needs two carrots. plant carrots, water them, wait three nights.") : "the soup recipe's in the kitchen: {cmd:cat ~/kitchen/recipes/carrot_soup.card}");
-  if (has("disk:sky") || has("disk:pip") || has("disk:lantern")) return H("you've a disk in your pocket. {cmd:cd study}, {cmd:insert}.");
-  if (!S.flags.gotKey) return H("the trunk key's on Biscuit's collar. she'll give it to someone she trusts. pet her. feed her. a fish wouldn't hurt.");
-  if (!S.taken["/cottage/attic/trunk/lantern.dsk"]) return H("open the trunk in the attic. {cmd:cd attic}, then {cmd:cd trunk}.");
-  if (has("seed:moonflower") && S.gh.every(p => p.crop !== "moonflower")) return H("moonflower seeds go in the greenhouse. {cmd:cd greenhouse}, {cmd:plant moonflower}.");
-  if (!has("moonflower") && !S.flags.lanternLit && S.gh.some(p => p.crop === "moonflower")) return H("the moonflower blooms at night. harvest it after dark. {cmd:garden} shows how long.");
-  if (!S.flags.lanternLit && S.day < SEASON_END) return H("you've done so well. Lantern Night is " + dateStr(SEASON_END) + ". till then: fish, cook, write to people, look at stars. live here a bit.");
-  if (!S.flags.lanternLit) return H(isNight() ? "it's time. {cmd:cd dock}. {cmd:lantern}." : "tonight's the night. after dark, on the dock: {cmd:lantern}.");
-  return H(pick(["go and look for Old Marmalade. fog, or dawn.", "have you found all the constellations? {cmd:sky}", "your jar's not full yet. {cmd:jar}", "write me a letter. well — write anyone a letter.", "just sit a while. {cmd:sit}. that's allowed too."]));
+  const H = s => "{acc:hint:} " + s;
+  if (!S.read["/cottage/study/note.txt"]) return H("there's a note from Wren, in the study. {cmd:cat ~/study/note.txt}");
+  if (S.mailbox.length) return H("you've got post. {cmd:mail}");
+  if (!S.stats.teas) return H("the kettle's in the kitchen. {cmd:cd kitchen}, {cmd:brew}.");
+  if (!S.flags.fedOnce) return H("Biscuit wants feeding. {cmd:feed biscuit}");
+  if (!S.disks.radio && !has("disk:radio")) return H("the radio disk is \"with the bread\". {cmd:ls ~/kitchen/bread_bin}");
+  if (has("disk:radio")) return H("disks go in the drive in the study. {cmd:cd study}, {cmd:insert}.");
+  if (!S.flags.planted) return H("you've seeds in your coat. {cmd:cd garden}, {cmd:plant}. then {cmd:water}.");
+  if (S.quests.otto_radio === "open" && S.disks.radio && S.min < 12 * 60) return H("Ottoline's on {cmd:radio 101.3} until noon.");
+  if (!has("rod") && !S.stats.fish) return H("Wren's fishing rod is in the shed. {cmd:ls ~/garden/shed}");
+  if (S.quests.fenn_lav === "open" && !has("seed:lavender") && !has("lavender") && !S.plots.some(p => p.crop === "lavender")) return H("Wren hid the good seeds. \"use your -a's.\" {cmd:ls -a ~/garden/shed}");
+  if (S.quests.fenn_lav === "open" && has("lavender")) return H("{cmd:send lavender to fenn}");
+  if (S.quests.pip_lesson === "open") return H("Pip wants a lesson. {cmd:write lesson.txt}, then {cmd:send lesson.txt to pip}.");
+  if (!S.flags.lampLit) return H(has("lamp") ? (has("matches") ? "{cmd:light lamp}" : "you need matches. kitchen drawer.") : "the attic's dark. there's an oil lamp in the {cmd:cd cellar}.");
+  if (!S.flags.ghOpen) return H(has("oilcan") ? "{cmd:cd garden}, {cmd:oil greenhouse}" : "the greenhouse door needs oil. the oilcan's in the shed.");
+  if (S.quests.jun_soup === "open") return H(S.recipes.carrot_soup ? (has("carrot_soup") ? "{cmd:send carrot soup to juniper}" : canMake("carrot_soup") ? "{cmd:cd kitchen}, {cmd:cook carrot soup}" : "soup needs two carrots. they take three nights.") : "there's a soup card in the kitchen: {cmd:cat ~/kitchen/recipes/carrot_soup.card}");
+  if (has("disk:sky") || has("disk:pip") || has("disk:lantern")) return H("there's a disk in your pocket. {cmd:cd study}, {cmd:insert}.");
+  if (!S.flags.gotKey) return H("the trunk key is on Biscuit's collar. she'll part with it when she trusts you. that takes days, and a fish wouldn't hurt.");
+  if (!S.taken["/cottage/attic/trunk/lantern.dsk"]) return H("the trunk, in the attic.");
+  if (has("seed:moonflower") && S.gh.every(p => p.crop !== "moonflower")) return H("moonflowers go in the greenhouse.");
+  if (!has("moonflower") && !S.flags.lanternLit && S.gh.some(p => p.crop === "moonflower")) return H("moonflowers open at night. harvest after dark.");
+  if (!S.flags.lanternLit && S.day < SEASON_END) return H("the lantern's ready, or nearly. the 25th is " + plural(SEASON_END - S.day, "day") + " away. there's a lot in this house you haven't looked at yet. {cmd:board}");
+  if (!S.flags.lanternLit) return H(isNight() ? "{cmd:cd dock}. {cmd:lantern}." : "tonight, after dark, on the dock.");
+  if (!S.flags.answered) return H(S.flags.sawAsk ? "it asked you something. Wren said what to answer with. the board has what you know: {cmd:board}" : "did you hear the cellar change, after the lantern?");
+  return H(pick(["the carp comes up in fog, or at dawn.", "your jar's not full. {cmd:jar}", "write to someone.", "{cmd:sit}. that's allowed."]));
 }
 
 function doOil(a) {
@@ -586,45 +597,45 @@ function doRecord() {
 
 async function doSit() {
   const r = roomName();
-  const spots = { parlour: "the marmalade armchair", dock: "the bench at the end of the dock", garden: "the edge of a raised bed", kitchen: "the kitchen chair with the wobbly leg", study: "the desk chair", hall: "the bottom stair", greenhouse: "an upturned flowerpot", roof: "the roof, back against the warm chimney", attic: "Gerald (gently)", cellar: "a crate of jam" };
+  const spots = { parlour: "the orange armchair", dock: "the bench at the end of the dock", garden: "the edge of a raised bed", kitchen: "the kitchen chair with the wobbly leg", study: "the desk chair", hall: "the bottom stair", greenhouse: "an upturned flowerpot", roof: "the roof, back against the warm chimney", attic: "a box marked TAX", cellar: "the cellar steps" };
   print("You sit on " + (spots[r] || "the floor") + " for a while.");
   await pause(800);
   const thoughts = [
-    "You don't think about anything in particular. It's lovely.",
-    "You listen to the house. It ticks and settles like an old dog turning round.",
-    "You think about Wren, on a ferry somewhere, probably talking to a stranger who'll remember her forever.",
-    r === "dock" ? "The water laps at the posts. A fish jumps, far out, just to show you it can." : "Outside, " + skyLine().charAt(0).toLowerCase() + skyLine().slice(1),
-    fireLit() && r === "parlour" ? "The fire pops. You watch the flames for so long you forget what you were going to do. Good." : "You notice you've stopped hurrying. You can't remember when."
+    "You don't think about much.",
+    "You listen to the house. Under everything, the hum.",
+    "You think about Wren, somewhere north, on a boat probably.",
+    r === "dock" ? "Water against the posts. The cable going down into it." : skyLine(),
+    fireLit() && r === "parlour" ? "You watch the stove until you forget what you came in for." : "You notice you've stopped hurrying."
   ];
   await type(pick(thoughts), 45);
-  if (r === "parlour" && S.cat.room === "parlour" && chance(0.7)) { await pause(500); print("{dim:Biscuit climbs into your lap, turns round three times, and settles like a warm loaf. You can never get up now. That's the law.}"); catMood(5); warm(5); sfx("purr"); }
+  if (r === "parlour" && S.cat.room === "parlour" && chance(0.7)) { await pause(500); print("{dim:Biscuit gets into your lap, turns round three times, and settles. You're not getting up for a while.}"); catMood(5); warm(5); sfx("purr"); }
   spend(15);
   warm(r === "parlour" && fireLit() ? 8 : 4, "warmer");
 }
 async function doNap() {
-  if (S.min > 22 * 60) return print("A nap? At this hour? That's just sleeping. {cmd:sleep}");
-  print("You curl up " + (roomName() === "parlour" ? "in the armchair" : "wherever you are") + " and close your eyes for just a minute...");
+  if (S.min > 22 * 60) return print("At this hour that's just sleeping. {cmd:sleep}");
+  print("You close your eyes for a minute.");
   await pause(900);
   print("{dim:z z z . . .}");
   await pause(900);
   spend(60);
   warm(5);
-  print("You wake an hour later with a crease on your face and " + (S.cat.room === roomName() ? "Biscuit asleep on your feet." : "no idea where you are, briefly.") + " It's " + clock(S.min) + ".");
+  print("An hour later" + (S.cat.room === roomName() ? ", with Biscuit on your feet." : ".") + " It's " + clock(S.min) + ".");
 }
 
 async function doSleep() {
-  if (S.min < 19 * 60 && S.min >= 7 * 60) return print("It's only " + clock(S.min) + ". The day's not done with you yet. {dim:(you can sleep from 7pm. or {cmd:nap}.)}");
-  print("You bank the stove, check the back door's shut, say goodnight to Biscuit (she doesn't say it back), and go up.");
+  if (S.min < 19 * 60 && S.min >= 5 * 60) return print("It's only " + clock(S.min) + ". {dim:(bed from 7pm. or {cmd:nap}.)}");
+  print("You check the back door, turn the lamp off, and go up.");
   await pause(700);
   if (S.today.length) {
     print("");
-    print("{dim:before you sleep, you write in your journal:}");
+    print("{dim:you write in your journal:}");
     const entry = S.today.slice(0, 5).join(" ");
     await type("  " + dateStr(S.day).toLowerCase() + ". " + entry, 70, "hi");
     await pause(600);
   }
   print("");
-  await type("Goodnight, cottage.", 30, "dim");
+  await type("Under the house, the hum.", 40, "dim");
   await pause(900);
   await newDay(false);
 }

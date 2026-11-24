@@ -45,6 +45,7 @@ function newState() {
     cat: { room: "parlour", mood: 60, fed: 0, petsToday: 0 },
     fox: null,                 // name you gave the fox
     keeps: {},                 // keepsakes (achievements) -> day found
+    clues: {},                 // the corkboard: clue id -> day pinned
     journal: [],               // [{ day, text }]
     today: [],                 // events that become tonight's journal entry
     stats: { cmds: 0, teas: 0, fish: 0, harvests: 0, pets: 0, letters: 0, gifts: 0, meals: 0, days: 1 },
@@ -67,7 +68,7 @@ function load() {
     S = Object.assign(newState(), got);
     // merge nested defaults so old saves don't explode when we add things
     const d = newState();
-    for (const k of ["flags", "friends", "stats", "cat"]) S[k] = Object.assign({}, d[k], got[k] || {});
+    for (const k of ["flags", "friends", "stats", "cat", "clues"]) S[k] = Object.assign({}, d[k], got[k] || {});
     return true;
   } catch (e) { return false; }
 }
@@ -105,6 +106,7 @@ const KEEPSAKES = {
   allfriends:  ["a village photograph", "befriended the whole Hollow"],
   fox:         ["a fox whisker (you think)", "named the fox"],
   lantern:     ["a lantern wick, burned down", "lit the lantern on Lantern Night"],
+  answered:    ["a scale of light, which fades if you look straight at it", "answered it"],
   writer:      ["a pencil stub", "wrote your own file"],
   sudo:        ["a sandwich crust", "used sudo for good"],
   night_owl:   ["a moth", "stayed up past 1am"],

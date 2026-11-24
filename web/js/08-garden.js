@@ -95,9 +95,9 @@ function doPlant(args) {
   beds[i] = { crop, age: 0, wet: gh || weatherNow().rain > 0 };
   spend(6); sfx("dig");
   print(pick([
-    "You make a little hole with your finger, drop the " + crop + " seed in, and pat it down like you're tucking it in.",
-    "In goes the " + crop + ". You tell it, quietly, that it's going to do great.",
-    "You plant the " + crop + " in " + (gh ? "pot " : "plot ") + (i + 1) + ". A worm surfaces, assesses your work, and leaves."
+    "A hole with your finger, the " + crop + " seed in, soil back over.",
+    "You plant the " + crop + " in " + (gh ? "pot " : "plot ") + (i + 1) + ".",
+    "In goes the " + crop + ". A worm comes up to look and goes back down."
   ]));
   if (!gh && !beds[i].wet) print("{dim:(it'll want some {cmd:water} before tonight.)}");
   if (!S.flags.planted) { S.flags.planted = true; keepsake("first_plant"); }
@@ -108,12 +108,12 @@ function doWater() {
   if (inGh()) return print("The mister hisses at you. It's got this. {dim:(the greenhouse waters itself.)}");
   if (!inGarden()) return print("Nothing to water in here, unless you count Biscuit, and you shouldn't.");
   const thirsty = S.plots.filter(p => p.crop && !p.wet);
-  if (weatherNow().rain) { S.plots.forEach(p => (p.wet = true)); return print("It's raining. The sky's doing it for you. You stand there holding the watering can anyway, feeling supportive."); }
+  if (weatherNow().rain) { S.plots.forEach(p => (p.wet = true)); return print("It's raining. The beds are fine."); }
   if (!S.plots.some(p => p.crop)) return print("You water the empty beds. The soil appreciates the thought.");
-  if (!thirsty.length) return print("Everything's already watered. You give the mint an extra splash. It didn't need it. It's mint.");
+  if (!thirsty.length) return print("Everything's watered.");
   S.plots.forEach(p => { if (p.crop) p.wet = true; });
   spend(8); sfx("water");
-  print("You fill the green can at the butt and go along the beds. The soil goes dark and smells like rain. " + pick(["A blackbird follows you, hoping.", "You water a snail by accident. It doesn't seem to mind.", "Biscuit watches from a dry spot, deeply unimpressed by water."]));
+  print("You fill the can at the water butt and go along the beds." + pick(["", " A blackbird follows you.", " You water a snail by accident."]));
   remember("watered the garden.");
 }
 
