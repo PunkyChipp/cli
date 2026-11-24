@@ -87,6 +87,7 @@ function worldTick() {
     catWander();
     maybeCatKeyboard();
     idleMoment();
+    if (typeof maybeVisit === "function") maybeVisit();
   }
 }
 

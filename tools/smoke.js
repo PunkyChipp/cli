@@ -46,7 +46,7 @@ Object.assign(global, {
 const html = fs.readFileSync(path.join(__dirname, "../web/index.html"), "utf8");
 const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
 let src = scripts.map(s => fs.readFileSync(path.join(__dirname, "../web", s), "utf8")).join("\n;\n");
-src += "\n;globalThis.__G = { get S() { return S; }, set S(v) { S = v; }, T, shell, buildTree, deliverMail, newDay, give, has, KEEPSAKES, nodeAt, resolve, children, commandNames };";
+src += "\n;globalThis.__G = { get S() { return S; }, set S(v) { S = v; }, T, shell, buildTree, maybeVisit, deliverMail, newDay, give, has, KEEPSAKES, nodeAt, resolve, children, commandNames };";
 vm.runInThisContext(src, { filename: "hearth.js" });
 const G = global.__G;
 
@@ -179,6 +179,10 @@ async function type(line, waitFor) {
     let count = 0;
     const walk = p => { const node = G.nodeAt(p); if (!node) return; if (node.kind === "file") { const t = typeof node.text === "function" ? node.text() : node.text; expect(typeof t === "string", p); count++; return; } for (const k of Object.keys(G.children(p, true))) walk((p === "/" ? "" : p) + "/" + k); };
     walk("/"); expect(count > 60, "only " + count + " files");
+  });
+  await step("people drop by: Fenn's eggs on a Saturday morning", async () => {
+    const before = G.S.friends.fenn; G.S.day = 4; G.S.min = 8 * 60; G.S.cwd = "/cottage/kitchen"; G.S.flags.visits = {};
+    G.maybeVisit(); expect(G.S.flags.visits.fenn_eggs_1, "no visit"); expect(G.S.friends.fenn > before, "no friendship");
   });
   await step("help, hint, map, jar, friends, journal, hearthfetch don't crash", async () => { for (const c of ["help", "help all", "hint", "map", "jar", "friends", "journal", "hearthfetch", "fishlog", "ps", "top", "cal", "tree", "fortune", "uptime", "pockets", "credits"]) await type(c); });
 

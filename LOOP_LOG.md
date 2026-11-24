@@ -34,3 +34,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 6 — quip sweep
 - Went through the everyday responses (moving, taking things, the cat's key, small talk, the dead radio, wrong-room messages) and cut the ones that were trying too hard: "very here", "forty pounds of liquid", "HEARTH blushes, as much as beige can", "'Earn it,' says her face", "dead as a doornail", "you respect the label". Replaced them with short plain lines.
 - Getting Biscuit's key is quieter now: she bumps your hand and walks off, rather than narrating what it means.
+
+## 7 — people drop by
+- The fridge note said "milk — Ottoline, Tues" and "eggs — Fenn"; Pip's letter said Wren let her use HEARTH on Saturdays. Those now actually happen, once each, if you're indoors at the time: Ottoline with milk (and an unmentioned scone) on Tuesdays, Fenn's eggs left on the step on Saturday mornings with a one-word note, Pip turning up on Saturday afternoons.
+- The visits carry a little of the mystery: Fenn's second note says the bees won't go near the water; Pip's second visit points at the voice on 77.7. Both are extra ways to find clues you could also find elsewhere.
+- New file: `web/js/17-visitors.js`. Smoke test covers a visit (52 steps).
