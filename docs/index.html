@@ -3115,7 +3115,11 @@ function doCd(args) {
     if (toRoom === "greenhouse" && !S.flags.ghSeen) { S.flags.ghSeen = true; keepsake("greenhouse"); }
     print("{dim:" + esc(shortPath(path)) + "}");
     const d = val(node.desc);
-    if (d && (!S.flags["seen" + toRoom] || isDark(path))) { print(d); S.flags["seen" + toRoom] = true; }
+    if (d && (!S.flags["seen" + toRoom] || isDark(path))) {
+      print(d);
+      if (node.room && !isDark(path)) print("{dim:doors:} " + doorsOf(toRoom).map(x => '<span class="cmd" data-c="cd ' + x + '">' + x + "</span>").join("{dim: · }"));
+      S.flags["seen" + toRoom] = true;
+    }
     if (catHere()) print("{dim:" + catLine() + "}");
     if (toRoom === "garden" && (isNight() || isEvening()) && chance(0.6)) print("{dim:(a fox is sitting at the edge of the long grass, watching you. {cmd:cat fox})}");
     if (isDark(path)) print("{dim:(you'll want some light. {cmd:cd ..} back down.)}");
@@ -3382,29 +3386,32 @@ cmd("name", "name something (name fox Clementine)", (a) => {
 /* ---------- implementations ---------- */
 function doHelp(a) {
   if (a[0] && a[0] !== "all") return doMan(a);
+  if (a[0] !== "all") {
+    const row = (c, d) => "  " + '<span class="cmd" data-c="' + c + '">' + pad(c, 14) + "</span>" + " {dim:" + d + "}";
+    print("{hi:the few things you need}  {dim:(tap any of them)}");
+    for (const [c, d] of [["look", "where am I, what's here"], ["ls", "list what's here"], ["cd kitchen", "go somewhere (any room's name works)"],
+      ["cat note.txt", "read or look closely at something"], ["take", "pick something up"], ["pockets", "what you're carrying"],
+      ["map", "the house"], ["board", "what you've worked out"], ["hint", "a nudge, if you're stuck"]]) print(row(c, d));
+    print("");
+    print("{dim:rooms have their own things to do: try them and see. everything else:} {cmd:help all}");
+    return;
+  }
   const groups = [
     ["around", "getting around"], ["living", "living here"], ["garden", "the garden"], ["people", "people & paper"], ["help", "when stuck"]
   ];
-  print("{hi:HEARTH — what you can type}   {dim:(or just tap things that are underlined)}");
-  print("");
   for (const [g, title] of groups) {
     const list = Object.values(CMDS).filter(c => c.group === g && cmdAvailable(c.name) && !c.secret);
     if (!list.length) continue;
     print("{acc:" + title + "}");
-    for (const c of list) print("  " + '<span class="cmd" data-c="' + c.name + '">' + pad(c.name, 10) + "</span>" + " {dim:" + esc(c.help) + "}");
-  }
-  print("");
-  print("{dim:there's more. computer-ish things are in {cmd:help all}, {cmd:man}, and {cmd:ls /bin}.}");
-  if (a[0] === "all") {
-    print("");
-    print("{acc:the computer-ish bits}");
-    const list = Object.values(CMDS).filter(c => c.group === "system" && cmdAvailable(c.name) && !c.secret);
     let line = "  ";
-    for (const c of list) { line += "{cmd:" + c.name + "}  "; if (plain(line).length > 60) { print(line); line = "  "; } }
+    for (const c of list) { line += '<span class="cmd" data-c="' + c.name + '">' + c.name + "</span>   "; if (plain(line.replace(/<[^>]+>/g, "")).length > 58) { print(line); line = "  "; } }
     if (line.trim()) print(line);
-    print("  {dim:plus: pipes (a | b), ; and &&, > and >> to write files, !! and history, tab-completion, aliases.}");
-    print("  {dim:...and a few things that aren't listed anywhere at all.}");
   }
+  print("{acc:the computer-ish bits}");
+  let line = "  ";
+  for (const c of Object.values(CMDS).filter(c => c.group === "system" && cmdAvailable(c.name) && !c.secret)) { line += "{cmd:" + c.name + "}  "; if (plain(line).length > 58) { print(line); line = "  "; } }
+  if (line.trim()) print(line);
+  print("{dim:pipes (a | b), ; and &&, > and >>, !!, history, tab-completion, aliases. {cmd:man} anything.}");
 }
 
 function hintText() {
