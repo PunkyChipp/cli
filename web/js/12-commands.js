@@ -822,7 +822,7 @@ function doFishlog() {
   for (const f of FISH) {
     const L = S.fishlog[f.id];
     if (f.junk) continue;
-    const name = f.id === "marmalade" ? "OLD MARMALADE" : f.id;
+    const name = f.id === "marmalade" ? "the carp" : f.id;
     print("  " + (L ? "{ok:" + pad(name, 14) + "}" + " {dim:x" + L.n + (L.best ? ", best " + L.best + "cm" : "") + "}" : "{dim:" + pad("?????", 14) + "}"));
   }
   print("{dim:(different fish bite at different times and in different weather. the fish book in the parlour knows.)}");

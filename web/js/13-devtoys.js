@@ -170,7 +170,7 @@ cmd("alias", "make a shortcut (alias morning='brew; feed biscuit')", (a, ctx) =>
 }, SYS);
 cmd("unalias", "forget a shortcut", (a) => { delete S.aliases[a[0]]; print("{dim:(forgotten.)}"); }, SYS);
 cmd("man", "the manual for a command", doMan, SYS);
-cmd("whoami", "who are you", () => print(esc(NAME()) + "\n{dim:the minder of the cottage. Biscuit's staff. (in that order? debatable.)}"), SYS);
+cmd("whoami", "who are you", () => print(esc(NAME())), SYS);
 cmd("hostname", "this machine's name", () => print("hearth"), SYS);
 cmd("uname", "about the system", (a) => print(a.includes("-a") ? "HEARTH 4.0.80-wren #1 SMP Mon Mar 9 1987 woodstove x86_cosy GNU/Kettle" : "HEARTH"), SYS);
 cmd("uptime", "how long it's been on", () => print("up " + plural(S.day, "day") + ", " + clock(S.min) + ", 1 user, 1 cat, load average: " + (S.cat.mood / 100).toFixed(2) + " " + (S.warmth / 100).toFixed(2) + " 0.42"), SYS);
@@ -204,13 +204,12 @@ cmd("ps", "what's running", () => {
   print(S.flags.lanternLit ? "  999 ?        R     wren --home --in-the-kitchen" : "  999 ?        S     wren --travelling --far-away --thinking-of-you");
 }, SYS);
 cmd("top htop", "what's using the most", () => {
-  print("{hi:HEARTH top}  - " + clock(S.min) + "  up " + S.day + " days,  1 user,  1 cat");
+  print("{hi:HEARTH top}  - " + clock(S.min) + "  up " + plural(S.day, "day") + ",  1 user,  1 cat");
   print("{dim:  PID  %CPU  %MEM  COMMAND}");
   print("    1  " + padL((80 + Math.random() * 18).toFixed(1), 4) + "  64.0  biscuit (dreaming about " + pick(["birds", "the fridge", "a large fish", "you, possibly"]) + ")");
   print("   42  " + padL(teaWarm() ? "12.0" : " 0.1", 4) + "   2.1  kettle");
   print("  101  " + padL(weatherNow().rain ? "9.3" : "0.0", 4) + "   0.5  rain");
   print("  512   1.2   3.0  hearth");
-  print("{dim:(press q to quit. there's no need. it's already gone.)}");
 }, SYS);
 cmd("kill pkill killall", "stop a process", (a) => {
   const t = a.filter(x => !x.startsWith("-")).join(" ").toLowerCase();
@@ -298,24 +297,23 @@ cmd("reboot restart shutdown poweroff", "turn it off and on again", async () => 
   await bootSequence(true);
 }, SYS);
 cmd("exit logout quit bye", "leave", async () => {
-  print(pick(["You consider leaving. Biscuit sits on your lap. You stay.", "And go where? It's " + (weatherNow().rain ? "raining" : "cold") + " out there and the kettle's in here.", "exit: there is nowhere better than here. (HEARTH saved your game, though. you can close the app whenever.)"]));
+  print("logout: you're the only user. {dim:(the game saves as you go. close it whenever.)}");
   save();
 }, SYS);
-cmd("fortune", "a little wisdom", () => print("{acc:\"" + pick(FORTUNES) + "\"}  {dim:— " + pick(["Wren", "Wren", "Wren, probably", "Mabel Thorne", "Fenn (reluctantly)", "Ottoline, on air", "a fortune cookie Wren saved since 1994"]) + "}"), SYS);
+cmd("fortune", "something someone once said", () => { const [q, who] = pick(FORTUNES); print("{acc:\"" + q + "\"}  {dim:— " + who + "}"); }, SYS);
 const FORTUNES = [
-  "Tea first. Then everything else. In that order.",
-  "Plants grow when you're not looking. So do people.",
-  "Rain counts as watering. Don't let anyone tell you otherwise.",
-  "A cat on your lap is a contract. You may not get up.",
-  "The kettle knows when you're in a hurry. Don't be in a hurry.",
-  "If you're lost, look. If you're still lost, have a biscuit. Not that Biscuit.",
-  "The lake keeps things. Be kind to it.",
-  "You are allowed to do nothing for a while. It's not nothing.",
-  "Every room is warmer with a book in it.",
-  "Write things down. Future you is a stranger who'll be glad you did.",
-  "It's never too late to light a lantern.",
-  "Old fish are wise fish. Leave them be.",
-  "Everyone comes home eventually. Leave a light on."
+  ["Thump it on the left.", "W."],
+  ["If it's foggy, go fishing.", "W."],
+  ["Water them, then go inside.", "Mabel Thorne, The Patient Gardener"],
+  ["Rain counts.", "Mabel Thorne"],
+  ["Bees know when you're lying.", "A. Fenn"],
+  ["Post goes at dawn.", "Ottoline"],
+  ["Look up.", "J.V."],
+  ["I'm not scared of it. I'm just saying it's there.", "Pip"],
+  ["It's not the freezer.", "W."],
+  ["Count the lights. Then count the boats.", "on the back of a photograph"],
+  ["Down, not up.", "pencil, HEARTH-80 Technical Reference, ch. 7"],
+  ["Leave a light on.", "W."]
 ];
 cmd("hearthfetch neofetch screenfetch fastfetch", "about this computer, prettily", () => {
   const art = [
@@ -345,13 +343,11 @@ cmd("hearthfetch neofetch screenfetch fastfetch", "about this computer, prettily
 cmd("credits about", "who made this", () => {
   print("{hi:HEARTH}  {dim:— a cottage, a cat, a season.}");
   print("");
-  print("  written for anyone who needed a quiet place for a while.");
   print("  font: VT323 (SIL Open Font License).");
   print("  every sound is made from scratch with WebAudio. the rain too.");
   print("  every pixel through the window is drawn by code.");
   print("");
   print("  {dim:want to change things? see {acc:MODDING.md} in the project folder.}");
-  print("  {dim:Biscuit was consulted throughout and disapproved of most of it.}");
 }, SYS);
 cmd("yes", "agree, repeatedly", async (a) => {
   const w = a.join(" ") || "y";
@@ -361,14 +357,14 @@ cmd("yes", "agree, repeatedly", async (a) => {
 cmd("sl", "you meant ls", async () => {
   const k = ["      )  )", "     (  (", "    .-----.", "   |       |=,", "   |       | ||", "   '-------'-'"];
   for (const l of k) { print("{acc:" + esc(l) + "}"); await pause(60); }
-  print("{dim:(you typed sl. you meant ls. here's a kettle anyway, steaming past.)}");
+  print("{dim:(you meant ls.)}");
 }, SYS);
 cmd("git", "version control", () => print("Wren didn't believe in version control. 'I remember what I did,' she wrote, in 1987, and then, in 1993, 'mostly.'"), SYS);
 cmd("make", "make something", (a) => (a.join(" ").includes("tea") ? doBrew([]) : a.join(" ").includes("love") ? print("make: *** You can't make love in a cottage terminal. Have a cup of tea.") : print("make: *** No rule to make target '" + esc(a[0] || "") + "'.  {dim:(did you mean {cmd:cook}? or {cmd:brew}?)}")), SYS);
-cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "Wren kept a python once. It's a long story. It went to the zoo in Edinburgh and is, by all accounts, thriving." : "Not on this machine. HEARTH speaks one language and it's mostly about tea."), SYS);
-cmd("npm pip3 apt brew-install", "install things", () => print("This computer has 640K of memory and you want to install the internet? {dim:(no.)}"), SYS);
+cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "python: not installed. {dim:(HEARTH has 640K. it uses most of it listening.)}" : "not installed."), SYS);
+cmd("npm pip3 apt brew-install", "install things", () => print("no network. {dim:(the only cable goes into the lake.)}"), SYS);
 cmd("ssh telnet", "connect to elsewhere", (a) => print((a[0] || "").includes("observatory") || (a[0] || "").includes("juniper") ? "Connecting to observatory... {dim:Connection refused. a note: 'if you want to talk, write. or row. — J.V.'}" : "ssh: nowhere to go. everywhere worth going is in this house, or across the lake by post."), SYS);
-cmd("coffee", "coffee", () => print("This is a tea household. HEARTH has been asked to report you."), SYS);
+cmd("coffee", "coffee", () => print("There's no coffee in the house. Wren doesn't drink it. {dim:(tea's in the kitchen.)}"), SYS);
 cmd("cron crontab", "scheduled things", () => {
   print("{dim:# the cottage's routine, according to Biscuit}");
   print("0  6  * * *   biscuit --demand-breakfast");
@@ -448,7 +444,7 @@ const MAN_EXTRA = {
   cd: ["cd ..  back out a level", "cd ~   home (the hall)", "cd -   wherever you were before", "you can also just say a room's name from anywhere: cd kitchen"],
   cat: ["BUGS: if there's a real cat on the keyboard, cat will not help you."],
   brew: ["kinds: black, mint, chamomile, lavender, honey", "BUGS: the kettle. see thump(1). left side."],
-  fish: ["press ENTER (or tap) the moment the float shows !", "different fish, different times. the field guide in the parlour knows.", "BUGS: Old Marmalade."],
+  fish: ["press ENTER (or tap) the moment the float shows !", "different fish, different times. the field guide in the parlour knows.", "BUGS: the carp."],
   grep: ["-i ignore case   -v invert   -n line numbers   -r search the whole house", "example: grep -r love"],
   sudo: ["BUGS: the password is not 'password'."],
   send: ["send <thing> to <person>", "things: anything in your pockets, or a file you wrote", "people: ottoline, fenn, pip, juniper", "replies arrive the next morning."],

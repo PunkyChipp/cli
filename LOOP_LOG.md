@@ -42,3 +42,9 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 8 — the paper card
 - The paper card beside the window had a big empty bottom half. It now has two handwritten-style notes: what's in your coat (no need to type `pockets`) and the last few things you pinned to the board. Checked at 1366×768, the common laptop size, ready for the PC version later. Hidden on portrait/phone layouts where there's no room.
+
+## 9 — the computer-ish bits
+- `fortune` used greeting-card platitudes ("Every room is warmer with a book in it"). It now quotes people and things in the game: Wren's notes, the gardening book, Fenn, Ottoline, Pip, the back of the 1974 photo, the pencil in the HEARTH manual. Some of them are quiet clues.
+- Toned down `whoami`, `exit`, `coffee`, `python`, `npm`, `top`, `sl` and `credits`, which were each doing a little bit.
+- `top`/`uptime` say "1 day", not "1 days".
+- The carp is "the carp" everywhere now (man page, fishlog, keepsake), not "Old Marmalade" in some places.

@@ -96,7 +96,7 @@ const KEEPSAKES = {
   first_plant: ["a muddy seed packet", "planted something"],
   first_harv:  ["a carrot top", "harvested your first crop"],
   pet10:       ["a tuft of orange fur", "petted Biscuit ten times"],
-  marmalade:   ["a golden scale the size of a coin", "caught Old Marmalade"],
+  marmalade:   ["a golden scale the size of a coin", "caught Wren's carp, and let him go"],
   radio:       ["a radio dial knob", "got the radio working"],
   allstars:    ["a hand-drawn star chart", "found every constellation"],
   comet:       ["a pencil sketch of a comet", "saw Wren's Comet"],
