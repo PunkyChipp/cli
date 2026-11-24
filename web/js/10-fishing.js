@@ -44,6 +44,7 @@ async function doFish() {
   if (T.cap) return print("you can't fish inside a pipe. you tried, though, and that's what matters.");
   if (weatherNow().rain >= 1 && !has("umbrella")) warm(-3, "cold. wet. you should've brought the duck umbrella.");
   print(pick(["You cast. {acc:plip.}", "The float lands a little short. Fine.", "A good cast, for once."]));
+  if (!S.flags.fishTaught) { S.flags.fishTaught = true; print("{dim:(watch the float. when it goes under, press enter, or tap the screen. not before.)}"); }
   sfx("plip");
   const d = printRaw(fmt(waterLine(0, false)));
   let early = false;
@@ -63,12 +64,12 @@ async function doFish() {
   if (T.skip) { print("{dim:you reel in. another time.}"); spend(5); return; }
   if (early) {
     spend(5);
-    return print(pick(["You strike too early! The float wasn't even moving. The lake seems faintly amused.", "Too eager! You yank the line out of the water with nothing on it. A duck looks away, embarrassed for you.", "Whoops — nothing was biting. Wait for the {warn:!} next time."]) + " {dim:(" + "{cmd:fish}" + " again?)}");
+    return print(pick(["Nothing's biting yet. You pull the float out.", "Too soon. The float hadn't moved.", "You strike at nothing. The ripples settle."]) + " {dim:(wait until it goes under.)} {cmd:fish}");
   }
   const f = rollFish();
   d.innerHTML = fmt(waterLine(phase, true));
   sfx("plip");
-  print("{warn:!! the float dips — NOW!}  {dim:(enter, space, or tap)}");
+  print("{warn:the float goes under —}  {dim:now! (enter, space or tap)}");
   const got = T.autoFish ? true : await new Promise(res => {
     let done = false;
     T.keyWait = () => { if (!done) { done = true; res(true); } };
@@ -77,7 +78,7 @@ async function doFish() {
   T.keyWait = null;
   spend(randi(10, 25));
   if (!got) {
-    return print(pick(["Too slow — the float pops back up and whatever it was has gone. You'll get the next one.", "You blink and miss it. The water closes over the spot like nothing happened.", "Gone! Something stole the bait with tremendous skill."]) + " {cmd:fish}");
+    return print(pick(["Too slow. The float bobs back up and the bait's gone.", "Missed it. The float comes back up, empty.", "Whatever it was, it's had the bait."]) + " {cmd:fish}");
   }
   sfx("reel");
   await pause(300);

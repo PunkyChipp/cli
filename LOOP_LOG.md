@@ -54,3 +54,9 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 11 — Biscuit decides about you
 - Once Biscuit trusts you (the same trust that eventually gets you the trunk key), she sometimes follows you from room to room: "Biscuit follows you in." / "You hear Biscuit behind you on the stairs." It's the game's way of showing her trust without a meter, and a sign the key isn't far off. She won't follow you onto the roof, or down the dock in the rain.
+
+## 12 — fishing, played for real
+- Played fishing with real timing (a catch, an early strike, a miss). The timing feels fair; the words didn't.
+- The bite cue was an arcade shout ("!! the float dips — NOW!"). It's now "the float goes under — now!", which is still clear but sounds like a lake.
+- Early strikes and misses are plain ("Too soon. The float hadn't moved." / "Missed it. The float comes back up, empty.") instead of "Whoops" and an embarrassed duck.
+- First cast ever: one dim line explains the rule (watch the float; when it goes under, press enter or tap; not before), so nobody has to learn it by failing.
