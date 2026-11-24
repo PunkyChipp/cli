@@ -4,15 +4,55 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Abyss</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1c130d">
+<title>Hearth</title>
+<!-- @@STYLE@@ -->
 <link rel="stylesheet" href="style.css">
+<!-- @@/STYLE@@ -->
 </head>
-<body>
-<canvas id="c"></canvas>
-<div id="hud"></div>
-<button id="menu" onclick="openMenu()">☰</button>
+<body data-theme="amber">
+<div id="app">
+  <aside id="side">
+    <div id="win"><canvas id="scene" width="120" height="132"></canvas><div id="postit" title="a sticky note"></div></div>
+    <div id="card"></div>
+  </aside>
+  <main id="monitor">
+    <div id="bezel">
+      <div id="screen" class="off">
+        <div id="term">
+          <div id="out"></div>
+          <div id="line" class="hide"><span id="prompt"></span><span id="mirror"></span><input id="cmd" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-label="command"></div>
+        </div>
+        <div class="scan"></div>
+        <div class="glass"></div>
+      </div>
+      <div class="brand"><b>HEARTH</b>-80<i> &middot; personal home computer</i></div>
+      <div class="vents"></div>
+      <div id="led"></div>
+    </div>
+    <div id="keys"></div>
+  </main>
+</div>
 <div id="toast"></div>
-<div id="overlay"></div>
-<script src="game.js"></script>
+<!-- @@SCRIPTS@@ -->
+<script src="js/00-util.js"></script>
+<script src="js/01-state.js"></script>
+<script src="js/02-term.js"></script>
+<script src="js/03-audio.js"></script>
+<script src="js/04-world.js"></script>
+<script src="js/05-fs.js"></script>
+<script src="js/06-content.js"></script>
+<script src="js/07-people.js"></script>
+<script src="js/08-garden.js"></script>
+<script src="js/09-kitchen.js"></script>
+<script src="js/10-fishing.js"></script>
+<script src="js/11-sky.js"></script>
+<script src="js/12-commands.js"></script>
+<script src="js/13-devtoys.js"></script>
+<script src="js/14-story.js"></script>
+<script src="js/15-scene.js"></script>
+<script src="js/99-boot.js"></script>
+<!-- @@/SCRIPTS@@ -->
 </body>
 </html>
