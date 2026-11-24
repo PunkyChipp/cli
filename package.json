@@ -1,0 +1,11 @@
+{
+  "name": "hearth",
+  "version": "1.0.0",
+  "description": "A cosy game about minding a cottage through an old home computer.",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build.js",
+    "test": "node tools/smoke.js",
+    "check": "for f in web/js/*.js; do node --check \"$f\" || exit 1; done && node tools/smoke.js"
+  }
+}

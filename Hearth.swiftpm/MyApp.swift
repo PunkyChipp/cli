@@ -1,11 +1,12 @@
 import SwiftUI
 
 @main
-struct AbyssApp: App {
+struct HearthApp: App {
     var body: some Scene {
         WindowGroup {
             WebGameView()
-                .ignoresSafeArea()
+                .ignoresSafeArea(.container)
+                .background(Color(red: 0.11, green: 0.075, blue: 0.05))
                 .preferredColorScheme(.dark)
                 .statusBarHidden(true)
                 .persistentSystemOverlays(.hidden)

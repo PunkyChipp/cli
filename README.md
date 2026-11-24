@@ -1,79 +1,92 @@
-# Verdant Void 🌱
+# HEARTH
 
-An idle / incremental game for **Swift Playgrounds on iPad (iOS 26)**. Seed life
-into dead worlds, grow it into an exponential garden, weave a glowing root-web
-beneath the surface, and reset it all for power across nine hand-themed worlds.
+*a cottage, a cat, a season.*
 
-Inspired by the *feel* of *Grass Cutting Incremental* — the satisfying tap loop,
-the thrill of a new zone, and systems that are more than "number go up" (its
-Constellations, Solarians, and Gauntlet) — but with its own mechanics, theme,
-and art.
+Your great-aunt Wren has gone travelling at seventy-eight, and she's left you her
+cottage on Lake Ilse for the autumn. Along with the house comes Biscuit (an
+orange cat who says she hasn't been fed) and **HEARTH**, a beige 1987 home
+computer that Wren wired into every room.
 
-## Art direction: bioluminescent line-art
+The cottage *is* the filesystem. Rooms are folders. Notes are files. The cat is
+PID 1.
 
-Everything is drawn **procedurally in code** (`Canvas` / `Path`), no images:
-near-black world-fields lit by glowing organic lines, drifting fireflies, a
-celestial orb that tracks the day/night cycle, and a central **living organism**
-on the tap screen that visibly grows as you progress.
+You have two weeks until **Lantern Night**, when the lantern on Wren's dock is
+always the first light on the lake. It's been lit every year since 1974.
+Everything you need is somewhere in the house. Wren isn't great at remembering
+where she put things.
 
-## How to run
+```
+ _  _ ___   _   ___ _____ _  _
+| || | __| /_\ | _ \_   _| || |
+| __ | _| / _ \|   / | | | __ |
+|_||_|___/_/ \_\_|_\ |_| |_||_|
+```
 
-1. Copy the **`VerdantVoid.swiftpm`** folder onto your iPad (or unzip the
-   provided zip). Keep it in the Files app.
-2. Tap the **whole `.swiftpm` folder** to open it in **Swift Playgrounds**
-   (or open it in Xcode on a Mac). Don't open an individual `.swift` file.
-3. Press **Run**. It autosaves and keeps progressing while you're away.
+## How to play it
 
-## Three difficulty modes
+**On iPad (Swift Playgrounds):**
+1. Get the `Hearth.swiftpm` folder onto your iPad (download the repo as a zip
+   from GitHub, unzip it in the Files app).
+2. Tap the **whole `Hearth.swiftpm` folder** to open it in Swift Playgrounds.
+3. Press **Run** (▶). It saves as you go, so you can close it whenever.
 
-Chosen on first launch, changeable any time in **Settings** — difficulty only
-changes the **game speed**: Easy 2×, Medium 1×, Hard 0.5×.
+**In a browser (any computer):** open `docs/index.html`. That one file is the
+whole game, so you can copy it anywhere and it still works offline.
 
-## The core loop
+## You don't need to know how to code
 
-- **Tap** the glowing bloom to gather **Motes** (with light-ring + drifting
-  number feedback).
-- Buy **6 tiers of lifeforms** (Spore → … → Ancient); each tier grows the one
-  below, so production snowballs exponentially.
-- Spend Motes on **upgrades** (tap power, production, cheaper costs…).
+- **Tap anything underlined** and it does it for you.
+- The **keys under the screen** change with the room you're in.
+- Type **`hint`** (or tap the sticky note) when you're stuck. Wren's voice will nudge you.
+- Type **`help`** for the everyday commands, and **`map`** to see the house.
+- You can also just say things: `go to the kitchen`, `make tea`, `read welcome`.
 
-## Reset layers & deeper systems
+## Things to do
 
-1. **Bloom → Pollen.** Reset for a permanent multiplier + its own shop.
-2. **Terraform → Biomass.** Reset the Mote+Pollen layers, gain Biomass, and
-   travel to the **next of 9 worlds** — each re-skins the entire game (its own
-   glow palette) and boosts production.
-3. **Singularity → Stardust.** Collapse everything into a permanent **Cosmos
-   tech tree** + automation (Auto-Tap / Buy / Bloom / Terraform).
-4. **The Root Web** *(unlocks after your first Terraform).* A 5×5 lattice you
-   grow with **Sap**. The puzzle: every node draws **Water**; overdraw your
-   budget and the web **wilts**. **Nodules** raise the budget, **Conduits** boost
-   neighbours, **Bloomcaps** reward clusters, a **Heartwood** multiplies the whole
-   web. *Placement* is the game.
-5. **The Long Year.** A Dawn → Day → Dusk → Night cycle that re-skins the sky and
-   shifts which action pays best (tap, production, Sap, or Bloom).
-6. **Field Journal.** 26 discoveries found through play, each granting a small
-   permanent compounding bonus, announced with a toast.
+Brew tea (thump the kettle on the **left**) · feed and earn the trust of Biscuit ·
+grow mint, carrots, lavender, pumpkins, and moonflowers that only bloom at night ·
+fish off the dock, and maybe meet *Old Marmalade* · cook from Wren's recipe
+cards · light the wood stove · listen to Ottoline's morning show on the radio ·
+trade letters and parcels with the neighbours · find Wren and Juniper's
+constellations through the roof telescope · see a comet · name the fox · write
+your own notes · fill the keepsake jar · and light the lantern.
 
-Plus capped, upgradable offline progress and full save/load.
+Each night when you `sleep`, the game writes a line in your journal about what
+you did that day.
 
-## Project layout (`VerdantVoid.swiftpm/`)
+## If you *do* code
 
-| File | Purpose |
-|------|---------|
-| `Package.swift`, `MyApp.swift` | Swift Playgrounds manifest + `@main` |
-| `Model.swift` | State, economy, reset layers, save/load, tick loop |
-| `RootWeb.swift` / `RootWebView.swift` | Root Web logic + interactive board |
-| `Seasons.swift` | The Long Year cycle + multipliers |
-| `Journal.swift` / `JournalView.swift` | Discoveries + bonuses |
-| `Theme.swift` | The 9 worlds + glow palettes |
-| `Visuals.swift` | Procedural glow art: background, organism, helpers |
-| `Components.swift` | Reusable UI (currency bar, glow cards/buttons) |
-| `Format.swift` | Big-number / time formatting |
-| `ContentView.swift` | Tabs, background, first-run picker, toast |
-| `WorldView` / `GrowView` / `UpgradesView` / `PrestigeView` / `CosmosView` / `SettingsView` | Screens |
+It's a real-ish shell. Most of what you'd try works, and a fair bit of it is
+answered in character:
 
-## Building / CI
+```sh
+ls -la | grep dsk          # pipes
+grep -r Marmalade ~        # grep the whole house
+echo "dear diary" > notes/today.txt   # redirect into files that persist
+alias morning='brew; feed biscuit; cd garden; water'
+!!   history   man fish   ps   top   kill -9 biscuit   sudo make me a sandwich
+cat /proc/biscuit/status   cat /etc/hosts   ls /bin   hearthfetch
+```
 
-A GitHub Actions workflow (`.github/workflows/build.yml`) compiles the package
-on a macOS runner so changes are type-checked without an Apple machine locally.
+There are a few things that aren't documented anywhere.
+
+## Project layout
+
+```
+web/                 the game (plain HTML/CSS/JS, no build step needed to play it)
+  index.html         loads everything in order
+  style.css          the monitor, the desk, the phosphor themes
+  js/00..99-*.js     the game, split by topic (see MODDING.md)
+  assets/            VT323 font (SIL Open Font License)
+docs/index.html      single-file build (generated)
+Hearth.swiftpm/      the iPad app: a WKWebView around the single-file build
+tools/build.js       web/ → docs/index.html + Hearth.swiftpm/GameHTML.swift
+tools/smoke.js       plays the whole season headlessly, start to finish
+```
+
+```sh
+npm run build   # rebuild docs/ and the iPad app after changing web/
+npm test        # play the full season headlessly (45 checks)
+```
+
+Want to add a room, a fish, a neighbour or a command? See **[MODDING.md](MODDING.md)**.

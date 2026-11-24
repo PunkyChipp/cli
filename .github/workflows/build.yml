@@ -1,46 +1,49 @@
 name: Build
 
-# Compiles the Swift Playgrounds app package on a real macOS + Xcode runner so
-# code can be type-checked even though the dev container is Linux (no Apple SDK).
-# Scoped to the working branches + manual runs to conserve private-repo minutes.
+# 1. plays the whole season headlessly (fast, on Linux)
+# 2. compiles the Swift Playgrounds app on a real macOS + Xcode runner, so the
+#    iPad wrapper is type-checked even though nobody here has a Mac handy.
 
 on:
   push:
     branches:
       - "claude/**"
       - "main"
-    paths:
-      - "Abyss.swiftpm/**"
-      - ".github/workflows/build.yml"
   workflow_dispatch:
 
 jobs:
-  build:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Syntax check
+        run: for f in web/js/*.js; do node --check "$f"; done
+      - name: Play the whole season
+        run: node tools/smoke.js
+      - name: Build is up to date
+        run: |
+          node tools/build.js
+          git diff --exit-code -- docs Hearth.swiftpm/GameHTML.swift || (echo "::error::run 'npm run build' and commit the result" && exit 1)
+
+  ipad:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Xcode version
         run: xcodebuild -version
-
-      - name: List schemes
-        working-directory: Abyss.swiftpm
-        run: xcodebuild -list || true
-
-      - name: Build .swiftpm for iOS Simulator
-        working-directory: Abyss.swiftpm
+      - name: Build Hearth.swiftpm for iOS Simulator
+        working-directory: Hearth.swiftpm
         run: |
           set -o pipefail
           xcodebuild \
-            -scheme "Abyss" \
+            -scheme "Hearth" \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "$RUNNER_TEMP/dd" \
             CODE_SIGNING_ALLOWED=NO \
             build 2>&1 | tee "$RUNNER_TEMP/xcodebuild.log"
-
       - name: Compile error summary
         if: failure()
-        run: |
-          echo "=== error: lines ==="
-          grep -nE "error:" "$RUNNER_TEMP/xcodebuild.log" || \
-            echo "No 'error:' lines found — likely a scheme/config issue; check the full build log above."
+        run: grep -nE "error:" "$RUNNER_TEMP/xcodebuild.log" || echo "no 'error:' lines — check the full log above"
