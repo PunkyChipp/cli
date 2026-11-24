@@ -74,6 +74,17 @@ function updatePostit() {
 
 /* ---------- the paper card beside the window ---------- */
 let cardSig = "";
+/** The bottom of the card: what's in your coat, and what you last pinned up. Scribbled. */
+function cardNotes() {
+  const carried = Object.keys(S.inv).filter(k => !k.startsWith("seed:")).map(k => itemName(k, S.inv[k]).replace(/^an? /, ""));
+  const seeds = Object.keys(S.inv).filter(k => k.startsWith("seed:")).reduce((n, k) => n + S.inv[k], 0);
+  if (seeds) carried.push(plural(seeds, "seed"));
+  const pinned = Object.entries(S.clues || {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => CLUES[k] && CLUES[k].title).filter(Boolean);
+  let h = "";
+  if (carried.length) h += '<div class="scrawl"><b>in my coat</b> ' + esc(carried.slice(0, 6).join(", ")) + (carried.length > 6 ? "…" : "") + "</div>";
+  if (pinned.length) h += '<div class="scrawl"><b>on the board</b> ' + esc(pinned.join(" · ")) + "</div>";
+  return h;
+}
 function updateCard() {
   const c = $("card");
   if (!c) return;
@@ -91,7 +102,7 @@ function updateCard() {
     '<div class="row pk"><span>Biscuit</span><span>' + S.cat.room + "</span></div>" +
     '<div class="row pk opt"><span>post</span><span>' + (unread ? unread + " new!" : "—") + "</span></div>" +
     '<div class="row pk opt"><span>lantern night</span><span>' + (S.flags.lanternLit ? "lit ✓" : S.day > SEASON_END ? "waiting" : SEASON_END - S.day === 0 ? "TONIGHT" : "in " + (SEASON_END - S.day) + " days") + "</span></div>" +
-    '<div class="note">' + esc(goal) + "</div>";
+    '<div class="note">' + esc(goal) + "</div>" + cardNotes();
   if (html !== cardSig) { c.innerHTML = html; cardSig = html; }
 }
 function nextGoal() {

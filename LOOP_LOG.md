@@ -39,3 +39,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 - The fridge note said "milk — Ottoline, Tues" and "eggs — Fenn"; Pip's letter said Wren let her use HEARTH on Saturdays. Those now actually happen, once each, if you're indoors at the time: Ottoline with milk (and an unmentioned scone) on Tuesdays, Fenn's eggs left on the step on Saturday mornings with a one-word note, Pip turning up on Saturday afternoons.
 - The visits carry a little of the mystery: Fenn's second note says the bees won't go near the water; Pip's second visit points at the voice on 77.7. Both are extra ways to find clues you could also find elsewhere.
 - New file: `web/js/17-visitors.js`. Smoke test covers a visit (52 steps).
+
+## 8 — the paper card
+- The paper card beside the window had a big empty bottom half. It now has two handwritten-style notes: what's in your coat (no need to type `pockets`) and the last few things you pinned to the board. Checked at 1366×768, the common laptop size, ready for the PC version later. Hidden on portrait/phone layouts where there's no room.
