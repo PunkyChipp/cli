@@ -25,3 +25,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 - The keepsake jar no longer prints 22 lines of "????". It shows what you've found and "room for N more".
 - People you haven't heard from yet show as "not met yet" (it said "them" for everyone).
 - The stove tells you where the matches are instead of a riddle.
+
+## 5 — the lake at night
+- Looking into the water from the dock now rewards patience. The first look is just dark water, the second you crouch and wait, and by the third your eyes have adjusted and (from about a week in) you see the light. It used to roll dice and repeat "Probably not." word for word.
+- Each look costs a few minutes of game time, so waiting feels like waiting.
+- Rewrote the rowing scene in plain language (the "wobble, wobble, fine" and "like a lighthouse keeper" draft is gone).

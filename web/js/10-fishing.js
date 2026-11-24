@@ -141,30 +141,30 @@ async function catchBottle() {
 
 async function doRow() {
   if (roomName() !== "dock") return print("The boat's tied up at the dock.");
-  if (weatherNow().wind > 0.8) return print("Far too windy. The Second Opinion bucks at her rope like she's got somewhere to be. Not today.");
-  print("You untie The Second Opinion, step in (wobble, wobble, fine), and pull out onto the lake.");
+  if (weatherNow().wind > 0.8) return print("Too windy. The boat's pulling at its rope. Not today.");
+  print("You untie the boat, get in, and push off.");
   sfx("splash");
   await pause(900);
   const w = weatherNow();
   const lines = [];
-  if (w.fog > 0.5) lines.push("The fog closes round you. Just you, the oars, the drip of water, and a grey that goes on forever. It's the quietest you've ever been.");
-  else if (isNight()) lines.push(w.cloud < 0.5 ? "The stars are in the water as well as the sky. You're rowing through them." : "It's dark and soft and the lake is very big. The cottage window is a small square of gold behind you.");
-  else lines.push(pick(["The water's like glass. Your oars leave little whirlpools that spin away and vanish.", "Out in the middle, the cottage looks like a toy someone loved very much."]));
+  if (w.fog > 0.5) lines.push("Fog all round. The oars, the drips off them, and nothing else. You can't see the dock behind you.");
+  else if (isNight()) lines.push(w.cloud < 0.5 ? "Stars in the water. You row through them." : "Dark, and the lake feels much bigger than it does in the day. The study window is a small yellow square behind you.");
+  else lines.push(pick(["Flat calm. Each stroke leaves two little whirlpools.", "From the middle of the lake the cottage looks small and very old."]));
   lines.push(pick([
-    "A heron lifts off the reeds as you pass, folding itself up into the air like a deckchair.",
-    "Across the water, the observatory dome is " + (isNight() ? "open, a sliver of light in it. Juniper's at the eyepiece." : "white against the hill. A tiny figure waves from the door. You wave back."),
-    "Up on the hill you can see Fenn's hives, a little row of white boxes, and Fenn himself, standing among them like a lighthouse keeper.",
-    "You ship the oars and just drift for a while. The boat turns slowly. So does the whole world.",
-    "A pair of grebes are doing a ridiculous dance. You give them privacy."
+    "A heron gets up out of the reeds as you pass.",
+    "The observatory dome on the far side is " + (isNight() ? "open, with a light in the slit." : "white against the hill. Someone waves from the door. You wave back."),
+    "Up the hill, Fenn is standing among his hives, not moving.",
+    "You stop rowing and drift for a while.",
+    "Two grebes, doing their dance."
   ]));
-  if (S.day > SEASON_END) lines.push("Thin ice has started at the edges. It sings when your oars touch it.");
+  if (S.day > SEASON_END) lines.push("Thin ice at the edges. It creaks when the oars touch it.");
   if (isNight() && !S.flags.answered && signalLevel() > 0.4 && w.cloud < 0.8) {
-    lines.push("Out over the deep part, you ship the oars and look down. A long way under the boat, something blue-gold turns over, slowly, and you have the distinct feeling it's looking up.");
+    lines.push("Over the deep part you stop and look down. A long way under the boat, something blue-gold turns over, slowly, and goes still.");
     clue("lights");
   }
-  for (const l of lines) { await type(l, 48); await pause(700); }
-  print("You row home, slowly, because there's no reason not to.");
+  for (const l of lines) { await type(l, 55); await pause(600); }
+  print("You row back.");
   spend(40);
   warm(6, "calmer");
-  remember(pick(["rowed out on the lake.", "took the boat out. drifted. thought about nothing."]));
+  remember(pick(["rowed out on the lake.", "took the boat out."]));
 }

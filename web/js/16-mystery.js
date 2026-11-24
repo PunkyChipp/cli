@@ -110,11 +110,16 @@ function lakeLook() {
   const lvl = signalLevel();
   if (S.flags.answered) return "The lake is dark and calm. Every so often, far down, something gold turns over, like it's asleep.";
   if (w.rain >= 1 || w.fog > 0.6) return "Black water, rain-pocked. You can't see into it.";
-  if (lvl > 0.45 && chance(0.25 + lvl * 0.6)) {
+  // patience: keep looking and your eyes adjust. a minute's staring is worth more than one glance.
+  const streak = S.flags.lookAt === S.day * 1440 + Math.floor(S.min / 30) ? (S.flags.lookStreak || 0) + 1 : 1;
+  S.flags.lookAt = S.day * 1440 + Math.floor(S.min / 30); S.flags.lookStreak = streak;
+  spend(3);
+  if (lvl > 0.3 && (streak >= 3 || (lvl > 0.45 && chance(0.25 + lvl * 0.6)))) {
     clue("lights");
-    return "Black water. Your own reflection, and the stars.\n\nThen, a long way down — further than the water should go — a light. Blue-gold. It turns slowly, like something looking up, and then it's gone.";
+    return "You keep looking. Your eyes get used to the dark.\n\nThen, a long way down, further than the water should go, there's a light. Blue-gold. It turns slowly, and goes out.";
   }
-  return "Black water, the stars in it. The cable going down. " + (lvl > 0.3 ? "For a second you think you see something, deep. Probably not." : "Nothing.");
+  if (streak === 2) return lvl > 0.3 ? "You crouch at the edge and wait. The stars in the water settle. There's something down there, or your eyes are making it up." : "You wait. Nothing but your reflection and the cable.";
+  return pick(["Black water, the stars in it, and the cable going down.", "Black water. Your face in it, and the stars.", "Dark. The cable disappears into it after about a foot."]);
 }
 
 /* ---------- listen ---------- */
