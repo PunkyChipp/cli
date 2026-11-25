@@ -100,24 +100,24 @@ function idleMoment() {
   lastIdle = Date.now();
   const r = roomName(), w = weatherNow(), m = S.min;
   const pool = [
-    "a floorboard upstairs.",
-    "the mantel clock chimes " + (Math.floor(m / 60) % 12 || 12) + ", a bit late.",
-    "under the floor, the hum dips, and comes back.",
-    "the hum. you'd stopped hearing it. now you can't stop."
+    "Upstairs, a floorboard creaks on its own.",
+    "The clock in the parlour starts chiming " + (Math.floor(m / 60) % 12 || 12) + ", a little late as usual.",
+    "The hum under the floor drops for a second, then comes back.",
+    "You'd stopped hearing the hum. Now you've noticed it again and can't stop."
   ];
-  if (w.rain) pool.push("the rain gets heavier for a minute, then eases.", "a drip in the gutter, the same note over and over.");
-  if (w.wind > 0.6) pool.push("wind in the chimney.");
-  if (w.fog > 0.5) pool.push("a foghorn, a long way off.");
-  if (isNight()) pool.push("an owl. another, further off.", "headlights on the far road, sweeping across the lake.");
-  else pool.push("a blackbird on the sill. it looks in, and goes.", "someone across the lake chopping wood. the sound comes a second late.");
-  if (teaWarm()) pool.push("the teapot ticks as it cools.");
-  if (fireLit()) pool.push("a log settles in the stove.");
-  if (r === "kitchen") pool.push("the fridge shudders and goes quiet.");
-  if (r === "study") pool.push("HEARTH's fan spins up and down again.", "the radio on the shelf crackles once, by itself.");
-  if (r === "dock") pool.push("a fish jumps, far out.", "the cable at your feet ticks.");
-  if (r === "cellar") pool.push("the box's green light blinks three times, and then once.");
-  if (S.cat.room === r) pool.push("Biscuit, asleep, twitches.", "Biscuit yawns.");
-  print("{dim:(" + pick(pool) + ")}");
+  if (w.rain) pool.push("The rain gets heavier for a minute and then eases off again.", "There's a drip somewhere in the gutter, hitting the same note over and over.");
+  if (w.wind > 0.6) pool.push("The wind gets into the chimney and makes it moan.");
+  if (w.fog > 0.5) pool.push("A foghorn goes, somewhere a long way off.");
+  if (isNight()) pool.push("An owl calls close to the house, and another one answers from across the water.", "A car goes along the far road and its headlights sweep across the lake.");
+  else pool.push("A blackbird lands on the windowsill, looks in at you, and flies off.", "Someone across the lake is chopping wood. You hear each knock a second after you'd expect it.");
+  if (teaWarm()) pool.push("The teapot ticks as it cools down.");
+  if (fireLit()) pool.push("A log shifts in the stove and settles.");
+  if (r === "kitchen") pool.push("The fridge shudders and goes quiet.");
+  if (r === "study") pool.push("HEARTH's fan speeds up for a moment and then slows down again.", "The radio on the shelf crackles once, even though it's off.");
+  if (r === "dock") pool.push("A fish jumps somewhere far out. By the time you look, there's only the ring.", "The cable by your feet makes a small ticking sound.");
+  if (r === "cellar") pool.push("The green light on the box blinks three times, then once.");
+  if (S.cat.room === r) pool.push("Biscuit twitches in her sleep.", "Biscuit yawns and shows all her teeth.");
+  print("{dim:" + pick(pool) + "}");
   showLine(true);
 }
 
@@ -152,8 +152,8 @@ function catWander() {
   const was = S.cat.room;
   S.cat.room = next;
   if (!T.busy && !T.asking && S.name) {
-    if (roomName() === was) { print("{dim:(Biscuit gets up, stretches every part of herself, and wanders off toward the " + next + ".)}"); showLine(true); }
-    else if (roomName() === next) { print("{dim:(Biscuit pads in and pretends she was always here.)}"); showLine(true); }
+    if (roomName() === was) { print("{dim:Biscuit gets up, stretches, and wanders off towards the " + next + ".}"); showLine(true); }
+    else if (roomName() === next) { print("{dim:Biscuit comes in and settles down as if she's been here all along.}"); showLine(true); }
   }
 }
 let catKeyT = 0;

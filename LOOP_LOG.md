@@ -71,3 +71,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 15 — mornings
 - Rewrote the day-specific morning lines, the generic ones, falling asleep at the desk, the garden and post notices, and going to bed. Out with "Fog right up to the windows." / "Not asleep. Watching." / "Under the house, the hum."; in with full sentences that notice one real thing ("You wake up because something is standing on you. It's Biscuit...", "There's frost on the inside of the bedroom window, and you can see your breath in the hall.").
+
+## 16 — idle moments and the cat
+- The things that happen while you sit still were lowercase fragments in brackets ("(an owl. another, further off.)", "(the hum. you'd stopped hearing it. now you can't stop.)"). They're now plain sentences without the brackets: "An owl calls close to the house, and another one answers from across the water."
+- Rewrote where-Biscuit-is lines and her wandering-off/coming-in lines the same way ("Biscuit is asleep in the armchair, in the dip Wren's left in it.").

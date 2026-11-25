@@ -29,16 +29,16 @@ function catHere() { return S.cat.room === roomName(); }
 function catLine() {
   const r = roomName();
   const lines = {
-    kitchen: "Biscuit is sitting by her bowl.",
-    parlour: fireLit() ? "Biscuit is flat out in front of the stove." : "Biscuit is asleep in the armchair.",
-    study: "Biscuit is on the desk, on the papers.",
-    garden: "Biscuit is in the long grass at the end of the beds. Just her ears.",
-    greenhouse: "Biscuit is asleep between two pots.",
-    dock: "Biscuit is at the end of the dock, looking down into the water.",
-    attic: "Biscuit is up here somewhere. You can hear her.",
-    hall: "Biscuit is lying in the middle of the rug.",
-    cellar: "Biscuit is curled on top of the humming box. It's warm.",
-    roof: "Biscuit has followed you up the ladder."
+    kitchen: "Biscuit is sitting next to her bowl, looking at it.",
+    parlour: fireLit() ? "Biscuit is lying flat out in front of the stove with her belly to the heat." : "Biscuit is asleep in the armchair, in the dip Wren's left in it.",
+    study: "Biscuit is lying on the desk, on top of whatever paper you were about to need.",
+    garden: "Biscuit is in the long grass at the end of the beds. You can just see her ears.",
+    greenhouse: "Biscuit is asleep between two of the pots, where it's warmest.",
+    dock: "Biscuit is sitting at the end of the dock, looking down into the water.",
+    attic: "You can hear Biscuit moving around up here somewhere among the boxes.",
+    hall: "Biscuit is lying right in the middle of the hall rug.",
+    cellar: "Biscuit is curled up on top of the humming box. It must be warm.",
+    roof: "Biscuit has followed you up the ladder, which you didn't know she could do."
   };
   return lines[r] || "Biscuit is here.";
 }
