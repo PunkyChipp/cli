@@ -81,3 +81,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 18 — Lantern Night
 - Rewrote the Lantern Night scene so it reads like someone telling you what happened rather than a trailer: "It takes you three matches, because your hands are cold.", the lanterns lighting "along the line" from boat to boat, counting the boats "because the photo on the mantelpiece told you to", and the twenty-first light "just there, very still". Juniper's beat is now narrated instead of a stage direction in brackets.
+
+## 19 — the true ending
+- Rewrote the secret ending's narration and Wren's radio message. Cut three near-cliché lines ("she's laughing, or crying, or both", "a sound that isn't a word", "like a shoal") and replaced them with specific ones: "you've never heard the cellar completely quiet before", Pip saying "oh" very quietly, "you went and worked it out in a fortnight". Juniper's moment is narrated, not a bracketed stage direction.
