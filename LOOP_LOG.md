@@ -75,3 +75,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 16 — idle moments and the cat
 - The things that happen while you sit still were lowercase fragments in brackets ("(an owl. another, further off.)", "(the hum. you'd stopped hearing it. now you can't stop.)"). They're now plain sentences without the brackets: "An owl calls close to the house, and another one answers from across the water."
 - Rewrote where-Biscuit-is lines and her wandering-off/coming-in lines the same way ("Biscuit is asleep in the armchair, in the dip Wren's left in it.").
+
+## 17 — the corkboard
+- Rewrote all 15 corkboard cards so they read like notes the player scribbled and pinned up, in first person, with the hedges people actually use ("As far as I can tell...", "I'm fairly sure...", "I've seen it now too."), instead of tidy third-person summaries ("It reads a signal off the cable.").
