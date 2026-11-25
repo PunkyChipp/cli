@@ -3206,7 +3206,7 @@ function doCd(args) {
       print("{dim:" + pick(["Biscuit follows you in.", "Biscuit has come with you.", "You hear Biscuit behind you on the stairs. She's followed you.", "Biscuit trots in after you and sits down like it was her idea."]) + "}");
       if (!S.flags.catFollowed) { S.flags.catFollowed = true; remember("Biscuit followed me from room to room today."); }
     } else if (catHere()) print("{dim:" + catLine() + "}");
-    if (toRoom === "garden" && (isNight() || isEvening()) && chance(0.6)) print("{dim:(a fox is sitting at the edge of the long grass, watching you. {cmd:cat fox})}");
+    if (toRoom === "garden" && (isNight() || isEvening()) && chance(0.6)) print("{dim:There's a fox sitting at the edge of the long grass, watching you. {cmd:cat fox}}");
     if (isDark(path)) print("{dim:(you'll want some light. {cmd:cd ..} back down.)}");
   } else if (!S.flags["seen:" + path]) {
     // a shed, a drawer, a trunk: say what it is and what's in it, once
@@ -3339,7 +3339,7 @@ function doTake(args) {
   give(n.item, n.count || 1);
   S.taken[f.path] = true;
   spend(1);
-  print("Taken: {acc:" + itemName(n.item, n.count || 1) + "}." + (n.item.startsWith("disk:") ? " {dim:(disks go in HEARTH's drive in the study: {cmd:insert " + n.item.slice(5) + ".dsk})}" : n.item === "lamp" ? " {dim:(now {cmd:light lamp}.)}" : n.item === "rod" ? " {dim:(down to the {cmd:cd ~/dock}, then {cmd:fish}.)}" : n.item === "oilcan" ? " {dim:(the greenhouse door is right next to the garden: {cmd:oil greenhouse})}" : ""));
+  print("You take " + "{acc:" + itemName(n.item, n.count || 1) + "}." + (n.item.startsWith("disk:") ? " {dim:(disks go in HEARTH's drive in the study: {cmd:insert " + n.item.slice(5) + ".dsk})}" : n.item === "lamp" ? " {dim:(now {cmd:light lamp}.)}" : n.item === "rod" ? " {dim:(down to the {cmd:cd ~/dock}, then {cmd:fish}.)}" : n.item === "oilcan" ? " {dim:(the greenhouse door is right next to the garden: {cmd:oil greenhouse})}" : ""));
   if (n.item === "seed:lavender") remember("found Wren's hidden seed tin. she really does hide things.");
   return true;
 }
@@ -3473,7 +3473,7 @@ cmd("unlock", "unlock something", (a) => {
 cmd("insert disk mount", "put a disk in HEARTH (in the study)", doInsert, { group: "living" });
 cmd("radio tune", "the radio (radio 101.3, radio off)", doRadio, { group: "living", when: () => true });
 cmd("play record music", "play a record (parlour)", doRecord, { group: "living" });
-cmd("stop", "stop the music", () => { if (S.flags.radioOn) { S.flags.radioOn = null; print("Click. Quiet. The house fills back up with its own small noises."); } else print("Nothing's playing. Just the rain" + (weatherNow().rain ? "." : ". (and there isn't any.)")); }, { group: "living", secret: true });
+cmd("stop", "stop the music", () => { if (S.flags.radioOn) { S.flags.radioOn = null; print("You turn it off. It's very quiet without it, apart from the hum."); } else print("Nothing's playing. Just the rain" + (weatherNow().rain ? "." : ". (and there isn't any.)")); }, { group: "living", secret: true });
 cmd("mail letters post inbox", "read your post", doMail, { group: "people" });
 cmd("send post give", "send something to someone (send carrot to fenn)", doSend, { group: "people" });
 cmd("friends people neighbours neighbors", "how you're getting on with everyone", doFriends, { group: "people" });
@@ -3559,14 +3559,14 @@ function doOil(a) {
     if (roomName() !== "garden") return print("The greenhouse is off the garden. {cmd:cd garden}");
     S.flags.ghOpen = true;
     sfx("door");
-    print("You drip oil onto each rusted hinge, wait, then try the door. It groans... and then gives, swinging open with a sigh of warm, earthy air.\n{ok:The greenhouse is open.} {cmd:cd greenhouse}");
+    print("You oil both hinges, give it a minute to soak in, and try the door again. It takes a hard shove, but it opens, and the air that comes out is warm and smells of wet soil.\n{ok:The greenhouse is open.} {cmd:cd greenhouse}");
     remember("got the greenhouse door open. it smells of tomato leaves in there, even though there aren't any.");
     return;
   }
-  if (what.includes("kettle")) return print("You oil the kettle. It doesn't help. The kettle's problems are emotional.");
+  if (what.includes("kettle")) return print("You put a drop of oil on the kettle's lid hinge. It doesn't make any difference to anything.");
   if (what.includes("biscuit") || what.includes("cat")) return print("Absolutely not.");
-  if (what.includes("rocking") || what.includes("gerald")) return print("You oil Gerald. He rocks a little smoother. He seems grateful, in a glass-eyed way.");
-  print("You oil the " + esc(what || "air") + ". It's now slightly oily.");
+  if (what.includes("rocking") || what.includes("gerald")) return print("You oil the rocking horse's runners. It rocks a bit more quietly now.");
+  print(what ? "You don't think the " + esc(what) + " needs oiling." : "Oil what? {dim:(the greenhouse door is the one that's stuck.)}");
 }
 
 async function doInsert(a) {
@@ -3623,7 +3623,7 @@ async function doRadio(a) {
   if (!f) return print("Tune to what? {dim:(try {cmd:radio 101.3})}");
   S.flags.radioOn = f;
   sfx("beep");
-  print("{dim:kssshh—} You tune to " + f + ".");
+  print("You turn the dial to " + f + ".");
   await pause(300);
   for (const l of radioOut(f)) { print(l); await pause(220); }
   spend(5);
@@ -3633,7 +3633,7 @@ async function doRadio(a) {
 function doRecord() {
   if (roomName() !== "parlour") return print("The record player's in the parlour.");
   S.flags.radioOn = "88.8";
-  print("You lift the lid, set down {acc:'Nocturnes for a Wet Tuesday'}, and lower the needle. A crackle, a hiss, and then piano, soft and slow and in no hurry at all.");
+  print("You put {acc:Nocturnes for a Wet Tuesday} on and lower the needle. After a bit of crackle it's solo piano, slow, recorded in a room where you can hear somebody's chair creak now and again.");
   if (!A.ctx) print("{dim:(tap the screen once to let the sound in.)}");
   warm(4);
   spend(2);
@@ -3726,8 +3726,8 @@ function doSend(a) {
   S.stats.letters++; S.stats.gifts++;
   spend(5);
   sfx("mail");
-  print("You wrap " + (key.startsWith("file:") ? "a copy of your note" : itemName(key)) + " in brown paper, write {acc:" + PEOPLE[who].full.toUpperCase() + "} on it in your best capitals, and pop it in the post box by the gate.");
-  print("{dim:(Ottoline collects at dawn. you'll hear back tomorrow.)}");
+  print("You wrap " + (key.startsWith("file:") ? "a copy of your note" : itemName(key)) + " in brown paper, write {acc:" + PEOPLE[who].full.toUpperCase() + "} on the front, and walk it down to the post box by the gate.");
+  print("{dim:Ottoline empties the box first thing, so they should have it tomorrow.}");
   remember("sent " + (key.startsWith("file:") ? "a note" : itemName(key)) + " to " + PEOPLE[who].short + ".");
 }
 

@@ -105,3 +105,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 25 — the telescope
 - Rewrote the telescope lines and cut the quips ("a very magnified cloud", "It's very nice cloud. It's not stars, though.", "as far as your hand, which you can already see") and the stock lines ("a tail like a brushstroke", "it's quiet. like it's waiting.", "It doesn't move, and it's moving at thousands of miles an hour").
 - The constellation notes are now Juniper's own notes in her voice ("I wanted to call it the Wheelbarrow. We didn't speak for a week."), and finding one means copying it into the margin of her notes, instead of a "New!" badge.
+
+## 26 — odds and ends in the shell
+- Rewrote the leftover action replies: oiling things (gone: "The kettle's problems are emotional", "grateful, in a glass-eyed way", "It's now slightly oily"), the greenhouse door opening ("a sigh of warm, earthy air" is now "the air that comes out is warm and smells of wet soil"), stopping the music, the record player, posting a parcel, tuning the radio, the fox in the evening.
+- "Taken: X" is now "You take X."
