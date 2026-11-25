@@ -361,7 +361,15 @@ const STATIONS = {
 };
 function forecastFor(day) {
   const w = weatherFor(day);
-  return w.word + (w.rain ? ". gardens can water themselves" : "") + (w.fog ? ". old fish weather" : "") + (w.name === "clear" ? ". stars tonight" : "");
+  return {
+    clear: "clear, light north-westerly. Good seeing after dark",
+    cloudy: "overcast and dry. Cloud base about four hundred metres",
+    drizzle: "drizzle on and off. No need to water anything",
+    rain: "rain, most of the day. No need to water anything",
+    fog: "fog on the water until late. The old fish come up in this",
+    windy: "gusty from the west. Tie down anything loose in the garden",
+    snow: "snow. Not much, but it will settle"
+  }[w.name] || w.word;
 }
 const OTTO_DAYS = {
   1: ["Morning, Hollow, it's Ottoline. It's drizzling, the post van's got a flat tyre outside the church, and Derek says he'll have it done by eleven, which means one.", "Fourteen days to Lantern Night, for anyone counting. I am.", "And if anybody's listening over at Wren's cottage on the east shore, hello, and welcome. I hope you found the milk."],
@@ -384,14 +392,14 @@ function ottoMorning() {
   return OTTO_DAYS[S.day] || ["Morning, Hollow.", "Nothing to report.", "Have a nice day."];
 }
 const PIP_FM = [
-  "THIS IS PIP FM. 104.5. PIRATE RADIO.",
-  "hacker tip: {acc:ls -a} shows hidden files. that's where the secrets are. that's ALWAYS where they are.",
-  "hacker tip: {acc:history} shows everything you ever typed. so be careful.",
-  "hacker tip: a | sends what one command says into another one. {acc:ls | grep txt}.",
-  "news: I saw the light in the lake AGAIN. it was further out this time. it was bigger. nobody believes me.",
-  "news: Fenn says the bees won't go near the water this week. that is SCIENTIFIC EVIDENCE.",
-  "news: Wren's cellar has a program I'm not allowed to run. it's called listen. if you're listening: run it.",
-  "this has been PIP FM. I have to go, it's tea."
+  "THIS IS PIP FM ON 104.5. IT'S A PIRATE STATION SO DON'T TELL ANYONE.",
+  "HACKER TIP. {acc:ls -a} SHOWS THE HIDDEN FILES. THE ONES WITH A DOT AT THE FRONT. THAT'S WHERE PEOPLE PUT SECRETS. EVERY TIME.",
+  "HACKER TIP. TYPE {acc:history} AND IT SHOWS YOU EVERYTHING YOU EVER TYPED. I FOUND OUT WREN TYPED \"is pip asleep\" ONCE.",
+  "HACKER TIP. THE STRAIGHT LINE KEY | MAKES ONE COMMAND TALK TO ANOTHER ONE. TRY {acc:ls | grep txt}. I DIDN'T BELIEVE IT EITHER.",
+  "NEWS. I SAW THE LIGHT IN THE LAKE AGAIN ON TUESDAY. IT WAS FURTHER OUT AND IT WAS BIGGER. MUM SAYS IT'S THE MOON. IT WASN'T THE MOON.",
+  "NEWS. FENN SAYS HIS BEES WON'T GO NEAR THE WATER. BEES KNOW THINGS. THAT IS ACTUAL SCIENCE.",
+  "NEWS. THERE'S A PROGRAM IN WREN'S CELLAR CALLED listen AND I'M NOT ALLOWED TO RUN IT. YOU ARE THOUGH. PROBABLY.",
+  "THAT'S PIP FM. I HAVE TO GO, IT'S FISH FINGERS."
 ];
 
 function radioOut(st) {
@@ -407,12 +415,13 @@ function radioOut(st) {
         remember("got the radio going. Ottoline said hello on air.");
       }
     } else if (S.min >= 12 * 60 && S.min < 20 * 60) {
-      lines.push("{dim:afternoon requests. a scratchy record:} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "} {dim:— for " + pick(["Fenn's bees", "the observatory", "'someone on the hill'", "whoever's at the cottage"]) + ".}");
+      lines.push("{acc:OTTOLINE:} " + pick(["This one's for Fenn's bees, from Fenn. He didn't ask me to say that.", "A request from the observatory. No message. There's never a message.", "This is for someone on the hill who says they know who they are.", "Next one's for whoever's at the cottage. Put the kettle on."]));
+      lines.push("{dim:a scratchy record:} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "}");
     } else lines.push("{dim:off air. a tape loop of Ottoline saying \"goodnight, Hollow.\"}");
   } else if (st === "93.1") {
-    lines.push("{sky:Weather for Lake Ilse, from the observatory.}");
-    lines.push("{sky:Today: " + forecastFor(S.day) + ".}");
-    lines.push("{sky:Tomorrow: " + forecastFor(S.day + 1) + ".}");
+    lines.push("{dim:a recording, the same every hour. Juniper's voice, reading off a card:}");
+    lines.push("{sky:Lake Ilse, from the observatory. Today, " + forecastFor(S.day) + ".}");
+    lines.push("{sky:Tomorrow, " + forecastFor(S.day + 1) + ". That's all.}");
   } else if (st === "88.8") {
     lines.push("{dim:slow piano. somebody in the background of the recording asks for more toast.}");
     if (!A.ctx) lines.push("{dim:tap the screen once to let the sound in.}");
@@ -420,8 +429,8 @@ function radioOut(st) {
     lines.push("{sky:PIP:} " + PIP_FM[0]);
     const tip = pick(PIP_FM.slice(1, -1));
     lines.push("{sky:PIP:} " + tip);
-    if (tip.includes("light in the lake")) clue("lights");
-    if (tip.includes("listen")) clue("listen");
+    if (/light in the lake/i.test(tip)) clue("lights");
+    if (/listen/i.test(tip)) clue("listen");
     lines.push("{sky:PIP:} " + PIP_FM[PIP_FM.length - 1]);
   } else if (st === "77.7") {
     lines.push("{dim:kshhhhhhhh}");

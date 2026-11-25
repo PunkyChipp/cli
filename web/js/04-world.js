@@ -18,7 +18,7 @@ const WEATHER = {
   cloudy:  { name: "cloudy",         rain: 0,   wind: 0.3, cloud: 0.7,  fog: 0,   snow: 0, word: "grey and soft" },
   drizzle: { name: "drizzle",        rain: 0.5, wind: 0.2, cloud: 0.8,  fog: 0.1, snow: 0, word: "drizzly" },
   rain:    { name: "rain",           rain: 1,   wind: 0.4, cloud: 1,    fog: 0.1, snow: 0, word: "properly rainy" },
-  fog:     { name: "fog",            rain: 0,   wind: 0,   cloud: 0.5,  fog: 0.9, snow: 0, word: "foggy, like the lake's thinking" },
+  fog:     { name: "fog",            rain: 0,   wind: 0,   cloud: 0.5,  fog: 0.9, snow: 0, word: "foggy" },
   windy:   { name: "windy",          rain: 0,   wind: 1,   cloud: 0.4,  fog: 0,   snow: 0, word: "blustery" },
   snow:    { name: "snow",           rain: 0,   wind: 0.2, cloud: 0.9,  fog: 0.2, snow: 1, word: "snowing, quietly" }
 };

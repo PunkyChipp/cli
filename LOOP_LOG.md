@@ -124,3 +124,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 30 — mid-season letters
 - Rewrote Fenn's trout letter, Ottoline's bake-sale letter (now a proper run-on grudge about Fenn's honey cake, with the PS and PPS she's supposed to love), and Pip's two later letters so they match the kid voice of her first one ("she said 'is this hacking' and I said yes").
+
+## 31 — radio
+- 93.1 is now Juniper reading a forecast off a card, one plain sentence per kind of weather (fog still says the old fish come up).
+- Pip FM rewritten in Pip's caps voice; tips and news sound like a kid, clue triggers made case-insensitive.
+- Ottoline's afternoon requests get a line of her own instead of a dash-aside. "foggy, like the lake's thinking" is just "foggy".
