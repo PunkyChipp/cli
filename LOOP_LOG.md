@@ -88,3 +88,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 20 — the jar
 - Rewrote all 24 keepsakes as specific things you'd actually keep from this place instead of generic tokens: "the teaspoon you used the first morning", "the tea towel the radio disk was wrapped in", "one of Wren's old lures, out of the carp's lip", "a bus ticket you found as a bookmark". The twee one ("a scale of light, which fades if you look straight at it") is now "the sheet of paper you worked the name out on". Fixed "saw Wren's Comet" (it was never called that).
 - Jar heading and toast reworded to match ("you put it in the jar: ...").
+
+## 21 — the kitchen
+- Rewrote the tea, cooking and eating lines as full sentences that notice something ("You make it strong with a bit of milk and drink it standing at the window.", "You rinse the soil off a carrot under the tap and eat it raw. It's sweeter than shop ones."). The kettle is no longer a rule-of-three ("ticks, then grumbles, then whistles").
+- Dropped the "(warmer)" / "(calmer)" tags after actions. The warmth meter on the paper card already shows it, and the tag made every cosy moment read like a stat change.

@@ -37,12 +37,12 @@ function itemKey(word) {
 
 /* ---------- recipes ---------- */
 const RECIPES = {
-  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion, butter, a bay leaf.\n  soften the onion. carrots in. water to cover. 25 min. blend.\n  {dim:(in pen: J. likes it thin.)}", eat: "Soup, with bread, both hands round the bowl." },
-  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish, any. 1 carrot. mash on top. more butter than you think.\n  {dim:(in pen: Fenn's favourite. he'll say it isn't.)}", eat: "Fish pie. You burn your mouth on the first bit." },
-  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  {dim:(this one's just a card that says TOAST, JAM. it's in a child's writing.)}", eat: "Jam on toast, over the sink." },
-  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:(Ottoline's copy)}\n  1 pumpkin, roasted. eggs, sugar, spice tin. pastry.\n  45 min. don't keep opening the oven.", eat: "Pumpkin pie, too much cinnamon." },
-  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:(Mrs Fenn's, 1979)}\n  1 jar of honey, butter, flour, eggs. low oven, a long time.", eat: "Honey cake. Dark and sticky." },
-  mint_biscuits: { name: "mint biscuits", needs: { mint: 2 }, warm: 15, card: "MINT BISCUITS\n  2 sprigs mint, butter, sugar, flour. roll, cut, 12 min.", eat: "A mint biscuit. Biscuit looks up when you say it." }
+  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion, butter, a bay leaf.\n  soften the onion. carrots in. water to cover. 25 min. blend.\n  {dim:(in pen: J. likes it thin.)}", eat: "You have the soup at the kitchen table with a heel of bread, holding the bowl in both hands to warm them." },
+  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish, any. 1 carrot. mash on top. more butter than you think.\n  {dim:(in pen: Fenn's favourite. he'll say it isn't.)}", eat: "You burn the roof of your mouth on the first forkful of fish pie, then eat the rest of it anyway, slightly more carefully." },
+  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  {dim:(this one's just a card that says TOAST, JAM. it's in a child's writing.)}", eat: "You eat jam on toast standing over the sink so you don't have to wash a plate." },
+  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:(Ottoline's copy)}\n  1 pumpkin, roasted. eggs, sugar, spice tin. pastry.\n  45 min. don't keep opening the oven.", eat: "You have a slice of the pumpkin pie. There's probably too much cinnamon in it, but you don't mind." },
+  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:(Mrs Fenn's, 1979)}\n  1 jar of honey, butter, flour, eggs. low oven, a long time.", eat: "The honey cake is dark and heavy and sticks to your fingers. You end up licking them." },
+  mint_biscuits: { name: "mint biscuits", needs: { mint: 2 }, warm: 15, card: "MINT BISCUITS\n  2 sprigs mint, butter, sugar, flour. roll, cut, 12 min.", eat: "You eat a mint biscuit. When you say the word out loud, the cat looks up." }
 };
 function recipeCard(id) { return "{hi:" + RECIPES[id].card.split("\n")[0] + "}\n" + RECIPES[id].card.split("\n").slice(1).join("\n"); }
 function learn(id) {
@@ -83,9 +83,9 @@ function doCook(args) {
   spend(40); S.stats.meals++;
   sfx("pour");
   print(pick([
-    "You cook. The windows steam up.",
-    "You cook with the radio off, listening to the hum under the floor.",
-    "You cook. It takes longer than the card says. It always does."
+    "You cook. By the time it's done the kitchen windows have steamed up and you can't see the garden.",
+    "You cook with the radio off. Under the sound of the pan you can hear the hum coming up through the floor.",
+    "You cook. It takes about twice as long as the card says it will, which you suspect is normal."
   ]));
   print("{ok:(made " + itemName(id) + ". {cmd:eat " + id.replace(/_/g, " ") + "}, or {cmd:send} it to someone.)}");
   if (S.stats.meals >= 5) keepsake("baker");
@@ -103,22 +103,22 @@ function doEat(args) {
   take(k);
   const r = RECIPES[k];
   if (r) { print(r.eat); warm(r.warm, "warmer"); }
-  else if (k === "honey") { print("Honey off a teaspoon, standing at the counter."); warm(8, "warmer"); }
-  else if (k === "jam") { print("Jam, from the jar, with a spoon."); warm(6, "warmer"); }
-  else if (k === "carrot") { print("A raw carrot, with the soil rinsed off."); warm(3); }
-  else if (k === "mint") { print("A mint leaf."); }
-  else if (k === "sandwich") { print("The sudo sandwich. It tastes of power. And cheese."); warm(10, "warmer"); }
+  else if (k === "honey") { print("You eat honey off a teaspoon, standing at the counter. Nobody's watching except the cat."); warm(8, "warmer"); }
+  else if (k === "jam") { print("You eat jam straight out of the jar with a spoon. It's blackberry, and very good."); warm(6, "warmer"); }
+  else if (k === "carrot") { print("You rinse the soil off a carrot under the tap and eat it raw. It's sweeter than shop ones."); warm(3); }
+  else if (k === "mint") { print("You chew a mint leaf. It's so strong it makes your eyes water a bit."); }
+  else if (k === "sandwich") { print("You eat the sandwich HEARTH made you. It's cheese and pickle, which is fine."); warm(10, "warmer"); }
   spend(10); S.stats.meals++;
   remember("ate " + itemName(k) + ".");
 }
 
 /* ---------- tea ---------- */
 const TEAS = {
-  black: { need: null, line: "Strong, with milk. You drink it at the window.", warm: 12 },
-  mint: { need: "mint", line: "Mint, straight from the garden. Too hot to drink for ages.", warm: 12 },
-  chamomile: { need: "chamomile", line: "Chamomile. It smells like hay.", warm: 15 },
-  lavender: { need: "lavender", line: "Lavender. It tastes a bit like soap. You drink it anyway.", warm: 14 },
-  honey: { need: "honey", line: "Tea with a spoon of Fenn's honey in.", warm: 18 }
+  black: { need: null, line: "You make it strong with a bit of milk and drink it standing at the window.", warm: 12 },
+  mint: { need: "mint", line: "You put a sprig of mint from the garden in a mug and pour the water on. It's too hot to drink for ages.", warm: 12 },
+  chamomile: { need: "chamomile", line: "You make chamomile tea. It smells like hay, and makes you want to sit down.", warm: 15 },
+  lavender: { need: "lavender", line: "Lavender tea tastes a bit like soap, if you're honest. You drink it anyway.", warm: 14 },
+  honey: { need: "honey", line: "You make tea and put a spoonful of Fenn's honey in it, then another one.", warm: 18 }
 };
 async function doBrew(args) {
   if (roomName() !== "kitchen") return print("The kettle's in the kitchen. {cmd:cd ~/kitchen} {dim:(or {cmd:cd /cottage/kitchen}, if you like typing.)}");
@@ -134,9 +134,9 @@ async function doBrew(args) {
   }
   S.flags.thumped = false; S.flags.kettleSulk = false;
   if (t.need) take(t.need);
-  print("You fill the kettle and set it on the range.");
+  print("You fill the kettle at the sink and put it on the range.");
   sfx("kettle");
-  await pause(600); print("{dim:it ticks, then grumbles, then whistles.}"); await pause(300);
+  await pause(600); print("{dim:It takes a couple of minutes to get going, and then it whistles.}"); await pause(300);
   await pause(400);
   sfx("pour");
   print(t.line);

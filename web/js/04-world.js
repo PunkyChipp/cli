@@ -68,7 +68,7 @@ function spend(mins) {
 function warm(n, why) {
   const before = S.warmth;
   S.warmth = clamp(S.warmth + n, 0, 100);
-  if (why && S.warmth > before + 1) print("{dim:(" + why + ")}");
+  // (the warmth meter on the paper card shows this; no need to say "warmer" out loud)
 }
 
 /** Called every second from the main loop. */
