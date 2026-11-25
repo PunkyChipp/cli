@@ -2055,7 +2055,7 @@ function reply(to, item) {
   }
   if (to === "ottoline" && item === "pumpkin" && S.quests.otto_pump === "open") {
     S.quests.otto_pump = "done"; L.reward = { "seed:carrot": 3, jam: 1 }; L.friend = 3; L.subject = "the pumpkin";
-    say(`${NAME()},\n\nIt's on the counter and everyone who comes in for stamps says "oh".\nI'm going to carve it into Biscuit.\n\nCarrot seeds, and a jar of quince jelly. Wren says it's "fine".\nFrom her that's a medal.`);
+    say(`${NAME()},\n\nIt's on the counter and everyone who comes in for stamps says "oh".\nI'm going to carve it into Biscuit.\n\nCarrot seeds, and a jar of my quince jelly. Wren always says\nit's "fine", which is the nicest thing she's ever said about food.`);
     remember("Ottoline's going to carve my pumpkin into Biscuit.");
     return L;
   }
@@ -2088,7 +2088,7 @@ function reply(to, item) {
   }
   if (to === "pip" && S.quests.pip_weird === "open" && (item.startsWith("junk:") || item === "fish:eel")) {
     S.quests.pip_weird = "done"; L.reward = { bracelet: 1 }; L.friend = 3; L.subject = "RESULTS";
-    say(`${item === "junk:boot" ? "A BOOT. nobody's foot was in it. I checked." : item === "fish:eel" ? "AN EEL. Mum screamed. 10/10." : item === "junk:bottle" ? "a bottle with a NOTE in. I read it. sorry. it's about the lights. I KNEW it." : "a tin can with a snail in. his name is Derek now."}\nHypothesis confirmed: the lake is weird.\n\nFriendship bracelet enclosed. It's orange because of Biscuit.`);
+    say(`${item === "junk:boot" ? "A BOOT. nobody's foot was in it. I checked." : item === "fish:eel" ? "AN EEL. Mum screamed. 10/10." : item === "junk:bottle" ? "a bottle with a NOTE in. I read it. sorry. it's about the lights. I KNEW it." : "a tin can with a snail in. his name is Colin now."}\nHypothesis confirmed: the lake is weird.\n\nFriendship bracelet enclosed. It's orange because of Biscuit.`);
     remember("Pip's science project is going well, she says.");
     return L;
   }
@@ -2098,19 +2098,20 @@ function reply(to, item) {
   L.friend = fav ? 2 : 1;
   const nice = itemName(item);
   const lines = {
-    ottoline: fav ? [`${cap(nice)}! Wren told you, didn't she.`, `Oh, ${nice}. That's lovely. Thank you.`] : [`Thank you for the ${nice}. It's in the shop window with a card: "from the cottage".`, `${cap(nice)}! You're as bad as Wren.`],
-    fenn: fav ? [`${cap(nice)}. Good.`, `${cap(nice)}. Wren's been talking. Thank you.`] : [`Got the ${nice}. Didn't need it. Glad of it.`, `${cap(nice)}. Kind of you. Hens send regards.`],
-    pip: fav ? [`${nice.toUpperCase()}!!!`, `you sent me ${nice}. Mum says I have to say thank you properly so: THANK YOU PROPERLY.`] : [`thank you for the ${nice}. I've named it Gary.`, `a ${nice}! I'm going to do science on it.`],
-    juniper: fav ? [`${cap(nice)}. Exactly right. Thank you.`, `I had the ${nice} at the eyepiece. Saturn was very good last night.`] : [`Thank you for the ${nice}. It's on the sill by the charts.`, `${cap(nice)}. It's quiet up here. Your parcels help.`]
+    ottoline: fav ? [`${cap(nice)}! Somebody's been telling you what I like, and I bet I know who.\n\nThank you. It's going straight in the back where the customers can't get at it.`, `Oh, ${nice}. You shouldn't have, and I'm very glad you did.\n\nI've told everyone who's been in this morning, so the whole village knows now.`]
+      : [`Thank you for the ${nice}. I've put it in the shop window with a little card saying FROM THE COTTAGE, and three people have asked about it already.`, `${cap(nice)}! You're getting as bad as Wren. She was always leaving things in the box for me.`],
+    fenn: fav ? [`${cap(nice)}. That's good of you.\n\nThe bees approve. So do I.`, `${cap(nice)}. Wren's been telling you things, hasn't she.\n\nThank you.`] : [`Got the ${nice}. Didn't need it, but I'm glad of it.`, `${cap(nice)}. Kind of you.\n\nThe hens are laying again, so expect eggs.`],
+    pip: fav ? [`${nice.toUpperCase()}!!! how did you know. HOW DID YOU KNOW`, `you sent me ${nice}!! Mum says I have to write a proper thank you so this is it: THANK YOU VERY MUCH FOR THE ${nice.toUpperCase()}. from Pip.`] : [`thank you for the ${nice}. I have put it on my shelf next to my rocks.`, `a ${nice}! I am going to do an experiment on it. (I am going to look at it really closely.)`],
+    juniper: fav ? [`${cap(nice)}. That was exactly right. Thank you.`, `I had the ${nice} last night at the eyepiece. Saturn was very clear, and I wasn't cold, which is a first this month.`] : [`Thank you for the ${nice}. It's on the windowsill beside my charts, where I can see it.`, `${cap(nice)}. It's very quiet up here, so a parcel is an event. Thank you.`]
   };
   if (item.startsWith("junk:")) {
-    const jl = { ottoline: "A boot. Is this a Wren joke? It's in the window anyway.", fenn: "Boot. Wrong size. Planting thyme in it.", pip: "WEIRD STUFF. more please", juniper: "A boot. I've decided not to ask." };
+    const jl = { ottoline: "A boot. An old wet boot, in a parcel. I'm assuming this is one of Wren's jokes and you're carrying it on. I've put it in the window.", fenn: "Boot. Wrong size for me. I've put thyme in it.", pip: "WEIRD STUFF!! more please. for science", juniper: "Thank you for the boot. I've decided not to ask." };
     L.friend = to === "pip" ? 2 : 0;
     say(`${NAME()},\n\n${jl[to]}`);
     return L;
   }
   if (item.startsWith("file:")) {
-    const fl = { ottoline: "Got your note. Lovely to hear from the cottage.", fenn: "Read your note. Good note.", pip: "I'm going to frame your file. can you frame a file", juniper: "I read your note twice. Keep writing things down. It's how anyone ever finds anything out." };
+    const fl = { ottoline: "Got your note. It's lovely to hear from the cottage again. Wren hardly ever wrote, she just turned up.", fenn: "Read your note. It was a good note.", pip: "I am going to print your file out and put it on my wall. can you print a file. I will find out", juniper: "I read your note twice. Keep writing things down. It's the only way anyone finds anything out." };
     say(`${NAME()},\n\n${fl[to]}`);
     return L;
   }

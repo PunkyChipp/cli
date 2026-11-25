@@ -109,3 +109,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 26 — odds and ends in the shell
 - Rewrote the leftover action replies: oiling things (gone: "The kettle's problems are emotional", "grateful, in a glass-eyed way", "It's now slightly oily"), the greenhouse door opening ("a sigh of warm, earthy air" is now "the air that comes out is warm and smells of wet soil"), stopping the music, the record player, posting a parcel, tuning the radio, the fox in the evening.
 - "Taken: X" is now "You take X."
+
+## 27 — thank-you letters
+- Rewrote the everyday replies people send when you post them something (not quest items): Ottoline, Fenn, Pip and Juniper each now write two or three proper sentences in their own voice instead of a one-liner ("It's very quiet up here, so a parcel is an event.", "The hens are laying again, so expect eggs.", "I have put it on my shelf next to my rocks."). Same for when you send a boot or one of your own notes.
+- Dropped the "From her that's a medal" quip, and renamed Pip's snail so it isn't called Derek like the man fixing the post van.
