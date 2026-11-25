@@ -11,36 +11,36 @@ const CONSTELLATIONS = {
     "     *-----*  \\",
     "     |      \\  *",
     "     *-------*"
-  ], note: "Four stars in a squat box with a spout. Always on the boil. In autumn it sits low over the hill, as if someone's about to make tea." },
+  ], note: "Four stars in a squat box, and a fifth off to one side for the spout. Low over the hill in autumn. Wren named it, obviously." },
   cat: { dir: "north", name: "The Sleeping Cat", art: [
     "    *.  .*",
     "     \\`'/     ",
     "     ( *   )___*",
     "      *---------*"
-  ], note: "Curled up and turning slowly round the pole star all night. She never actually gets up. Wren said that was the most realistic thing in the sky." },
+  ], note: "Curled round the pole star, so she goes round all night without ever getting up. Wren said it was the most accurate thing in the sky." },
   spoon: { dir: "north", name: "The Long Spoon", art: [
     "  *",
     "   \\",
     "    *--*--*--*"
-  ], note: "For stirring the Kettle. A long handle and a little bowl of three faint stars." },
+  ], note: "A long handle with three faint stars at the end for the bowl. Next to the Kettle, for stirring it." },
   heron: { dir: "east", name: "The Heron", art: [
     "        *",
     "        |\\",
     "   *----*  *",
     "        |",
     "        *"
-  ], note: "Standing on one leg in the eastern reeds. Rises late, like herons do, and stands very still." },
+  ], note: "A tall one on the eastern side that comes up late in the evening. I named this one. It's a heron standing in the reeds on one leg." },
   bicycle: { dir: "west", name: "Wren's Bicycle", art: [
     "      *--*",
     "     /    \\",
     "   (*)----(*)"
-  ], note: "Two bright stars for wheels and a crooked frame. Wren insisted on it. Juniper wanted it to be called 'The Wheelbarrow'. They didn't speak for a week in 1962." },
+  ], note: "Two bright stars for the wheels and a crooked frame between them. I wanted to call it the Wheelbarrow. We didn't speak for a week." },
   lantern: { dir: "up", name: "The Lantern", art: [
     "       _*_",
     "      | * |",
     "      |___|",
     "        *"
-  ], note: "Straight overhead in autumn. A small box of stars with one bright one inside. The whole Hollow plans Lantern Night by it." }
+  ], note: "Straight overhead in October. A small square of stars with a bright one in the middle. Lantern Night is always when this is highest." }
 };
 const DIRS = ["north", "east", "south", "west", "up"];
 const cometVisible = () => S.day >= 10 && S.day <= 18;
@@ -58,12 +58,12 @@ function starfield(dir, w = 40, h = 7) {
 
 function skyCan() {
   if (roomName() !== "roof") return "The telescope's up on the roof. {cmd:cd ~/roof}";
-  if (!S.disks.sky) return "The telescope's motor needs its disk. {dim:(Juniper has the disk.)}";
-  if (!isNight()) return "It's daytime. You look through the telescope anyway and see a very magnified cloud. {dim:(come back after 8pm.)}";
+  if (!S.disks.sky) return "The telescope's motor won't turn without its disk, and Juniper has that.";
+  if (!isNight()) return "It's still light. You'll need to come back up after dark, from about eight.";
   const w = weatherNow();
-  if (w.rain) return "It's raining. You put the cover back on the telescope before it gets wet. {dim:(the weather's on 93.1.)}";
-  if (w.fog > 0.5) return "Fog. The telescope can see about as far as your hand, which you can already see.";
-  if (w.cloud > 0.6) return "Nothing but cloud tonight. It's very nice cloud. It's not stars, though.";
+  if (w.rain) return "It's raining, so you leave the cover on the telescope. The forecast is on 93.1 if you want to know about tomorrow.";
+  if (w.fog > 0.5) return "It's foggy. You can barely see the chimney, never mind the stars.";
+  if (w.cloud > 0.6) return "It's too cloudy tonight to see anything.";
   return null;
 }
 
@@ -74,7 +74,7 @@ async function doSky(args) {
   if (["n", "e", "s", "w", "u"].includes(dir)) dir = DIRS.find(d => d[0] === dir);
   if (["overhead", "zenith", "straight"].includes(dir)) dir = "up";
   if (!dir) {
-    print("You take the cover off the telescope. The motor whirrs as it wakes up.");
+    print("You pull the oilskin off the telescope. The motor makes a whirring noise as it warms up.");
     print("{dim:Where to point it?}  " + DIRS.map(d => "{cmd:sky " + d + "}").join("  "));
     const found = Object.keys(S.stars).filter(k => CONSTELLATIONS[k]).length;
     print("{dim:(" + found + "/6 of Wren and Juniper's constellations found. notes: {cmd:cat star_notes.txt})}");
@@ -82,7 +82,7 @@ async function doSky(args) {
   }
   if (!DIRS.includes(dir)) return print("The telescope can point " + DIRS.join(", ") + ". Not " + esc(dir) + ".");
   sfx("beep");
-  print("{dim:whirrrrr... click.} The telescope swings " + (dir === "up" ? "straight up" : dir) + ".");
+  print("The motor whirrs and the telescope swings round to point " + (dir === "up" ? "straight up" : dir) + ".");
   await pause(500);
   // the sky is a grid of [char, colour] cells; constellations get stamped on top
   const field = starfield(dir).map(r => r.split("").map(ch => [ch, ch === " " ? null : "dim"]));
@@ -104,21 +104,22 @@ async function doSky(args) {
   for (const [k, c] of here) {
     const first = !S.stars[k];
     S.stars[k] = S.stars[k] || S.day;
-    print((first ? "{ok:New!} " : "") + "{hi:" + c.name + "} {dim:· " + c.note + "}");
+    print("{hi:" + c.name + "}" + (first ? "  {ok:you copy it into the margin of Juniper's notes}" : ""));
+    print("{dim:Juniper's note: " + c.note + "}");
     if (first) remember("found " + c.name + " through the telescope.");
   }
   if (comet) {
-    print("{acc:...and there, low and faint, with a tail like a brushstroke: the comet.}");
+    print("{acc:And low down, faint, with a short smudge of tail behind it, there's the comet.}");
     if (!S.flags.sawComet) {
       S.flags.sawComet = true;
       await pause(600);
-      await type("You watch it for a long time. It doesn't move, and it's moving at thousands of miles an hour, and you think about two fourteen-year-olds at the end of the dock, sixty-four years ago, seeing exactly this.", 45);
+      await type("You watch it until your neck aches from bending to the eyepiece. Across the lake, Juniper is probably doing the same. The last time it came round, she and Wren were fourteen and watching it from the end of your dock.", 45);
       keepsake("comet");
       clue("comet");
       remember("saw the comet. Juniper and Wren saw it from this exact roof in 1962.");
-      if (S.quests.jun_comet === "open") print("{dim:(Juniper will want to know. {cmd:send} her something. anything.)}");
+      if (S.quests.jun_comet === "open") print("{dim:Juniper said to send her something if you saw it. It doesn't matter what. {cmd:send}}");
     }
-  } else if (dir === "west" && S.day < 10) print("{dim:(nothing unusual in the west tonight. it's quiet. like it's waiting.)}");
+  } else if (dir === "west" && S.day < 10) print("{dim:There's nothing unusual in the west tonight.}");
   if (Object.keys(CONSTELLATIONS).every(k => S.stars[k])) keepsake("allstars");
   spend(15);
   warm(-2);

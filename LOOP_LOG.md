@@ -101,3 +101,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 24 — the garden
 - Rewrote the garden's planting, watering and harvesting lines. Cut the quips ("Seeds don't take to carpet", "unless you count Biscuit, and you shouldn't", "The soil appreciates the thought", "The mister hisses at you. It's got this.") and the stock simile on the moonflower ("like it's remembering the moon", now "a faint blue-gold, enough to see your fingers by"). Harvesting now reads "You pick ... and put them in your coat pocket" instead of a "You harvest:" label.
+
+## 25 — the telescope
+- Rewrote the telescope lines and cut the quips ("a very magnified cloud", "It's very nice cloud. It's not stars, though.", "as far as your hand, which you can already see") and the stock lines ("a tail like a brushstroke", "it's quiet. like it's waiting.", "It doesn't move, and it's moving at thousands of miles an hour").
+- The constellation notes are now Juniper's own notes in her voice ("I wanted to call it the Wheelbarrow. We didn't speak for a week."), and finding one means copying it into the margin of her notes, instead of a "New!" badge.
