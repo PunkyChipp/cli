@@ -177,21 +177,21 @@ function lanternStatus() {
 async function doLantern() {
   if (roomName() !== "dock") return print("The lantern's on the dock. {cmd:cd dock}");
   if (S.flags.lanternLit) {
-    print("It's lit. You stand by it for a while." + (S.flags.answered ? "" : " {dim:(up at the house, the cellar is still humming that new note.)}"));
+    print("It's lit. You stand by it for a while." + (S.flags.answered ? "" : " {dim:up at the house, the cellar is still humming that new note.}"));
     return;
   }
   const missing = [];
-  if (!has("wick")) missing.push("a wick {dim:(Wren's trunk)}");
-  if (!has("moonflower")) missing.push("a moonflower {dim:(greenhouse, harvested at night)}");
-  if (!has("matches")) missing.push("matches {dim:(kitchen drawer)}");
+  if (!has("wick")) missing.push("a wick {dim:Wren's trunk}");
+  if (!has("moonflower")) missing.push("a moonflower {dim:greenhouse, harvested at night}");
+  if (!has("matches")) missing.push("matches {dim:kitchen drawer}");
   if (S.day < SEASON_END) {
     print("Not yet. It's for Lantern Night, " + dateStr(SEASON_END) + ", " + plural(SEASON_END - S.day, "day") + " away.");
     print(missing.length ? "{dim:You'll need: " + missing.join(", ") + ".}" : "{ok:You've got everything it needs.}");
     S.flags.lanternReady = !missing.length;
     return;
   }
-  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:(they'll wait. Ottoline said.)}");
-  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. After dark. {dim:(from 6pm.)}");
+  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:they'll wait. Ottoline said.}");
+  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. After dark. {dim:from 6pm.}");
   await lanternFinale();
 }
 

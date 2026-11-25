@@ -77,7 +77,7 @@ async function doSky(args) {
     print("You pull the oilskin off the telescope. The motor makes a whirring noise as it warms up.");
     print("{dim:Where to point it?}  " + DIRS.map(d => "{cmd:sky " + d + "}").join("  "));
     const found = Object.keys(S.stars).filter(k => CONSTELLATIONS[k]).length;
-    print("{dim:(" + found + "/6 of Wren and Juniper's constellations found. notes: {cmd:cat star_notes.txt})}");
+    print("{dim:" + found + "/6 of Wren and Juniper's constellations found. notes: {cmd:cat star_notes.txt}}");
     return;
   }
   if (!DIRS.includes(dir)) return print("The telescope can point " + DIRS.join(", ") + ". Not " + esc(dir) + ".");
@@ -126,7 +126,7 @@ async function doSky(args) {
 }
 
 function starNotes() {
-  let out = "{hi:STAR NOTES}  {dim:(Juniper's handwriting, very small and very neat)}\n\n";
+  let out = "{hi:STAR NOTES}  {dim:Juniper's handwriting, very small and very neat}\n\n";
   for (const [k, c] of Object.entries(CONSTELLATIONS)) out += (S.stars[k] ? "{ok:✓} {hi:" + c.name + "}" : "{dim:·} " + c.name) + "  {dim:— look " + c.dir + "}\n";
   out += "\n{dim:clear nights only. after 8pm. dress warmly, you won't, but do.}";
   if (S.day >= 10) out += "\n{acc:p.s. comet. west. this week only. J.}";

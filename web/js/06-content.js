@@ -44,7 +44,7 @@ function catLine() {
 }
 
 /* ---------- the note on the screen (the first thing you read) ---------- */
-const NOTE = () => `{dim:(biro, on the back of an envelope)}
+const NOTE = () => `{dim:biro, on the back of an envelope}
 
 ${NAME()} —
 
@@ -76,7 +76,7 @@ function todoText() {
     ["write back to people", () => S.stats.letters > 0, ""],
     ["the lantern. the 25th.", () => S.flags.lanternLit, ""]
   ];
-  let out = "{dim:(Wren's list, pinned by the door)}\n\n";
+  let out = "{dim:Wren's list, pinned by the door}\n\n";
   for (const [t, ok, hint] of items) {
     const d = ok();
     out += (d ? "{dim:  {s:" + t + "}}" : "  " + t + (hint ? "  {dim:· " + hint + "}" : "")) + "\n";
@@ -84,7 +84,7 @@ function todoText() {
   return out.trimEnd();
 }
 
-const BISCUIT_MANUAL = `{hi:BISCUIT}  {dim:(typed, then corrected in pen)}
+const BISCUIT_MANUAL = `{hi:BISCUIT}  {dim:typed, then corrected in pen}
 
   orange. eleven. heavier than she looks.
   fed morning and evening. half a tin. she gets the
@@ -104,7 +104,7 @@ const FRIDGE_NOTE = () => `On the fridge, under a magnet shaped like a sardine:
   {acc:${S.day > 3 ? "{s:jam}" : "jam"} — cellar}
   {acc:ring J. about the 25th}`;
 
-const HEARTH_MANUAL = `{hi:HEARTH-80 OPERATOR'S GUIDE}  {dim:(the printed part is three pages. the rest is pencil.)}
+const HEARTH_MANUAL = `{hi:HEARTH-80 OPERATOR'S GUIDE}  {dim:the printed part is three pages. the rest is pencil.}
 
   {acc:ls}            what's here (add -a for hidden things)
   {acc:cd} kitchen    go somewhere.  {acc:cd ..}  back out
@@ -149,7 +149,7 @@ const BOOKS = {
 
   The lake is 41 metres at its deepest point, roughly
   below the centre of the bay. It has never been surveyed
-  below that. {dim:(Wren has underlined "never".)}`,
+  below that. {dim:Wren has underlined "never".}`,
   "the_cat_who_kept_a_lighthouse.book": `{hi:THE CAT WHO KEPT A LIGHTHOUSE}  {dim:a picture book}
 
   Every night the cat pushed the big switch with her paw,
@@ -184,7 +184,7 @@ everyone thinks I've wired it backwards. I haven't."}`,
 };
 
 /* ---------- Wren's letter in the attic trunk ---------- */
-const TRUNK_LETTER = () => `{dim:(folded in four, in the lid of the trunk)}
+const TRUNK_LETTER = () => `{dim:folded in four, in the lid of the trunk}
 
 ${NAME()},
 
@@ -287,12 +287,12 @@ It's been folded and unfolded a lot.`)
           return "A 3.5\" drive. Installed: " + (d.length ? d.map(x => "{acc:" + x + "}").join(", ") : "{dim:nothing}") + ". {cmd:insert}";
         }),
         desk: D("Wren's desk has a green-shaded lamp, a mug of pencils and a pile of envelopes she was clearly going to get round to.", {
-          "torn_page.txt": F("A page torn out of something:\n\n  {acc:the good seeds are in the shed. use your -a's.}\n\n{dim:(as in {cmd:ls -a})}"),
+          "torn_page.txt": F("A page torn out of something:\n\n  {acc:the good seeds are in the shed. use your -a's.}\n\n{dim:as in {cmd:ls -a}}"),
           pencils: F("A mug of pencils. All of them have been sharpened at both ends, which you didn't know was a thing people did."),
           floppy_box: D("A box of floppy disks.", {
             "BLANK.DSK": F("BLANK, it says on the label, and underneath in smaller writing, 'actually blank'."),
             "GAMES.DSK": F("The label says GAMES. The only thing on it is a spreadsheet of who owes Wren money from cards. Fenn owes the most."),
-            "LOG-87.DSK": F("Labelled LOG 87–. Empty. {dim:(whatever was on it has been copied somewhere. /var/log, maybe.)}", { onRead: () => clue("log") })
+            "LOG-87.DSK": F("Labelled LOG 87–. Empty. {dim:whatever was on it has been copied somewhere. /var/log, maybe.}", { onRead: () => clue("log") })
           })
         }),
         postcards: D("A shoebox with POSTCARDS written on the lid. Wren must have left it out for you.", () => {
@@ -315,19 +315,19 @@ It's been folded and unfolded a lot.`)
             chamomile_seeds: F("An envelope marked {acc:CHAMOMILE}. It smells of hay even through the paper.", { item: "seed:chamomile", count: 2 })
           })
         }),
-        woodpile: F(() => "Logs stacked against the shed wall under a green tarp held down with bricks. The axe is leaning against them. {cmd:chop} {dim:(" + plural(S.wood, "log") + " in the basket inside)}"),
+        woodpile: F(() => "Logs stacked against the shed wall under a green tarp held down with bricks. The axe is leaning against them. {cmd:chop} {dim:" + plural(S.wood, "log") + " in the basket inside}"),
         birdbath: F(() => "A stone birdbath with moss up the stem. " + pick(["There's a robin in it, splashing about.", "Two sparrows are arguing on the rim.", "There's a single yellow leaf floating in it."])),
-        fox: F(() => "A fox" + (S.fox ? " (" + esc(S.fox) + ")" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:({cmd:name fox} her?)}"), { when: () => isNight() || isEvening() })
+        fox: F(() => "A fox" + (S.fox ? " (" + esc(S.fox) + ")" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:{cmd:name fox} her?}"), { when: () => isNight() || isEvening() })
       }), { room: true }),
 
       greenhouse: D(() => "It's noticeably warmer in here. The glass is whitewashed on the inside, a brass mister on the ceiling hisses every so often, and three clay pots are lined up on the bench.", () => Object.assign(potKids(), {
         "moonflower_note.txt": F(W("{hi:moonflowers}\n\npots only. they want warm and dark.\nthey open after dark and shut again at dawn, so pick them at night.\none flower gives enough oil for the lantern.\n\nthe light they give off is the same colour as the other light.\nthat's not a coincidence. I don't know what it is."), { onRead: () => clue("colour") }),
         mister: F("A brass pipe along the ceiling with little nozzles in it. Every few minutes it hisses and mists the pots, so you never need to water in here.")
-      }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:(the oilcan's in the shed: {cmd:oil greenhouse})}") }),
+      }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:the oilcan's in the shed: {cmd:oil greenhouse}}") }),
 
       dock: D(() => "The dock is grey boards on old posts, thirty feet or so of it, with Wren's green rowing boat tied up alongside. At the far end there's an iron lantern on a pole" + (S.flags.lanternLit ? ", lit." : ".") + " A thick black cable is stapled along the boards the whole way out and drops over the end into the water. " + skyLine(), {
         lantern: F(() => lanternStatus()),
-        cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:(it goes back up the garden towards the house.)}", { onRead: () => clue("cable") }),
+        cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:it goes back up the garden towards the house.}", { onRead: () => clue("cable") }),
         water: F(() => lakeLook()),
         rowboat: F("A green wooden rowing boat with a bit of water in the bottom. Someone has painted {acc:THE SECOND OPINION} on the back in white. The oars are under the seat. {cmd:row}"),
         tackle_box: D("A green metal tackle box with trays that fold out like stairs.", {
@@ -340,8 +340,8 @@ It's been folded and unfolded a lot.`)
       cellar: D(() => "You have to duck under the beam at the bottom of the steps. It's cold down here and smells of earth and jam, and there are shelves of jars along both walls. In the corner is a beige metal box about the size of a suitcase, and that's where the hum is coming from. A cable comes in through the wall and plugs into the back of it.", {
         jam_shelf: F(() => "Blackberry, damson, plum, one labelled MYSTERY 2019. " + (jamLeft() ? "{cmd:take jam}" : "The rest are labelled 'winter'."), { item: "jam" }),
         oil_lamp: F("A brass oil lamp with a glass chimney, full of oil. The attic has no light up there, so you'll want this.", { item: "lamp" }),
-        box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:(there's a program for it. Wren used to run it down here: {cmd:listen})}", { onRead: () => { clue("hum"); clue("listen"); } }),
-        "the_hum.txt": F("{dim:(taped to the box)}\n\nit's the freezer.\n\n{dim:(the freezer is unplugged.)}", { onRead: () => clue("hum") })
+        box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:there's a program for it. Wren used to run it down here: {cmd:listen}}", { onRead: () => { clue("hum"); clue("listen"); } }),
+        "the_hum.txt": F("{dim:taped to the box}\n\nit's the freezer.\n\n{dim:the freezer is unplugged.}", { onRead: () => clue("hum") })
       }, { room: true }),
 
       attic: D(() => S.flags.atticLit ? "The attic runs the whole length of the house. Boxes are stacked under the eaves, there's a rocking horse missing one eye, and under the round window there's a heavy leather trunk. A ladder goes up to a hatch onto the roof." : "It's completely dark up here. Something small walks across the boards and stops.", () => (S.flags.atticLit ? {
@@ -351,14 +351,14 @@ It's been folded and unfolded a lot.`)
           "letter.txt": F(TRUNK_LETTER, { onRead: f => { clue("ask"); if (f) remember("found Wren's letter in the trunk. read it twice."); } }),
           "diary_1962.txt": F(DIARY_1962, { onRead: () => { clue("1962"); clue("name"); } }),
           "photo_1974.txt": F(PHOTO_1974, { onRead: () => clue("count") })
-        }, { lock: () => (S.flags.trunkOpen ? null : "Padlocked.\n{dim:(the key is on Biscuit's collar.)}") }),
+        }, { lock: () => (S.flags.trunkOpen ? null : "Padlocked.\n{dim:the key is on Biscuit's collar.}") }),
         rocking_horse: F("A dapple-grey rocking horse missing one glass eye. Someone wrote GERALD on the saddle in felt tip a long time ago."),
         margaret: F("In the corner of the rafters there's a big spider in a big web, and pinned to the beam next to it a note in Wren's writing: {acc:MARGARET. do not hoover.}"),
         boxes: F("Cardboard boxes labelled XMAS, XMAS (REAL), TAX and NOT TAX. One at the back just says {acc:NO}, and you decide to leave it.")
       } : {}), { room: true, dark: () => !S.flags.atticLit }),
 
       roof: D(() => "There's a flat bit of roof between the two chimneys with a railing round it and a weathervane shaped like a heron. Wren's brass telescope stands there under an oilskin cover. " + skyLine(), {
-        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:(after dark.)}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK (J. has it)}."),
+        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:after dark.}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK (J. has it)}."),
         weathervane: F(() => "The heron points " + pick(["north-west", "west", "south-west", "north"]) + ". " + cap(weatherNow().word) + "."),
         "star_notes.txt": F(starNotes, { when: () => S.disks.sky })
       }, { room: true, lock: () => (S.flags.atticLit ? null : "The ladder to the roof is in the attic, and the attic is dark.") })
@@ -394,7 +394,7 @@ Collar:   ${S.flags.gotKey ? "bell" : "bell, small brass key"}`)
 
     bin: D("programs.", () => {
       const k = {};
-      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "") + "\n{dim:({cmd:" + n + "})}", { exec: true });
+      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "") + "\n{dim:{cmd:" + n + "}}", { exec: true });
       return k;
     }),
     tmp: D("empty, apart from a crumb.", { crumb: F("Shortbread.") }),

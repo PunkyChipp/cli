@@ -78,11 +78,11 @@ function doPlant(args) {
   let crop = (args[0] || "").toLowerCase().replace(/s$/, "").replace(/^seed:/, "");
   if (crop === "carrots") crop = "carrot";
   if (!crop) {
-    if (!seeds.length) return print("You haven't got any seeds left. {dim:(there might be some in the shed, if you look properly.)}");
+    if (!seeds.length) return print("You haven't got any seeds left. {dim:there might be some in the shed, if you look properly.}");
     if (seeds.length === 1) crop = seeds[0];
     else return print("Plant what? You've got: " + seedList());
   }
-  if (!CROPS[crop]) { const g = closest(crop, Object.keys(CROPS)); return print("There's no such thing as " + esc(crop) + " seeds." + (g ? " {dim:(did you mean {cmd:plant " + g + "}?)}" : "")); }
+  if (!CROPS[crop]) { const g = closest(crop, Object.keys(CROPS)); return print("There's no such thing as " + esc(crop) + " seeds." + (g ? " {dim:did you mean {cmd:plant " + g + "}?}" : "")); }
   if (!has("seed:" + crop)) return print("You're out of " + crop + " seeds." + (seeds.length ? " You have: " + seedList() : ""));
   const gh = inGh();
   if (CROPS[crop].gh && !gh) return print("Moonflowers won't grow out here. According to Wren they need the warmth of the greenhouse.");
@@ -119,7 +119,7 @@ function doWater() {
 
 function doHarvest() {
   const gh = inGh();
-  if (!inGarden() && !gh) return print("There's nothing to harvest in here. {dim:({cmd:cd garden})}");
+  if (!inGarden() && !gh) return print("There's nothing to harvest in here. {dim:{cmd:cd garden}}");
   const beds = gh ? S.gh : S.plots;
   const got = [];
   let closedBud = false;

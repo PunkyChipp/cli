@@ -113,3 +113,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 27 — thank-you letters
 - Rewrote the everyday replies people send when you post them something (not quest items): Ottoline, Fenn, Pip and Juniper each now write two or three proper sentences in their own voice instead of a one-liner ("It's very quiet up here, so a parcel is an event.", "The hens are laying again, so expect eggs.", "I have put it on my shelf next to my rocks."). Same for when you send a boot or one of your own notes.
 - Dropped the "From her that's a medal" quip, and renamed Pip's snail so it isn't called Derek like the man fixing the post van.
+
+## 28 — the brackets
+- There were 215 places where the game wrapped a line in "(dim brackets)", like stage directions. Took the brackets off all the whole-line asides (they keep their quieter colour), which removes a lot of the "narrator commenting on itself" feel in one go. Real in-sentence parentheses are untouched.
+- Fixed the few hints that now ran on after a full stop to be proper sentences ("You find it in the bread bin.", "Disks go in HEARTH's drive in the study."), and the hall now shows its doors when you walk into it instead of a file listing.

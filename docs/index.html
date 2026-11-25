@@ -1101,8 +1101,8 @@ function worldTick() {
     tickAcc -= 1;
     S.min += 1;
     S.warmth = clamp(S.warmth - (fireLit() ? 0 : 0.02) + (fireLit() && roomName() === "parlour" ? 0.04 : 0), 0, 100);
-    if (S.min === 22 * 60 && !T.busy) { print(""); print("{dim:(it's ten o'clock. somewhere a clock agrees. {cmd:sleep} whenever you're ready.)}"); showLine(!T.busy); }
-    if (S.min === 25 * 60 && !T.busy) { print(""); print("{dim:(it's 1am. your eyes are doing that thing.)}"); showLine(!T.busy); keepsake("night_owl"); }
+    if (S.min === 22 * 60 && !T.busy) { print(""); print("{dim:it's ten o'clock. somewhere a clock agrees. {cmd:sleep} whenever you're ready.}"); showLine(!T.busy); }
+    if (S.min === 25 * 60 && !T.busy) { print(""); print("{dim:it's 1am. your eyes are doing that thing.}"); showLine(!T.busy); keepsake("night_owl"); }
     if (S.min >= 25 * 60 + 30 && !T.busy && !T.asking) { T.busy = true; nodOff().then(() => { T.busy = false; showLine(true); }); }
     catWander();
     maybeCatKeyboard();
@@ -1423,7 +1423,7 @@ function catLine() {
 }
 
 /* ---------- the note on the screen (the first thing you read) ---------- */
-const NOTE = () => `{dim:(biro, on the back of an envelope)}
+const NOTE = () => `{dim:biro, on the back of an envelope}
 
 ${NAME()} —
 
@@ -1455,7 +1455,7 @@ function todoText() {
     ["write back to people", () => S.stats.letters > 0, ""],
     ["the lantern. the 25th.", () => S.flags.lanternLit, ""]
   ];
-  let out = "{dim:(Wren's list, pinned by the door)}\n\n";
+  let out = "{dim:Wren's list, pinned by the door}\n\n";
   for (const [t, ok, hint] of items) {
     const d = ok();
     out += (d ? "{dim:  {s:" + t + "}}" : "  " + t + (hint ? "  {dim:· " + hint + "}" : "")) + "\n";
@@ -1463,7 +1463,7 @@ function todoText() {
   return out.trimEnd();
 }
 
-const BISCUIT_MANUAL = `{hi:BISCUIT}  {dim:(typed, then corrected in pen)}
+const BISCUIT_MANUAL = `{hi:BISCUIT}  {dim:typed, then corrected in pen}
 
   orange. eleven. heavier than she looks.
   fed morning and evening. half a tin. she gets the
@@ -1483,7 +1483,7 @@ const FRIDGE_NOTE = () => `On the fridge, under a magnet shaped like a sardine:
   {acc:${S.day > 3 ? "{s:jam}" : "jam"} — cellar}
   {acc:ring J. about the 25th}`;
 
-const HEARTH_MANUAL = `{hi:HEARTH-80 OPERATOR'S GUIDE}  {dim:(the printed part is three pages. the rest is pencil.)}
+const HEARTH_MANUAL = `{hi:HEARTH-80 OPERATOR'S GUIDE}  {dim:the printed part is three pages. the rest is pencil.}
 
   {acc:ls}            what's here (add -a for hidden things)
   {acc:cd} kitchen    go somewhere.  {acc:cd ..}  back out
@@ -1528,7 +1528,7 @@ const BOOKS = {
 
   The lake is 41 metres at its deepest point, roughly
   below the centre of the bay. It has never been surveyed
-  below that. {dim:(Wren has underlined "never".)}`,
+  below that. {dim:Wren has underlined "never".}`,
   "the_cat_who_kept_a_lighthouse.book": `{hi:THE CAT WHO KEPT A LIGHTHOUSE}  {dim:a picture book}
 
   Every night the cat pushed the big switch with her paw,
@@ -1563,7 +1563,7 @@ everyone thinks I've wired it backwards. I haven't."}`,
 };
 
 /* ---------- Wren's letter in the attic trunk ---------- */
-const TRUNK_LETTER = () => `{dim:(folded in four, in the lid of the trunk)}
+const TRUNK_LETTER = () => `{dim:folded in four, in the lid of the trunk}
 
 ${NAME()},
 
@@ -1666,12 +1666,12 @@ It's been folded and unfolded a lot.`)
           return "A 3.5\" drive. Installed: " + (d.length ? d.map(x => "{acc:" + x + "}").join(", ") : "{dim:nothing}") + ". {cmd:insert}";
         }),
         desk: D("Wren's desk has a green-shaded lamp, a mug of pencils and a pile of envelopes she was clearly going to get round to.", {
-          "torn_page.txt": F("A page torn out of something:\n\n  {acc:the good seeds are in the shed. use your -a's.}\n\n{dim:(as in {cmd:ls -a})}"),
+          "torn_page.txt": F("A page torn out of something:\n\n  {acc:the good seeds are in the shed. use your -a's.}\n\n{dim:as in {cmd:ls -a}}"),
           pencils: F("A mug of pencils. All of them have been sharpened at both ends, which you didn't know was a thing people did."),
           floppy_box: D("A box of floppy disks.", {
             "BLANK.DSK": F("BLANK, it says on the label, and underneath in smaller writing, 'actually blank'."),
             "GAMES.DSK": F("The label says GAMES. The only thing on it is a spreadsheet of who owes Wren money from cards. Fenn owes the most."),
-            "LOG-87.DSK": F("Labelled LOG 87–. Empty. {dim:(whatever was on it has been copied somewhere. /var/log, maybe.)}", { onRead: () => clue("log") })
+            "LOG-87.DSK": F("Labelled LOG 87–. Empty. {dim:whatever was on it has been copied somewhere. /var/log, maybe.}", { onRead: () => clue("log") })
           })
         }),
         postcards: D("A shoebox with POSTCARDS written on the lid. Wren must have left it out for you.", () => {
@@ -1694,19 +1694,19 @@ It's been folded and unfolded a lot.`)
             chamomile_seeds: F("An envelope marked {acc:CHAMOMILE}. It smells of hay even through the paper.", { item: "seed:chamomile", count: 2 })
           })
         }),
-        woodpile: F(() => "Logs stacked against the shed wall under a green tarp held down with bricks. The axe is leaning against them. {cmd:chop} {dim:(" + plural(S.wood, "log") + " in the basket inside)}"),
+        woodpile: F(() => "Logs stacked against the shed wall under a green tarp held down with bricks. The axe is leaning against them. {cmd:chop} {dim:" + plural(S.wood, "log") + " in the basket inside}"),
         birdbath: F(() => "A stone birdbath with moss up the stem. " + pick(["There's a robin in it, splashing about.", "Two sparrows are arguing on the rim.", "There's a single yellow leaf floating in it."])),
-        fox: F(() => "A fox" + (S.fox ? " (" + esc(S.fox) + ")" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:({cmd:name fox} her?)}"), { when: () => isNight() || isEvening() })
+        fox: F(() => "A fox" + (S.fox ? " (" + esc(S.fox) + ")" : "") + " at the edge of the long grass, watching you." + (S.fox ? "" : " {dim:{cmd:name fox} her?}"), { when: () => isNight() || isEvening() })
       }), { room: true }),
 
       greenhouse: D(() => "It's noticeably warmer in here. The glass is whitewashed on the inside, a brass mister on the ceiling hisses every so often, and three clay pots are lined up on the bench.", () => Object.assign(potKids(), {
         "moonflower_note.txt": F(W("{hi:moonflowers}\n\npots only. they want warm and dark.\nthey open after dark and shut again at dawn, so pick them at night.\none flower gives enough oil for the lantern.\n\nthe light they give off is the same colour as the other light.\nthat's not a coincidence. I don't know what it is."), { onRead: () => clue("colour") }),
         mister: F("A brass pipe along the ceiling with little nozzles in it. Every few minutes it hisses and mists the pots, so you never need to water in here.")
-      }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:(the oilcan's in the shed: {cmd:oil greenhouse})}") }),
+      }), { room: true, lock: () => (S.flags.ghOpen ? null : "The door won't budge. The hinges have rusted.\n{dim:the oilcan's in the shed: {cmd:oil greenhouse}}") }),
 
       dock: D(() => "The dock is grey boards on old posts, thirty feet or so of it, with Wren's green rowing boat tied up alongside. At the far end there's an iron lantern on a pole" + (S.flags.lanternLit ? ", lit." : ".") + " A thick black cable is stapled along the boards the whole way out and drops over the end into the water. " + skyLine(), {
         lantern: F(() => lanternStatus()),
-        cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:(it goes back up the garden towards the house.)}", { onRead: () => clue("cable") }),
+        cable: F("A thick black cable, stapled along the dock, going over the end and straight down into the water. It's warm to touch. Faintly. {dim:it goes back up the garden towards the house.}", { onRead: () => clue("cable") }),
         water: F(() => lakeLook()),
         rowboat: F("A green wooden rowing boat with a bit of water in the bottom. Someone has painted {acc:THE SECOND OPINION} on the back in white. The oars are under the seat. {cmd:row}"),
         tackle_box: D("A green metal tackle box with trays that fold out like stairs.", {
@@ -1719,8 +1719,8 @@ It's been folded and unfolded a lot.`)
       cellar: D(() => "You have to duck under the beam at the bottom of the steps. It's cold down here and smells of earth and jam, and there are shelves of jars along both walls. In the corner is a beige metal box about the size of a suitcase, and that's where the hum is coming from. A cable comes in through the wall and plugs into the back of it.", {
         jam_shelf: F(() => "Blackberry, damson, plum, one labelled MYSTERY 2019. " + (jamLeft() ? "{cmd:take jam}" : "The rest are labelled 'winter'."), { item: "jam" }),
         oil_lamp: F("A brass oil lamp with a glass chimney, full of oil. The attic has no light up there, so you'll want this.", { item: "lamp" }),
-        box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:(there's a program for it. Wren used to run it down here: {cmd:listen})}", { onRead: () => { clue("hum"); clue("listen"); } }),
-        "the_hum.txt": F("{dim:(taped to the box)}\n\nit's the freezer.\n\n{dim:(the freezer is unplugged.)}", { onRead: () => clue("hum") })
+        box: F(() => "Beige steel, warm, humming. A label in Wren's capitals: {acc:HEARTH RECEIVER — DO NOT UNPLUG}. A small green light blinks, slowly. " + (S.flags.lanternLit ? "Faster than it used to." : "") + "\n{dim:there's a program for it. Wren used to run it down here: {cmd:listen}}", { onRead: () => { clue("hum"); clue("listen"); } }),
+        "the_hum.txt": F("{dim:taped to the box}\n\nit's the freezer.\n\n{dim:the freezer is unplugged.}", { onRead: () => clue("hum") })
       }, { room: true }),
 
       attic: D(() => S.flags.atticLit ? "The attic runs the whole length of the house. Boxes are stacked under the eaves, there's a rocking horse missing one eye, and under the round window there's a heavy leather trunk. A ladder goes up to a hatch onto the roof." : "It's completely dark up here. Something small walks across the boards and stops.", () => (S.flags.atticLit ? {
@@ -1730,14 +1730,14 @@ It's been folded and unfolded a lot.`)
           "letter.txt": F(TRUNK_LETTER, { onRead: f => { clue("ask"); if (f) remember("found Wren's letter in the trunk. read it twice."); } }),
           "diary_1962.txt": F(DIARY_1962, { onRead: () => { clue("1962"); clue("name"); } }),
           "photo_1974.txt": F(PHOTO_1974, { onRead: () => clue("count") })
-        }, { lock: () => (S.flags.trunkOpen ? null : "Padlocked.\n{dim:(the key is on Biscuit's collar.)}") }),
+        }, { lock: () => (S.flags.trunkOpen ? null : "Padlocked.\n{dim:the key is on Biscuit's collar.}") }),
         rocking_horse: F("A dapple-grey rocking horse missing one glass eye. Someone wrote GERALD on the saddle in felt tip a long time ago."),
         margaret: F("In the corner of the rafters there's a big spider in a big web, and pinned to the beam next to it a note in Wren's writing: {acc:MARGARET. do not hoover.}"),
         boxes: F("Cardboard boxes labelled XMAS, XMAS (REAL), TAX and NOT TAX. One at the back just says {acc:NO}, and you decide to leave it.")
       } : {}), { room: true, dark: () => !S.flags.atticLit }),
 
       roof: D(() => "There's a flat bit of roof between the two chimneys with a railing round it and a weathervane shaped like a heron. Wren's brass telescope stands there under an oilskin cover. " + skyLine(), {
-        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:(after dark.)}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK (J. has it)}."),
+        telescope: F(() => S.disks.sky ? "Cover off. {cmd:sky}" + (isNight() ? "" : " {dim:after dark.}") : "A brass telescope. The motor has a slot for a disk. A label: {acc:SKY.DSK (J. has it)}."),
         weathervane: F(() => "The heron points " + pick(["north-west", "west", "south-west", "north"]) + ". " + cap(weatherNow().word) + "."),
         "star_notes.txt": F(starNotes, { when: () => S.disks.sky })
       }, { room: true, lock: () => (S.flags.atticLit ? null : "The ladder to the roof is in the attic, and the attic is dark.") })
@@ -1773,7 +1773,7 @@ Collar:   ${S.flags.gotKey ? "bell" : "bell, small brass key"}`)
 
     bin: D("programs.", () => {
       const k = {};
-      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "") + "\n{dim:({cmd:" + n + "})}", { exec: true });
+      for (const n of commandNames()) k[n] = F("#!/bin/hearth\n# " + (CMDS[n].help || "") + "\n{dim:{cmd:" + n + "}}", { exec: true });
       return k;
     }),
     tmp: D("empty, apart from a crumb.", { crumb: F("Shortbread.") }),
@@ -1845,7 +1845,7 @@ me run. She said "when you're older." I'm older now (by a month).
 
 Can you teach me a new command? Write it in a file and post it:
 
-   {cmd:write lesson.txt}     {dim:(type, then a line with just a dot)}
+   {cmd:write lesson.txt}     {dim:type, then a line with just a dot}
    {cmd:send lesson.txt to pip}
 
 PIP
@@ -1984,7 +1984,7 @@ I'll show you the cellar properly.
 
 function letterText(id) {
   const L = LETTERS[id] || (S.dyn && S.dyn[id]);
-  if (!L) return "{dim:(a letter that seems to have gone missing)}";
+  if (!L) return "{dim:a letter that seems to have gone missing}";
   return typeof L.text === "function" ? L.text() : L.text;
 }
 function letterMeta(id) { return LETTERS[id] || (S.dyn && S.dyn[id]); }
@@ -2165,7 +2165,7 @@ function radioOut(st) {
   const lines = [];
   if (st === "101.3") {
     if (S.min < 12 * 60 && S.min >= 6 * 60) {
-      lines.push("{dim:(a jingle on an out-of-tune piano)}");
+      lines.push("{dim:a jingle on an out-of-tune piano}");
       for (const l of ottoMorning()) lines.push("{acc:OTTOLINE:} " + l);
       if (S.quests.otto_radio !== "done") {
         S.quests.otto_radio = "done"; befriend("ottoline", 2); give("seed:chamomile", 2);
@@ -2174,15 +2174,15 @@ function radioOut(st) {
         remember("got the radio going. Ottoline said hello on air.");
       }
     } else if (S.min >= 12 * 60 && S.min < 20 * 60) {
-      lines.push("{dim:(afternoon requests. a scratchy record:)} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "} {dim:— for " + pick(["Fenn's bees", "the observatory", "'someone on the hill'", "whoever's at the cottage"]) + ".}");
-    } else lines.push("{dim:(off air. a tape loop of Ottoline saying \"goodnight, Hollow.\")}");
+      lines.push("{dim:afternoon requests. a scratchy record:} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "} {dim:— for " + pick(["Fenn's bees", "the observatory", "'someone on the hill'", "whoever's at the cottage"]) + ".}");
+    } else lines.push("{dim:off air. a tape loop of Ottoline saying \"goodnight, Hollow.\"}");
   } else if (st === "93.1") {
     lines.push("{sky:Weather for Lake Ilse, from the observatory.}");
     lines.push("{sky:Today: " + forecastFor(S.day) + ".}");
     lines.push("{sky:Tomorrow: " + forecastFor(S.day + 1) + ".}");
   } else if (st === "88.8") {
-    lines.push("{dim:(slow piano. somebody in the background of the recording asks for more toast.)}");
-    if (!A.ctx) lines.push("{dim:(tap the screen once to let the sound in.)}");
+    lines.push("{dim:slow piano. somebody in the background of the recording asks for more toast.}");
+    if (!A.ctx) lines.push("{dim:tap the screen once to let the sound in.}");
   } else if (st === "104.5" && S.disks.pip) {
     lines.push("{sky:PIP:} " + PIP_FM[0]);
     const tip = pick(PIP_FM.slice(1, -1));
@@ -2192,13 +2192,13 @@ function radioOut(st) {
     lines.push("{sky:PIP:} " + PIP_FM[PIP_FM.length - 1]);
   } else if (st === "77.7") {
     lines.push("{dim:kshhhhhhhh}");
-    lines.push("{dim:(under the static, a flat voice, one word at a time:)} {sky:" + heard(signalLevel()) + "}");
-    lines.push("{dim:(it's HEARTH's voice. the same one that reads the error messages.)}");
+    lines.push("{dim:under the static, a flat voice, one word at a time:} {sky:" + heard(signalLevel()) + "}");
+    lines.push("{dim:it's HEARTH's voice. the same one that reads the error messages.}");
     clue("r777");
   } else {
     lines.push("{dim:kshhhhhhhhhhhhhhhhhhhhh}");
-    if (st === "104.5") lines.push("{dim:(very faintly, a kid's voice: \"is this on? IS THIS ON?\" not yet, apparently.)}");
-    else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:(something, nearby on the dial. a voice? lower.)}");
+    if (st === "104.5") lines.push("{dim:very faintly, a kid's voice: \"is this on? IS THIS ON?\" not yet, apparently.}");
+    else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:something, nearby on the dial. a voice? lower.}");
   }
   return lines;
 }
@@ -2284,11 +2284,11 @@ function doPlant(args) {
   let crop = (args[0] || "").toLowerCase().replace(/s$/, "").replace(/^seed:/, "");
   if (crop === "carrots") crop = "carrot";
   if (!crop) {
-    if (!seeds.length) return print("You haven't got any seeds left. {dim:(there might be some in the shed, if you look properly.)}");
+    if (!seeds.length) return print("You haven't got any seeds left. {dim:there might be some in the shed, if you look properly.}");
     if (seeds.length === 1) crop = seeds[0];
     else return print("Plant what? You've got: " + seedList());
   }
-  if (!CROPS[crop]) { const g = closest(crop, Object.keys(CROPS)); return print("There's no such thing as " + esc(crop) + " seeds." + (g ? " {dim:(did you mean {cmd:plant " + g + "}?)}" : "")); }
+  if (!CROPS[crop]) { const g = closest(crop, Object.keys(CROPS)); return print("There's no such thing as " + esc(crop) + " seeds." + (g ? " {dim:did you mean {cmd:plant " + g + "}?}" : "")); }
   if (!has("seed:" + crop)) return print("You're out of " + crop + " seeds." + (seeds.length ? " You have: " + seedList() : ""));
   const gh = inGh();
   if (CROPS[crop].gh && !gh) return print("Moonflowers won't grow out here. According to Wren they need the warmth of the greenhouse.");
@@ -2325,7 +2325,7 @@ function doWater() {
 
 function doHarvest() {
   const gh = inGh();
-  if (!inGarden() && !gh) return print("There's nothing to harvest in here. {dim:({cmd:cd garden})}");
+  if (!inGarden() && !gh) return print("There's nothing to harvest in here. {dim:{cmd:cd garden}}");
   const beds = gh ? S.gh : S.plots;
   const got = [];
   let closedBud = false;
@@ -2404,11 +2404,11 @@ function itemKey(word) {
 
 /* ---------- recipes ---------- */
 const RECIPES = {
-  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion, butter, a bay leaf.\n  soften the onion. carrots in. water to cover. 25 min. blend.\n  {dim:(in pen: J. likes it thin.)}", eat: "You have the soup at the kitchen table with a heel of bread, holding the bowl in both hands to warm them." },
-  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish, any. 1 carrot. mash on top. more butter than you think.\n  {dim:(in pen: Fenn's favourite. he'll say it isn't.)}", eat: "You burn the roof of your mouth on the first forkful of fish pie, then eat the rest of it anyway, slightly more carefully." },
-  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  {dim:(this one's just a card that says TOAST, JAM. it's in a child's writing.)}", eat: "You eat jam on toast standing over the sink so you don't have to wash a plate." },
-  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:(Ottoline's copy)}\n  1 pumpkin, roasted. eggs, sugar, spice tin. pastry.\n  45 min. don't keep opening the oven.", eat: "You have a slice of the pumpkin pie. There's probably too much cinnamon in it, but you don't mind." },
-  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:(Mrs Fenn's, 1979)}\n  1 jar of honey, butter, flour, eggs. low oven, a long time.", eat: "The honey cake is dark and heavy and sticks to your fingers. You end up licking them." },
+  carrot_soup:   { name: "carrot soup",   needs: { carrot: 2 }, warm: 25, card: "CARROT SOUP\n  2 carrots, 1 onion, butter, a bay leaf.\n  soften the onion. carrots in. water to cover. 25 min. blend.\n  {dim:in pen: J. likes it thin.}", eat: "You have the soup at the kitchen table with a heel of bread, holding the bowl in both hands to warm them." },
+  fish_pie:      { name: "fish pie",      needs: { "fish:*": 1, carrot: 1 }, warm: 30, card: "FISH PIE\n  1 fish, any. 1 carrot. mash on top. more butter than you think.\n  {dim:in pen: Fenn's favourite. he'll say it isn't.}", eat: "You burn the roof of your mouth on the first forkful of fish pie, then eat the rest of it anyway, slightly more carefully." },
+  jam_toast:     { name: "jam on toast",  needs: { jam: 1 }, warm: 10, card: "JAM ON TOAST\n  {dim:this one's just a card that says TOAST, JAM. it's in a child's writing.}", eat: "You eat jam on toast standing over the sink so you don't have to wash a plate." },
+  pumpkin_pie:   { name: "pumpkin pie",   needs: { pumpkin: 1 }, warm: 25, card: "PUMPKIN PIE  {dim:Ottoline's copy}\n  1 pumpkin, roasted. eggs, sugar, spice tin. pastry.\n  45 min. don't keep opening the oven.", eat: "You have a slice of the pumpkin pie. There's probably too much cinnamon in it, but you don't mind." },
+  honey_cake:    { name: "honey cake",    needs: { honey: 1 }, warm: 20, card: "HONEY CAKE  {dim:Mrs Fenn's, 1979}\n  1 jar of honey, butter, flour, eggs. low oven, a long time.", eat: "The honey cake is dark and heavy and sticks to your fingers. You end up licking them." },
   mint_biscuits: { name: "mint biscuits", needs: { mint: 2 }, warm: 15, card: "MINT BISCUITS\n  2 sprigs mint, butter, sugar, flour. roll, cut, 12 min.", eat: "You eat a mint biscuit. When you say the word out loud, the cat looks up." }
 };
 function recipeCard(id) { return "{hi:" + RECIPES[id].card.split("\n")[0] + "}\n" + RECIPES[id].card.split("\n").slice(1).join("\n"); }
@@ -2433,13 +2433,13 @@ function doCook(args) {
   const known = Object.keys(RECIPES).filter(r => S.recipes[r]);
   const want = args.join("_").toLowerCase().replace(/s$/, "");
   if (!want) {
-    if (!known.length) return print("You don't know any recipes yet. {dim:(the recipe cards are in {cmd:ls recipes}. read one with {cmd:cat}.)}");
+    if (!known.length) return print("You don't know any recipes yet. {dim:the recipe cards are in {cmd:ls recipes}. read one with {cmd:cat}.}");
     print("{hi:You know how to make:}");
     for (const r of known) print("  " + (canMake(r) ? "{ok:✓}" : "{dim:·}") + " {cmd:cook " + r.replace(/_/g, " ") + "}  {dim:· " + needsText(r) + "}");
     return;
   }
   const id = Object.keys(RECIPES).find(r => r === want || r === want + "s" || RECIPES[r].name.replace(/ /g, "_") === want || r.startsWith(want));
-  if (!id) return print("You don't know how to make that. {dim:(yet.)}");
+  if (!id) return print("You don't know how to make that. {dim:yet.}");
   if (!S.recipes[id]) return print("You'd need the recipe for that first. Wren's recipes are on cards in the kitchen. {cmd:ls recipes}");
   if (!canMake(id)) return print("You need " + needsText(id) + " for " + RECIPES[id].name + ".");
   for (const [k, n] of Object.entries(RECIPES[id].needs)) {
@@ -2463,9 +2463,9 @@ function doEat(args) {
   const k = itemKey(args.join(" "));
   if (!k) {
     const foods = Object.keys(S.inv).filter(x => RECIPES[x] || x === "honey" || x === "carrot" || x === "jam" || x === "sandwich" || x === "mint");
-    return print(foods.length ? "Eat what? You've got: " + foods.map(f => "{cmd:eat " + f.replace(/_/g, " ") + "}").join("  ") : "You've nothing to eat on you. {dim:(cook something: {cmd:cook})}");
+    return print(foods.length ? "Eat what? You've got: " + foods.map(f => "{cmd:eat " + f.replace(/_/g, " ") + "}").join("  ") : "You've nothing to eat on you. {dim:cook something: {cmd:cook}}");
   }
-  if (k.startsWith("fish:")) return print("Raw? No. {dim:(cook it into a fish pie, or give it to Biscuit.)}");
+  if (k.startsWith("fish:")) return print("Raw? No. {dim:cook it into a fish pie, or give it to Biscuit.}");
   if (k.startsWith("junk:") || k.startsWith("disk:") || k.startsWith("seed:") || ["lamp", "matches", "oilcan", "rod", "umbrella", "wick", "candle", "starchart", "bracelet", "key", "moonflower", "lavender", "pumpkin", "chamomile"].includes(k)) return print(pick(["You consider it. You decide against it.", "That's not food. You know that's not food.", "Biscuit watches to see if you'll really do it. You don't."]));
   take(k);
   const r = RECIPES[k];
@@ -2488,16 +2488,16 @@ const TEAS = {
   honey: { need: "honey", line: "You make tea and put a spoonful of Fenn's honey in it, then another one.", warm: 18 }
 };
 async function doBrew(args) {
-  if (roomName() !== "kitchen") return print("The kettle's in the kitchen. {cmd:cd ~/kitchen} {dim:(or {cmd:cd /cottage/kitchen}, if you like typing.)}");
+  if (roomName() !== "kitchen") return print("The kettle's in the kitchen. {cmd:cd ~/kitchen} {dim:or {cmd:cd /cottage/kitchen}, if you like typing.}");
   let kind = (args[0] || "black").toLowerCase();
   if (kind === "tea") kind = args[1] || "black";
   if (["builders", "english", "normal", "regular", "plain", "breakfast"].includes(kind)) kind = "black";
   if (!TEAS[kind]) return print("You haven't got " + esc(kind) + " tea. You can brew: " + Object.keys(TEAS).map(t => "{cmd:brew " + t + "}").join("  "));
   const t = TEAS[kind];
-  if (t.need && !has(t.need)) return print("You'd need some " + t.need + " for that." + (kind === "honey" ? " {dim:(Fenn has bees. Fenn has opinions about lavender.)}" : " {dim:(grow some in the garden.)}"));
+  if (t.need && !has(t.need)) return print("You'd need some " + t.need + " for that." + (kind === "honey" ? " {dim:Fenn has bees. Fenn has opinions about lavender.}" : " {dim:grow some in the garden.}"));
   if (S.stats.teas > 0 && !S.flags.thumped && chance(0.25)) {
     S.flags.kettleSulk = true;
-    return print("You put the kettle on. Nothing happens.\n{dim:(Wren's note said something about the left side. {cmd:thump kettle})}");
+    return print("You put the kettle on. Nothing happens.\n{dim:Wren's note said something about the left side. {cmd:thump kettle}}");
   }
   S.flags.thumped = false; S.flags.kettleSulk = false;
   if (t.need) take(t.need);
@@ -2510,15 +2510,15 @@ async function doBrew(args) {
   S.teaAt = now(); S.teaKind = kind; S.stats.teas++;
   spend(6);
   warm(t.warm, "warmer");
-  if (kind === "chamomile" && S.min > 20 * 60) print("{dim:(you're very sleepy.)}");
+  if (kind === "chamomile" && S.min > 20 * 60) print("{dim:you're very sleepy.}");
   keepsake("first_tea");
   remember(pick(["had a cup of " + kind + " tea.", "made " + kind + " tea. drank it at the window."]));
 }
 function doThump(args) {
-  if (roomName() !== "kitchen") return print("Thump what? {dim:(there's nothing in here that deserves it.)}");
+  if (roomName() !== "kitchen") return print("Thump what? {dim:there's nothing in here that deserves it.}");
   const side = (args[1] || args[0] || "").toLowerCase();
-  if (side.includes("right")) { print("You thump it on the right. Nothing. Then, grudgingly, a gurgle.\n{dim:({cmd:brew})}"); S.flags.thumped = true; return; }
-  print("{hi:Thunk.} The kettle gurgles and comes on. {dim:({cmd:brew})}");
+  if (side.includes("right")) { print("You thump it on the right. Nothing. Then, grudgingly, a gurgle.\n{dim:{cmd:brew}}"); S.flags.thumped = true; return; }
+  print("{hi:Thunk.} The kettle gurgles and comes on. {dim:{cmd:brew}}");
   S.flags.thumped = true; sfx("chop");
 }
 
@@ -2531,7 +2531,7 @@ function doFeed(args) {
   const rest = args.slice(who === "the" ? 2 : 1);
   const fishKey = itemKey(rest.join(" ")) || (rest.length ? null : null);
   const giveFish = fishKey && fishKey.startsWith("fish:");
-  if (roomName() !== "kitchen" && !catHere()) return print("Biscuit's in the " + S.cat.room + ". {dim:(or rattle her tin in the kitchen and she'll come.)}");
+  if (roomName() !== "kitchen" && !catHere()) return print("Biscuit's in the " + S.cat.room + ". {dim:or rattle her tin in the kitchen and she'll come.}");
   if (!catHere()) { S.cat.room = roomName(); print("You rattle the tin. Somewhere in the house there's a thump, and then Biscuit is in the doorway."); }
   if (giveFish) {
     take(fishKey);
@@ -2559,7 +2559,7 @@ function doFeed(args) {
 function feedFox(rest) {
   if (roomName() !== "garden" || !(isNight() || isEvening())) return print("The fox isn't around. She comes to the garden in the evenings.");
   const k = itemKey(rest.join(" ")) || Object.keys(S.inv).find(x => x.startsWith("fish:") || x === "jam_toast" || x === "carrot");
-  if (!k) return print("You've nothing a fox would want. {dim:(foxes like fish. and toast, apparently.)}");
+  if (!k) return print("You've nothing a fox would want. {dim:foxes like fish. and toast, apparently.}");
   take(k);
   befriendFox();
   print("You put " + itemName(k) + " down at the edge of the grass and step back. The fox" + (S.fox ? ", " + S.fox + "," : "") + " waits a polite amount of time, then trots over and takes it, and looks at you for one long second before going.");
@@ -2571,7 +2571,7 @@ function doPet(args) {
   const who = (args[0] || "biscuit").toLowerCase();
   if (who === "fox" || who === (S.fox || "").toLowerCase()) return print(S.flags.foxFed >= 3 ? "The fox lets you get within a few feet. Then she goes." : "The fox steps back exactly as far as you step forward. Not yet.");
   if (!["biscuit", "cat", "the"].includes(who)) return print("You pet the " + esc(who) + ". It doesn't do much for either of you.");
-  if (!catHere()) return print("Biscuit isn't here. She's in the " + S.cat.room + ". {dim:({cmd:where biscuit})}");
+  if (!catHere()) return print("Biscuit isn't here. She's in the " + S.cat.room + ". {dim:{cmd:where biscuit}}");
   const belly = args.join(" ").includes("belly") || args.join(" ").includes("tummy");
   S.stats.pets++; S.cat.petsToday++;
   spend(2);
@@ -2585,15 +2585,15 @@ function doPet(args) {
     : m > 50 ? pick(["You scratch behind her ears. A small purr, like an engine that hasn't been started in a while.", "She allows it. A quiet purr.", "Head to tail. She arches into it."])
       : pick(["One stroke, then she gets up and sits somewhere else.", "She looks at your hand. You take it back.", "She lets you, once."]));
   if (S.stats.pets === 10) keepsake("pet10");
-  if (m > 75 && !S.flags.gotKey && S.stats.pets >= 8 && S.day >= 3 && !S.flags.keyHinted) { S.flags.keyHinted = true; print("{dim:(she turns her head so the brass key on her collar is facing you. {cmd:take key})}"); }
+  if (m > 75 && !S.flags.gotKey && S.stats.pets >= 8 && S.day >= 3 && !S.flags.keyHinted) { S.flags.keyHinted = true; print("{dim:she turns her head so the brass key on her collar is facing you. {cmd:take key}}"); }
   if (S.cat.petsToday === 1) remember("petted Biscuit. she purred. (she purred!)");
 }
 
 /* ---------- fire & warmth ---------- */
 function doStoke() {
   if (roomName() !== "parlour") return print("The wood stove's in the parlour. {cmd:cd ~/parlour}");
-  if (!S.wood) return print("The wood basket's empty. {dim:(there's a woodpile in the garden. {cmd:chop})}");
-  if (!fireLit() && !has("matches")) return print("You've got wood but nothing to light it with. {dim:(matches are in the kitchen drawer.)}");
+  if (!S.wood) return print("The wood basket's empty. {dim:there's a woodpile in the garden. {cmd:chop}}");
+  if (!fireLit() && !has("matches")) return print("You've got wood but nothing to light it with. {dim:matches are in the kitchen drawer.}");
   S.wood--;
   const was = fireLit();
   S.fireUntil = Math.max(S.fireUntil, now()) + 180;
@@ -2601,7 +2601,7 @@ function doStoke() {
   spend(5); sfx("crackle"); sfx("crackle");
   print(was ? "Another log on." : "Kindling, a match, a long wait, a lot of smoke. Then it catches.");
   warm(10, "much warmer");
-  if (S.cat.room !== "parlour" && chance(0.6)) { S.cat.room = "parlour"; print("{dim:(a minute later Biscuit comes in and lies down in front of it.)}"); }
+  if (S.cat.room !== "parlour" && chance(0.6)) { S.cat.room = "parlour"; print("{dim:a minute later Biscuit comes in and lies down in front of it.}"); }
   remember(was ? "kept the fire going." : "lit the stove.");
 }
 function doChop() {
@@ -2610,14 +2610,14 @@ function doChop() {
   spend(20); sfx("chop"); setTimeout(() => sfx("chop"), 350);
   S.wood = Math.min(8, S.wood + 2);
   warm(4);
-  print(pick(["Two logs. The crack of the axe comes back off the lake a second later.", "Two logs. You miss once.", "Two logs. A robin watches."]) + " {dim:(" + plural(S.wood, "log") + " in the basket.)}");
+  print(pick(["Two logs. The crack of the axe comes back off the lake a second later.", "Two logs. You miss once.", "Two logs. A robin watches."]) + " {dim:" + plural(S.wood, "log") + " in the basket.}");
 }
 function doLight(args) {
   const what = (args[0] || "").toLowerCase();
   if (what === "lamp" || what === "oil_lamp") {
-    if (!has("lamp")) return print("You haven't got the lamp. {dim:(it's in the cellar.)}");
+    if (!has("lamp")) return print("You haven't got the lamp. {dim:it's in the cellar.}");
     if (S.flags.lampLit) return print("The lamp's already lit, glowing in your hand.");
-    if (!has("matches")) return print("You need matches. {dim:(kitchen drawer.)}");
+    if (!has("matches")) return print("You need matches. {dim:kitchen drawer.}");
     S.flags.lampLit = true; S.flags.atticLit = true;
     sfx("crackle");
     print("You lift the glass chimney, strike a match, and touch it to the wick. A small flame, then a steady warm light. {ok:The attic won't be dark any more.}");
@@ -2625,7 +2625,7 @@ function doLight(args) {
     return;
   }
   if (what === "candle") {
-    if (!has("candle")) return print("You haven't got a candle. {dim:(somebody up the hill makes them.)}");
+    if (!has("candle")) return print("You haven't got a candle. {dim:somebody up the hill makes them.}");
     if (!has("matches")) return print("You need matches.");
     take("candle");
     warm(18, "much warmer");
@@ -2634,8 +2634,8 @@ function doLight(args) {
     return;
   }
   if (what === "fire" || what === "stove") return doStoke();
-  if (what === "lantern") return print("That's for Lantern Night. {dim:(on the dock: {cmd:lantern})}");
-  print("Light what? {dim:(the {cmd:light lamp}, a {cmd:light candle}, the {cmd:stoke} stove...)}");
+  if (what === "lantern") return print("That's for Lantern Night. {dim:on the dock: {cmd:lantern}}");
+  print("Light what? {dim:the {cmd:light lamp}, a {cmd:light candle}, the {cmd:stoke} stove...}");
 }
 
 function jamLeft() { return Math.max(0, 4 - (S.flags.jamTaken || 0)); }
@@ -2701,12 +2701,12 @@ function waterLine(phase, bob) {
 }
 
 async function doFish() {
-  if (roomName() !== "dock") return print("You'll want to be on the dock for that. {cmd:cd ~/dock} {dim:(fish don't live in " + roomName() + "s.)}");
-  if (!has("rod")) return print("You haven't got a rod. {dim:(Wren's is in the garden shed: {cmd:cd ~/garden/shed})}");
+  if (roomName() !== "dock") return print("You'll want to be on the dock for that. {cmd:cd ~/dock} {dim:fish don't live in " + roomName() + "s.}");
+  if (!has("rod")) return print("You haven't got a rod. {dim:Wren's is in the garden shed: {cmd:cd ~/garden/shed}}");
   if (T.cap) return print("you can't fish inside a pipe. you tried, though, and that's what matters.");
   if (weatherNow().rain >= 1 && !has("umbrella")) warm(-3, "cold. wet. you should've brought the duck umbrella.");
   print(pick(["You cast. {acc:plip.}", "The float lands a little short. Fine.", "A good cast, for once."]));
-  if (!S.flags.fishTaught) { S.flags.fishTaught = true; print("{dim:(watch the float. when it goes under, press enter, or tap the screen. not before.)}"); }
+  if (!S.flags.fishTaught) { S.flags.fishTaught = true; print("{dim:watch the float. when it goes under, press enter, or tap the screen. not before.}"); }
   sfx("plip");
   const d = printRaw(fmt(waterLine(0, false)));
   let early = false;
@@ -2726,7 +2726,7 @@ async function doFish() {
   if (T.skip) { print("{dim:you reel in. another time.}"); spend(5); return; }
   if (early) {
     spend(5);
-    return print(pick(["Nothing's biting yet. You pull the float out.", "Too soon. The float hadn't moved.", "You strike at nothing. The ripples settle."]) + " {dim:(wait until it goes under.)} {cmd:fish}");
+    return print(pick(["Nothing's biting yet. You pull the float out.", "Too soon. The float hadn't moved.", "You strike at nothing. The ripples settle."]) + " {dim:wait until it goes under.} {cmd:fish}");
   }
   const f = rollFish();
   d.innerHTML = fmt(waterLine(phase, true));
@@ -2747,7 +2747,7 @@ async function doFish() {
   if (f.id === "marmalade") return catchMarmalade();
   if (f.id === "junk:bottle") return catchBottle();
   const size = randi(f.size[0], f.size[1]);
-  print(f.line + (f.size[1] ? " {dim:(" + size + "cm)}" : ""));
+  print(f.line + (f.size[1] ? " {dim:" + size + "cm}" : ""));
   const L = S.fishlog[f.id] || { n: 0, best: 0 };
   const best = size > L.best && L.n > 0;
   L.n++; L.best = Math.max(L.best, size); S.fishlog[f.id] = L;
@@ -2912,7 +2912,7 @@ async function doSky(args) {
     print("You pull the oilskin off the telescope. The motor makes a whirring noise as it warms up.");
     print("{dim:Where to point it?}  " + DIRS.map(d => "{cmd:sky " + d + "}").join("  "));
     const found = Object.keys(S.stars).filter(k => CONSTELLATIONS[k]).length;
-    print("{dim:(" + found + "/6 of Wren and Juniper's constellations found. notes: {cmd:cat star_notes.txt})}");
+    print("{dim:" + found + "/6 of Wren and Juniper's constellations found. notes: {cmd:cat star_notes.txt}}");
     return;
   }
   if (!DIRS.includes(dir)) return print("The telescope can point " + DIRS.join(", ") + ". Not " + esc(dir) + ".");
@@ -2961,7 +2961,7 @@ async function doSky(args) {
 }
 
 function starNotes() {
-  let out = "{hi:STAR NOTES}  {dim:(Juniper's handwriting, very small and very neat)}\n\n";
+  let out = "{hi:STAR NOTES}  {dim:Juniper's handwriting, very small and very neat}\n\n";
   for (const [k, c] of Object.entries(CONSTELLATIONS)) out += (S.stars[k] ? "{ok:✓} {hi:" + c.name + "}" : "{dim:·} " + c.name) + "  {dim:— look " + c.dir + "}\n";
   out += "\n{dim:clear nights only. after 8pm. dress warmly, you won't, but do.}";
   if (S.day >= 10) out += "\n{acc:p.s. comet. west. this week only. J.}";
@@ -3075,7 +3075,7 @@ async function pipeline(seg, depth = 0) {
     if (why) { print("{warn:can't write there —} " + why); return false; }
     const text = (stdin || []).join("\n");
     S.files[path] = redirect.mode === ">>" && S.files[path] ? S.files[path] + "\n" + text : text;
-    print("{dim:(wrote " + plural((stdin || []).length, "line") + " to " + esc(shortPath(path)) + ")}");
+    print("{dim:wrote " + plural((stdin || []).length, "line") + " to " + esc(shortPath(path)) + "}");
     keepsake("writer");
   }
   return ok !== false;
@@ -3141,15 +3141,15 @@ function notFound(name, w) {
   const l = w.join(" ").toLowerCase();
   if (/^(go|walk|enter|head)\b/.test(l)) return runOne("cd " + w.slice(1).filter(x => !["to", "the", "into", "in"].includes(x.toLowerCase())).join(" "));
   if (/^(make|have|drink)\s+(a\s+)?(cup|tea|pot)/.test(l) || l === "tea") return runOne("brew " + (w.find(x => TEAS[x.toLowerCase()]) || ""));
-  if (/^(hi|hello|hey|hiya)\b/.test(l)) { print(pick(["hello.", "hello. {dim:(from somewhere in the house: mrrp.)}"])); return true; }
-  if (/^(thank|thanks|ty)\b/.test(l)) { print("{dim:(you say thank you to a computer. nobody saw.)}"); return true; }
-  if (/^(ok|okay|yes|no|y|n)$/.test(l)) { print("{dim:(the cursor blinks.)}"); return true; }
-  if (/biscuit|cat/.test(l) && w.length > 1) { print("Biscuit doesn't look round. {dim:({cmd:pet biscuit}, {cmd:feed biscuit})}"); return true; }
+  if (/^(hi|hello|hey|hiya)\b/.test(l)) { print(pick(["hello.", "hello. {dim:from somewhere in the house: mrrp.}"])); return true; }
+  if (/^(thank|thanks|ty)\b/.test(l)) { print("{dim:you say thank you to a computer. nobody saw.}"); return true; }
+  if (/^(ok|okay|yes|no|y|n)$/.test(l)) { print("{dim:the cursor blinks.}"); return true; }
+  if (/biscuit|cat/.test(l) && w.length > 1) { print("Biscuit doesn't look round. {dim:{cmd:pet biscuit}, {cmd:feed biscuit}}"); return true; }
   const all = Object.keys(CMDS).filter(n => cmdAvailable(n) && !CMDS[n].secret).concat(Object.keys(ALIAS_OF).filter(a => cmdAvailable(ALIAS_OF[a]) && !CMDS[ALIAS_OF[a]].secret && a.length > 1));
   const g = closest(name.toLowerCase(), all, name.length > 4 ? 2 : 1);
   sfx("bonk");
-  if (/^[a-z;'\]\[,.]{12,}$/.test(name) && /(.)\1{4,}/.test(name)) { print("hearth: command not found: " + esc(name) + "\n{dim:(that was Biscuit, on the keyboard.)}"); return false; }
-  print("hearth: command not found: {warn:" + esc(name) + "}" + (g ? "   {dim:did you mean} {cmd:" + g + "}{dim:?}" : "   {dim:(try {cmd:help}, or {cmd:hint} if you're stuck)}"));
+  if (/^[a-z;'\]\[,.]{12,}$/.test(name) && /(.)\1{4,}/.test(name)) { print("hearth: command not found: " + esc(name) + "\n{dim:that was Biscuit, on the keyboard.}"); return false; }
+  print("hearth: command not found: {warn:" + esc(name) + "}" + (g ? "   {dim:did you mean} {cmd:" + g + "}{dim:?}" : "   {dim:try {cmd:help}, or {cmd:hint} if you're stuck}"));
   return false;
 }
 
@@ -3175,8 +3175,8 @@ function doCd(args) {
     const room = ROOM_NAMES.includes(n) ? n : syn[n] != null ? syn[n] : closest(n, ROOM_NAMES, 2);
     if (room != null && (room === "" || ROOM_NAMES.includes(room))) { path = HOME + (room ? "/" + room : ""); node = nodeAt(path); }
   }
-  if (!node) { sfx("bonk"); print("cd: no such place: {warn:" + esc(target) + "}  {dim:(try {cmd:ls} to see what's here, or {cmd:map})}"); return false; }
-  if (node.kind !== "dir") { print("cd: " + esc(target) + " isn't a place, it's a thing. {dim:(read it: {cmd:cat " + esc(target) + "})}"); return false; }
+  if (!node) { sfx("bonk"); print("cd: no such place: {warn:" + esc(target) + "}  {dim:try {cmd:ls} to see what's here, or {cmd:map}}"); return false; }
+  if (node.kind !== "dir") { print("cd: " + esc(target) + " isn't a place, it's a thing. {dim:read it: {cmd:cat " + esc(target) + "}}"); return false; }
   const lock = node.lock && node.lock();
   if (lock) {
     if (path.endsWith("/trunk") && has("key")) { S.flags.trunkOpen = true; print("You fit the little brass key into the padlock. It turns with a satisfying {acc:click}."); }
@@ -3191,15 +3191,15 @@ function doCd(args) {
   if (toRoom !== fromRoom) {
     spend(1);
     sfx("door");
-    if (["garden", "dock", "roof"].includes(toRoom) && weatherNow().rain >= 1 && !has("umbrella")) print("{dim:(it's pouring. there's an umbrella in the hall.)}"), warm(-2);
+    if (["garden", "dock", "roof"].includes(toRoom) && weatherNow().rain >= 1 && !has("umbrella")) print("{dim:it's pouring. there's an umbrella in the hall.}"), warm(-2);
     if (toRoom === "attic" && !S.flags.atticSeen && S.flags.atticLit) { S.flags.atticSeen = true; keepsake("attic"); }
     if (toRoom === "greenhouse" && !S.flags.ghSeen) { S.flags.ghSeen = true; keepsake("greenhouse"); }
     print("{dim:" + esc(shortPath(path)) + "}");
     const d = val(node.desc);
     if (d && (!S.flags["seen" + toRoom] || isDark(path))) {
       print(d);
-      if (!node.room && !isDark(path) && Object.keys(children(path)).length) doLs([]);
-      if (node.room && !isDark(path)) print("{dim:doors:} " + doorsOf(toRoom).map(x => '<span class="cmd" data-c="cd ' + x + '">' + x + "</span>").join("{dim: · }"));
+      if (!node.room && path !== HOME && !isDark(path) && Object.keys(children(path)).length) doLs([]);
+      if ((node.room || path === HOME) && !isDark(path)) print("{dim:doors:} " + doorsOf(toRoom).map(x => '<span class="cmd" data-c="cd ' + x + '">' + x + "</span>").join("{dim: · }"));
       S.flags["seen" + toRoom] = true;
     }
     if (catFollows && roomName() !== fromRoom && !["roof", "dock"].includes(toRoom) || catFollows && toRoom === "dock" && !weatherNow().rain) {
@@ -3208,7 +3208,7 @@ function doCd(args) {
       if (!S.flags.catFollowed) { S.flags.catFollowed = true; remember("Biscuit followed me from room to room today."); }
     } else if (catHere()) print("{dim:" + catLine() + "}");
     if (toRoom === "garden" && (isNight() || isEvening()) && chance(0.6)) print("{dim:There's a fox sitting at the edge of the long grass, watching you. {cmd:cat fox}}");
-    if (isDark(path)) print("{dim:(you'll want some light. {cmd:cd ..} back down.)}");
+    if (isDark(path)) print("{dim:you'll want some light. {cmd:cd ..} back down.}");
   } else if (!S.flags["seen:" + path]) {
     // a shed, a drawer, a trunk: say what it is and what's in it, once
     S.flags["seen:" + path] = true;
@@ -3241,11 +3241,11 @@ function doLs(args) {
   if (node.kind === "file") { print(lsLine(path.split("/").pop(), node, long, path.slice(0, path.lastIndexOf("/")))); return true; }
   const lock = node.lock && node.lock();
   if (lock) { print(lock); return false; }
-  if (isDark(path)) { print("It's too dark to see anything in here. {dim:(something rustles. probably fine.)}"); return true; }
+  if (isDark(path)) { print("It's too dark to see anything in here. {dim:something rustles. probably fine.}"); return true; }
   const kids = children(path, all);
   let names = Object.keys(kids).sort((a, b) => (kids[a].kind === kids[b].kind ? a.localeCompare(b) : kids[a].kind === "dir" ? -1 : 1));
   if (all) names = [".", ".."].concat(names), kids["."] = node, kids[".."] = nodeAt(resolve(path + "/..")) || node;
-  if (!names.length) { print("{dim:(empty)}"); return true; }
+  if (!names.length) { print("{dim:empty}"); return true; }
   if (long || T.cap) { for (const n of names) print(long ? lsLine(n, kids[n], true, path) : n); return true; }
   // columns-ish: just space them out
   const cells = names.map(n => (n === "." || n === ".." ? "{dim:" + n + "}" : lsLine(n, kids[n], false, path)));
@@ -3257,14 +3257,14 @@ function doLs(args) {
     line += cells[i] + "    "; len += w;
   }
   if (line) print(line);
-  if (path === HOME && !S.flags.lsHinted) { S.flags.lsHinted = true; print("{dim:(blue things are places you can {cmd:cd} into. orange things you can {cmd:take}. you can tap any of them.)}"); }
+  if (path === HOME && !S.flags.lsHinted) { S.flags.lsHinted = true; print("{dim:blue things are places you can {cmd:cd} into. orange things you can {cmd:take}. you can tap any of them.}"); }
   return true;
 }
 
 function doCat(args, ctx) {
   if (!args.length) {
     if (ctx.stdin) { for (const l of ctx.stdin) print(esc(l)); return true; }
-    print("cat what? {dim:(try {cmd:cat welcome.txt}. or, if you meant the cat: {cmd:pet biscuit})}"); return false;
+    print("cat what? {dim:try {cmd:cat welcome.txt}. or, if you meant the cat: {cmd:pet biscuit}}"); return false;
   }
   for (const a of args) {
     if (["biscuit", "the_cat", "cat"].includes(a.toLowerCase()) && !findHere(a)) { print(catHere() ? catLine() : "Biscuit isn't here. She's in the " + S.cat.room + "."); continue; }
@@ -3274,8 +3274,8 @@ function doCat(args, ctx) {
     if (!node) { const f = findHere(a); if (f) { node = f.node; p = f.path; } }
     if (!node) {
       const where = whereIs(a);
-      if (where) print("There's no " + esc(a.replace(/_/g, " ")) + " here. {dim:(there's one in the " + where.room + ": {cmd:cd " + where.room + "})}");
-      else print("cat: {warn:" + esc(a) + "}: no such file. {dim:(" + "{cmd:ls}" + " shows what's here.)}");
+      if (where) print("There's no " + esc(a.replace(/_/g, " ")) + " here. {dim:there's one in the " + where.room + ": {cmd:cd " + where.room + "}}");
+      else print("cat: {warn:" + esc(a) + "}: no such file. {dim:" + "{cmd:ls}" + " shows what's here.}");
       return false;
     }
     if (node.kind === "dir") {
@@ -3286,9 +3286,9 @@ function doCat(args, ctx) {
     }
     const text = readFile(p);
     sfx("page");
-    print(text === "" ? "{dim:(empty. as expected. very calming.)}" : text);
+    print(text === "" ? "{dim:empty. as expected. very calming.}" : text);
     if (node.item && !T.cap) {
-      print("{dim:(you could {cmd:take " + esc(p.split("/").pop()) + "}.)}");
+      print("{dim:you could {cmd:take " + esc(p.split("/").pop()) + "}.}");
     }
   }
   spend(1);
@@ -3309,7 +3309,7 @@ function whereIs(name) {
 
 function doTake(args) {
   const what = args.join(" ").replace(/^(the|a|an)\s+/, "").trim();
-  if (!what) return print("Take what? {dim:(orange things in {cmd:ls} can be taken.)}");
+  if (!what) return print("Take what? {dim:orange things in {cmd:ls} can be taken.}");
   if (what.startsWith("key")) return takeKey();
   if (isDark(S.cwd)) return print("You fumble about in the dark and find a cobweb. You don't take it.");
   let f = findHere(what.replace(/ /g, "_")) || findHere(what) || findHere(what.split(" ")[0]);
@@ -3320,27 +3320,27 @@ function doTake(args) {
       const dp = (S.cwd === "/" ? "" : S.cwd) + "/" + dn;
       if (dnode.kind !== "dir" || (dnode.lock && dnode.lock()) || isDark(dp)) continue;
       const g = findHere(what.replace(/ /g, "_"), dp) || findHere(what, dp);
-      if (g && g.node.item) { f = g; print("{dim:(from the " + dn.replace(/^\./, "") + ")}"); break; }
+      if (g && g.node.item) { f = g; print("{dim:You find it in the " + dn.replace(/^\./, "").replace(/_/g, " ") + ".}"); break; }
     }
   }
   if (!f) {
     if (what === "biscuit" || what === "cat") return print(catHere() ? "You try to pick Biscuit up. She goes heavy and slides out of your arms." : "Biscuit isn't here.");
-    return print("You can't see " + esc(what) + " here. {dim:(" + "{cmd:ls -a}" + "?)}");
+    return print("You can't see " + esc(what) + " here. {dim:" + "{cmd:ls -a}" + "?}");
   }
   const n = f.node;
-  if (n.kind === "dir") return print("You can't carry the " + f.name + ". {dim:(look inside: {cmd:cd " + f.name + "})}");
+  if (n.kind === "dir") return print("You can't carry the " + f.name + ". {dim:look inside: {cmd:cd " + f.name + "}}");
   if (!n.item) {
     return print(pick(["You'd rather leave that where Wren put it.", "That stays here.", "It's not the kind of thing you take."]));
   }
   if (n.item === "jam") {
     if (!jamLeft()) return print("The rest are labelled 'winter'. You leave them.");
     S.flags.jamTaken = (S.flags.jamTaken || 0) + 1; give("jam");
-    return print("You take a jar of " + pick(["blackberry", "damson", "plum", "MYSTERY 2019"]) + " jam. {dim:(" + jamLeft() + " left that you're allowed.)}");
+    return print("You take a jar of " + pick(["blackberry", "damson", "plum", "MYSTERY 2019"]) + " jam. {dim:" + jamLeft() + " left that you're allowed.}");
   }
   give(n.item, n.count || 1);
   S.taken[f.path] = true;
   spend(1);
-  print("You take " + "{acc:" + itemName(n.item, n.count || 1) + "}." + (n.item.startsWith("disk:") ? " {dim:(disks go in HEARTH's drive in the study: {cmd:insert " + n.item.slice(5) + ".dsk})}" : n.item === "lamp" ? " {dim:(now {cmd:light lamp}.)}" : n.item === "rod" ? " {dim:(down to the {cmd:cd ~/dock}, then {cmd:fish}.)}" : n.item === "oilcan" ? " {dim:(the greenhouse door is right next to the garden: {cmd:oil greenhouse})}" : ""));
+  print("You take " + "{acc:" + itemName(n.item, n.count || 1) + "}." + (n.item.startsWith("disk:") ? " {dim:Disks go in HEARTH's drive in the study. {cmd:insert " + n.item.slice(5) + ".dsk}}" : n.item === "lamp" ? " {dim:You'll need to {cmd:light lamp} before it's any use.}" : n.item === "rod" ? " {dim:The fish are down at the {cmd:cd dock}.}" : n.item === "oilcan" ? " {dim:The greenhouse door is just off the garden. {cmd:oil greenhouse}}" : ""));
   if (n.item === "seed:lavender") remember("found Wren's hidden seed tin. she really does hide things.");
   return true;
 }
@@ -3349,12 +3349,12 @@ function takeKey() {
   if (!catHere()) return print("The key's on Biscuit's collar, and Biscuit's in the " + S.cat.room + ".");
   if (S.cat.mood < 75 || S.stats.pets < 8 || S.day < 3) {
     S.flags.keyTried = true;
-    return print(pick(["You reach for her collar. She bites your hand, not hard. Not yet.", "She leans away from your hand.", "She moves off before you can get to the collar."]) + "\n{dim:(give her a few days. {cmd:pet biscuit}, {cmd:feed biscuit}, a fish.)}");
+    return print(pick(["You reach for her collar. She bites your hand, not hard. Not yet.", "She leans away from your hand.", "She moves off before you can get to the collar."]) + "\n{dim:give her a few days. {cmd:pet biscuit}, {cmd:feed biscuit}, a fish.}");
   }
   S.flags.gotKey = true; give("key");
   sfx("chime");
   print("You reach for her collar, slowly. She lifts her chin and lets you unclip the brass key. Then she bumps her head against your hand, once, and walks off.");
-  print("{dim:(it's the key to Wren's trunk, in the attic.)}");
+  print("{dim:it's the key to Wren's trunk, in the attic.}");
   remember("Biscuit let me have the key.");
 }
 
@@ -3370,7 +3370,7 @@ function doLook(args) {
   print("{hi:" + (roomName() === "hall" ? "The Hall" : cap(roomName())) + "}  {dim:" + esc(shortPath(S.cwd)) + " · " + clock(S.min) + "}");
   print(val(node.desc) || "");
   if (catHere()) print("{dim:" + catLine() + "}");
-  if (isDark(S.cwd)) return print("{dim:(it's too dark to see. find a light, then come back.)}");
+  if (isDark(S.cwd)) return print("{dim:it's too dark to see. find a light, then come back.}");
   const kids = children(S.cwd);
   const things = Object.entries(kids).filter(([, n]) => n.kind === "file");
   const places = Object.entries(kids).filter(([, n]) => n.kind === "dir");
@@ -3406,7 +3406,7 @@ function doMap() {
     " {dim:|} " + r("greenhouse", 10) + " {dim:|--|} " + r("garden", 7) + " {dim:|--|} " + r("dock", 7) + " {dim:|}{sky:~~~~~}",
     " {dim:'------------'  '---------'  '---------'}{sky:~ lake ~}",
     "",
-    "  {acc:you're " + (["dock", "roof"].includes(here) ? "on the " : "in the ") + here + ".}  {ok:Biscuit is in the " + S.cat.room + ".}  {dim:(tap a room to go there)}"
+    "  {acc:you're " + (["dock", "roof"].includes(here) ? "on the " : "in the ") + here + ".}  {ok:Biscuit is in the " + S.cat.room + ".}  {dim:tap a room to go there}"
   ];
   for (const l of m) print(l);
 }
@@ -3426,7 +3426,7 @@ cmd("pockets inv inventory i bag", "what you're carrying", () => { for (const l 
 cmd("where whereis", "where is... (where biscuit)", (a) => {
   const w = (a[0] || "").toLowerCase();
   if (!w || w === "am" || w === "i") return print("You're in the " + roomName() + " ({dim:" + esc(S.cwd) + "}).");
-  if (["biscuit", "cat"].includes(w)) return print("HEARTH checks the collar tracker... Biscuit is in the {acc:" + S.cat.room + "}." + (S.cat.room === roomName() ? " {dim:(right here, in fact. she's pretending you're not.)}" : " {cmd:cd " + S.cat.room + "}"));
+  if (["biscuit", "cat"].includes(w)) return print("HEARTH checks the collar tracker... Biscuit is in the {acc:" + S.cat.room + "}." + (S.cat.room === roomName() ? " {dim:right here, in fact. she's pretending you're not.}" : " {cmd:cd " + S.cat.room + "}"));
   if (w === "wren" && S.flags.lanternLit) return print("She's home. Probably in the kitchen, thumping the kettle. Or on the dock, telling Fenn he's wrong about something.");
   if (w === "wren") return print("Last postcard: " + (S.day >= 8 ? "the Faroe Islands." : S.day >= 5 ? "Shetland." : S.day >= 2 ? "a sleeper train going north." : "somewhere between here and the Faroes."));
   if (w === "fox") return print(isNight() || isEvening() ? "Probably in the garden, at the edge of the long grass." : "Asleep somewhere. Foxes keep evening hours.");
@@ -3443,7 +3443,7 @@ cmd("water", "water the garden", doWater, { group: "garden" });
 cmd("harvest pick", "harvest what's ready", doHarvest, { group: "garden" });
 cmd("garden beds", "see how the garden's growing", () => {
   if (inGh()) return gardenView(true).forEach(l => print(l));
-  if (!inGarden()) { print("{dim:(from the window:)}"); }
+  if (!inGarden()) { print("{dim:from the window:}"); }
   gardenView(false).forEach(l => print(l));
   if (S.flags.ghOpen) { print("{dim:greenhouse:}"); gardenView(true).forEach(l => print(l)); }
 }, { group: "garden" });
@@ -3469,7 +3469,7 @@ cmd("oil", "oil something squeaky", doOil, { group: "living" });
 cmd("unlock", "unlock something", (a) => {
   if ((a[0] || "").includes("trunk")) { if (roomName() !== "attic") return print("The trunk's in the attic."); return doCd(["trunk"]); }
   if ((a[0] || "").includes("greenhouse")) return doOil(["greenhouse"]);
-  print("Unlock what? {dim:(most doors here aren't locked. they're just stuck, or sulking.)}");
+  print("Unlock what? {dim:most doors here aren't locked. they're just stuck, or sulking.}");
 }, { group: "living" });
 cmd("insert disk mount", "put a disk in HEARTH (in the study)", doInsert, { group: "living" });
 cmd("radio tune", "the radio (radio 101.3, radio off)", doRadio, { group: "living", when: () => true });
@@ -3485,7 +3485,7 @@ cmd("fishlog fishing", "every fish you've caught", doFishlog, { group: "people" 
 cmd("name", "name something (name fox Clementine)", (a) => {
   if ((a[0] || "").toLowerCase() !== "fox") return print("You can name the fox: {cmd:name fox} something. ");
   const n = a.slice(1).join(" ").trim();
-  if (!n) return print("Name her what? {dim:(name fox Clementine)}");
+  if (!n) return print("Name her what? {dim:name fox Clementine}");
   if (roomName() !== "garden" || !(isNight() || isEvening())) return print("You should probably meet her first. She's in the garden in the evenings.");
   S.fox = n.slice(0, 24);
   keepsake("fox");
@@ -3498,7 +3498,7 @@ function doHelp(a) {
   if (a[0] && a[0] !== "all") return doMan(a);
   if (a[0] !== "all") {
     const row = (c, d) => "  " + '<span class="cmd" data-c="' + c + '">' + pad(c, 14) + "</span>" + " {dim:" + d + "}";
-    print("{hi:the few things you need}  {dim:(tap any of them)}");
+    print("{hi:the few things you need}  {dim:tap any of them}");
     for (const [c, d] of [["look", "where am I, what's here"], ["ls", "list what's here"], ["cd kitchen", "go somewhere (any room's name works)"],
       ["cat note.txt", "read or look closely at something"], ["take", "pick something up"], ["pockets", "what you're carrying"],
       ["map", "the house"], ["board", "what you've worked out"], ["hint", "a nudge, if you're stuck"]]) print(row(c, d));
@@ -3554,7 +3554,7 @@ function hintText() {
 
 function doOil(a) {
   const what = (a.join(" ") || "").toLowerCase();
-  if (!has("oilcan")) return print("You'd need the oilcan. {dim:(it's in the garden shed.)}");
+  if (!has("oilcan")) return print("You'd need the oilcan. {dim:it's in the garden shed.}");
   if (what.includes("greenhouse") || what.includes("door") || what.includes("hinge") || (!what && roomName() === "garden")) {
     if (S.flags.ghOpen) return print("The greenhouse door swings like a dream already. You give it another drop for luck.");
     if (roomName() !== "garden") return print("The greenhouse is off the garden. {cmd:cd garden}");
@@ -3567,14 +3567,14 @@ function doOil(a) {
   if (what.includes("kettle")) return print("You put a drop of oil on the kettle's lid hinge. It doesn't make any difference to anything.");
   if (what.includes("biscuit") || what.includes("cat")) return print("Absolutely not.");
   if (what.includes("rocking") || what.includes("gerald")) return print("You oil the rocking horse's runners. It rocks a bit more quietly now.");
-  print(what ? "You don't think the " + esc(what) + " needs oiling." : "Oil what? {dim:(the greenhouse door is the one that's stuck.)}");
+  print(what ? "You don't think the " + esc(what) + " needs oiling." : "Oil what? {dim:the greenhouse door is the one that's stuck.}");
 }
 
 async function doInsert(a) {
   if (roomName() !== "study") return print("HEARTH's disk drive is in the study. {cmd:cd study}");
   let k = a.length ? itemKey(a.join(" ").replace(/\.dsk$/i, "")) : Object.keys(S.inv).find(x => x.startsWith("disk:"));
   if (k && !k.startsWith("disk:")) k = null;
-  if (!k) return print(Object.keys(S.inv).some(x => x.startsWith("disk:")) ? "Insert which disk? " + Object.keys(S.inv).filter(x => x.startsWith("disk:")).map(x => "{cmd:insert " + x.slice(5) + ".dsk}").join(" ") : "You haven't got any disks. {dim:(they turn up in odd places. a bread bin, for instance.)}");
+  if (!k) return print(Object.keys(S.inv).some(x => x.startsWith("disk:")) ? "Insert which disk? " + Object.keys(S.inv).filter(x => x.startsWith("disk:")).map(x => "{cmd:insert " + x.slice(5) + ".dsk}").join(" ") : "You haven't got any disks. {dim:they turn up in odd places. a bread bin, for instance.}");
   const id = k.slice(5);
   take(k);
   print("You push " + id.toUpperCase() + ".DSK into the drive. {dim:clunk.}");
@@ -3590,9 +3590,9 @@ async function doInsert(a) {
   S.disks[id] = true;
   const msgs = {
     radio: "{ok:RADIO installed.} On the shelf, the old radio clicks and starts to warm up. {cmd:radio}",
-    sky: "{ok:SKY installed.} Up on the roof, faintly, you hear the telescope motor whirr awake. {dim:(on clear nights: {cmd:cd roof}, {cmd:sky})}",
+    sky: "{ok:SKY installed.} Up on the roof, faintly, you hear the telescope motor whirr awake. {dim:on clear nights: {cmd:cd roof}, {cmd:sky}}",
     lantern: "{ok:LANTERN installed.} Nothing happens for a second. Then, through the window, you see the little brass shutter on the dock lantern click open and shut once.",
-    pip: "{ok:PIP.DSK installed.} The screen fills with a pixel cat that waves and says HI FROM PIP!!! and then vanishes. {dim:(new command: {cmd:catsay hello})}"
+    pip: "{ok:PIP.DSK installed.} The screen fills with a pixel cat that waves and says HI FROM PIP!!! and then vanishes. {dim:new command: {cmd:catsay hello}}"
   };
   print(msgs[id] || "{ok:installed.}");
   if (id === "radio") { keepsake("radio"); remember("fixed the radio. it was a disk wrapped in a tea towel all along."); }
@@ -3601,7 +3601,7 @@ async function doInsert(a) {
 }
 
 async function doRadio(a) {
-  if (!S.disks.radio) return print("The radio on the shelf doesn't come on. {dim:(it needs its disk. Wren's list says it's with the bread.)}");
+  if (!S.disks.radio) return print("The radio on the shelf doesn't come on. {dim:it needs its disk. Wren's list says it's with the bread.}");
   const arg = (a[0] || "").toLowerCase();
   if (arg === "off") { S.flags.radioOn = null; return print("You switch the radio off. The click is very loud in the quiet."); }
   if (!arg) {
@@ -3610,7 +3610,7 @@ async function doRadio(a) {
     print("  {dim:FM} 77 . . . . 88 . . . . 93 . . . . 101 . . . 104 . . 108");
     const known = Object.keys(STATIONS).filter(f => f !== "104.5" || S.disks.pip);
     print("  " + known.map(f => "{cmd:radio " + f + "} {dim:" + STATIONS[f] + "}").join("\n  "));
-    print("  {cmd:radio off}" + (st ? "   {dim:(now playing: " + st + ")}" : ""));
+    print("  {cmd:radio off}" + (st ? "   {dim:now playing: " + st + "}" : ""));
     return;
   }
   if (arg === "scan") {
@@ -3621,7 +3621,7 @@ async function doRadio(a) {
   }
   let f = arg.replace(/[^0-9.]/g, "");
   if (!f.includes(".") && f.length >= 3) f = f.slice(0, -1) + "." + f.slice(-1);
-  if (!f) return print("Tune to what? {dim:(try {cmd:radio 101.3})}");
+  if (!f) return print("Tune to what? {dim:try {cmd:radio 101.3}}");
   S.flags.radioOn = f;
   sfx("beep");
   print("You turn the dial to " + f + ".");
@@ -3635,7 +3635,7 @@ function doRecord() {
   if (roomName() !== "parlour") return print("The record player's in the parlour.");
   S.flags.radioOn = "88.8";
   print("You put {acc:Nocturnes for a Wet Tuesday} on and lower the needle. After a bit of crackle it's solo piano, slow, recorded in a room where you can hear somebody's chair creak now and again.");
-  if (!A.ctx) print("{dim:(tap the screen once to let the sound in.)}");
+  if (!A.ctx) print("{dim:tap the screen once to let the sound in.}");
   warm(4);
   spend(2);
   remember("played one of Wren's records.");
@@ -3670,7 +3670,7 @@ async function doNap() {
 }
 
 async function doSleep() {
-  if (S.min < 19 * 60 && S.min >= 5 * 60) return print("It's only " + clock(S.min) + ". {dim:(bed from 7pm. or {cmd:nap}.)}");
+  if (S.min < 19 * 60 && S.min >= 5 * 60) return print("It's only " + clock(S.min) + ". {dim:bed from 7pm. or {cmd:nap}.}");
   print("You check the back door's locked, turn off the lamp, and go up to bed.");
   await pause(700);
   if (S.today.length) {
@@ -3700,27 +3700,27 @@ function doMail(a) {
     if (!id) return print("No letter number " + arg + ".");
     return openLetter(id);
   }
-  if (!S.mailbox.length) return print("No new post. {dim:(post comes in the morning.)} {cmd:mail all} for old letters." + (S.outbox.length ? "\n{dim:in the outbox, waiting for Ottoline at dawn: " + S.outbox.map(o => itemName(o.item) + " → " + PEOPLE[o.to].short).join(", ") + "}" : ""));
+  if (!S.mailbox.length) return print("No new post. {dim:post comes in the morning.} {cmd:mail all} for old letters." + (S.outbox.length ? "\n{dim:in the outbox, waiting for Ottoline at dawn: " + S.outbox.map(o => itemName(o.item) + " → " + PEOPLE[o.to].short).join(", ") + "}" : ""));
   openLetter(S.mailbox[0]);
   if (S.mailbox.length) {
     print("");
-    print("{dim:(" + plural(S.mailbox.length, "more letter") + " waiting:} " + S.mailbox.map(id => { const L = letterMeta(id); return PEOPLE[L.from] ? PEOPLE[L.from].short : "Wren"; }).join(", ") + "{dim:)} {cmd:mail}");
+    print("{dim:" + plural(S.mailbox.length, "more letter") + " waiting:} " + S.mailbox.map(id => { const L = letterMeta(id); return PEOPLE[L.from] ? PEOPLE[L.from].short : "Wren"; }).join(", ") + "{dim:} {cmd:mail}");
   }
 }
 
 function doSend(a) {
   const ti = a.map(x => x.toLowerCase()).lastIndexOf("to");
-  if (ti < 1 || ti === a.length - 1) return print("Send what to whom? {dim:like: {cmd:send carrot to fenn} or {cmd:send lesson.txt to pip}}\n{dim:(neighbours: ottoline, fenn, pip, juniper)}");
+  if (ti < 1 || ti === a.length - 1) return print("Send what to whom? {dim:like: {cmd:send carrot to fenn} or {cmd:send lesson.txt to pip}}\n{dim:neighbours: ottoline, fenn, pip, juniper}");
   const what = a.slice(0, ti).join(" ");
   const who = WHO(a.slice(ti + 1).join(" "));
-  if (!who) return print("There's nobody called " + esc(a.slice(ti + 1).join(" ")) + " in the Hollow. {dim:(ottoline, fenn, pip, juniper.)}" + (/wren/i.test(a.join(" ")) ? "\n{dim:(Wren's travelling. no fixed address. she'd like that you thought of it, though.)}" : ""));
+  if (!who) return print("There's nobody called " + esc(a.slice(ti + 1).join(" ")) + " in the Hollow. {dim:ottoline, fenn, pip, juniper.}" + (/wren/i.test(a.join(" ")) ? "\n{dim:Wren's travelling. no fixed address. she'd like that you thought of it, though.}" : ""));
   let key = itemKey(what);
   if (!key) {
     const f = nodeAt(resolve(what)) ? resolve(what) : (findHere(what) || {}).path;
     if (f && S.files[f] != null) key = "file:" + f;
-    else if (f && nodeAt(f) && nodeAt(f).kind === "file") return print("That's one of Wren's. You'd rather keep it here. {dim:(you can send things you {cmd:write} yourself.)}");
+    else if (f && nodeAt(f) && nodeAt(f).kind === "file") return print("That's one of Wren's. You'd rather keep it here. {dim:you can send things you {cmd:write} yourself.}");
   }
-  if (!key) return print("You haven't got " + esc(what) + ". {dim:({cmd:pockets} shows what you have.)}");
+  if (!key) return print("You haven't got " + esc(what) + ". {dim:{cmd:pockets} shows what you have.}");
   if (key === "key" || key.startsWith("disk:") || ["rod", "lamp", "oilcan", "matches", "umbrella"].includes(key)) return print("You'll need that. Better keep it.");
   if (!key.startsWith("file:")) take(key);
   S.outbox.push({ to: who, item: key, day: S.day });
@@ -3746,7 +3746,7 @@ function doFriends() {
   }
   print("  {acc:" + pad("Biscuit", 16) + "} " + hearts(S.cat.mood / 10) + "  {dim:· " + (S.cat.mood > 80 ? "adores you, privately" : S.cat.mood > 55 ? "warming to you" : "reserving judgement") + "}");
   if (S.fox) print("  {acc:" + pad(S.fox + " (fox)", 16) + "} " + hearts(Math.min(10, (S.flags.foxFed || 0) * 2)) );
-  print("{dim:(send people things they'd like. {cmd:send}. their letters usually say what they'd like.)}");
+  print("{dim:send people things they'd like. {cmd:send}. their letters usually say what they'd like.}");
 }
 
 async function doWrite(a, ctx) {
@@ -3761,11 +3761,11 @@ async function doWrite(a, ctx) {
   const lines = [];
   while (true) {
     const l = await ask("  " + padL(lines.length + 1, 2) + "| ");
-    if (l === null) { print("{dim:(cancelled. nothing saved.)}"); return; }
+    if (l === null) { print("{dim:cancelled. nothing saved.}"); return; }
     if (l.trim() === "." || l.trim() === ":wq" || l.trim() === ":x" || l.trim() === "EOF") break;
-    if (l.trim() === ":q!") { print("{dim:(cancelled. nothing saved. very vim of you.)}"); return; }
+    if (l.trim() === ":q!") { print("{dim:cancelled. nothing saved. very vim of you.}"); return; }
     lines.push(l);
-    if (lines.length > 60) { print("{dim:(that's a lot. saving here.)}"); break; }
+    if (lines.length > 60) { print("{dim:that's a lot. saving here.}"); break; }
   }
   S.files[path] = lines.join("\n");
   print("{ok:saved.} {dim:" + plural(lines.length, "line") + " in " + esc(shortPath(path)) + ". read it back with {cmd:cat " + esc(name) + "}.}");
@@ -3802,14 +3802,14 @@ function doFishlog() {
     const name = f.id === "marmalade" ? "the carp" : f.id;
     print("  " + (L ? "{ok:" + pad(name, 14) + "}" + " {dim:x" + L.n + (L.best ? ", best " + L.best + "cm" : "") + "}" : "{dim:" + pad("?????", 14) + "}"));
   }
-  print("{dim:(different fish bite at different times and in different weather. the fish book in the parlour knows.)}");
+  print("{dim:different fish bite at different times and in different weather. the fish book in the parlour knows.}");
 }
 
 function doFind(a) {
   const q = (a.filter(x => !x.startsWith("-"))[0] || "").toLowerCase().replace(/^-name$/, "");
   const name = a.includes("-name") ? (a[a.indexOf("-name") + 1] || "") : q;
-  if (!name) return print("find what? {dim:(find jam, find .dsk, find biscuit)}");
-  if (["biscuit", "cat"].includes(name.toLowerCase())) return print("/proc/biscuit  {dim:(she's in the " + S.cat.room + ")}");
+  if (!name) return print("find what? {dim:find jam, find .dsk, find biscuit}");
+  if (["biscuit", "cat"].includes(name.toLowerCase())) return print("/proc/biscuit  {dim:she's in the " + S.cat.room + "}");
   const pat = name.replace(/\*/g, "").toLowerCase();
   const hits = [];
   const walk = (p, depth) => {
@@ -3823,7 +3823,7 @@ function doFind(a) {
     }
   };
   walk(HOME, 0);
-  if (!hits.length) return print("find: nothing called '" + esc(name) + "'. {dim:(somewhere locked, maybe. or dark.)}");
+  if (!hits.length) return print("find: nothing called '" + esc(name) + "'. {dim:somewhere locked, maybe. or dark.}");
   for (const h of hits) print('<span class="cmd" data-c="' + (isDir(h) ? "cd " : "cat ") + esc(h) + '">' + esc(h) + "</span>");
 }
 cmd("find locate", "search the cottage for something", doFind, { group: "around" });
@@ -3856,7 +3856,7 @@ cmd("grep", "find lines that match (ls | grep txt, grep -r love)", (a, ctx) => {
   const flags = a.filter(x => /^-[a-z]+$/.test(x)).join("");
   const rest = a.filter(x => !/^-[a-z]+$/.test(x));
   const pat = rest.shift();
-  if (pat == null) { print("usage: grep [-i -v -n -r] pattern [file]  {dim:(or pipe into it: {cmd:ls | grep txt})}"); return false; }
+  if (pat == null) { print("usage: grep [-i -v -n -r] pattern [file]  {dim:or pipe into it: {cmd:ls | grep txt}}"); return false; }
   let re;
   try { re = new RegExp(pat, flags.includes("i") ? "i" : ""); } catch (e) { re = new RegExp(pat.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), flags.includes("i") ? "i" : ""); }
   const hit = l => re.test(l) !== flags.includes("v");
@@ -3870,7 +3870,7 @@ cmd("grep", "find lines that match (ls | grep txt, grep -r love)", (a, ctx) => {
       for (const k of Object.keys(children(p, true))) walk((p === "/" ? "" : p) + "/" + k);
     };
     walk(rest[0] ? resolve(rest[0]) : S.cwd);
-    if (!n) print("{dim:(nothing.)}");
+    if (!n) print("{dim:nothing.}");
     return n > 0;
   }
   const lines = inputLines(rest, ctx);
@@ -3903,7 +3903,7 @@ cmd("touch", "make an empty file", (a) => {
   const p = resolve(a[0]); const why = writable(p);
   if (why) { const n = nodeAt(p); return print(n && !n.user ? "You touch it. Gently. It's one of Wren's." : "{warn:" + why + "}"); }
   if (S.files[p] == null) S.files[p] = "";
-  print("{dim:(" + esc(shortPath(p)) + " exists now. it's empty. it's full of potential.)}");
+  print("{dim:" + esc(shortPath(p)) + " exists now. it's empty. it's full of potential.}");
 }, SYS);
 cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
   const raw = ctx.raw;
@@ -3919,7 +3919,7 @@ cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
   if (!targets.length) return print("rm what?");
   for (const t of targets) {
     const p = resolve(t);
-    if (S.files[p] != null) { delete S.files[p]; print("{dim:(removed " + esc(shortPath(p)) + ". gone, like a sock in a dryer.)}"); continue; }
+    if (S.files[p] != null) { delete S.files[p]; print("{dim:removed " + esc(shortPath(p)) + ". gone, like a sock in a dryer.}"); continue; }
     const n = nodeAt(p) || (findHere(t) || {}).node;
     if (!n) { print("rm: no such file: " + esc(t)); continue; }
     if (p.includes("biscuit") || t === "biscuit") { print("You can't remove Biscuit. Biscuit removes you. (from the armchair, mostly.)"); continue; }
@@ -3928,7 +3928,7 @@ cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
 }, SYS);
 cmd("cp copy", "copy a file (into your own notes)", (a) => {
   const [src, dst] = a.filter(x => !x.startsWith("-"));
-  if (!src || !dst) return print("usage: cp <from> <to>   {dim:(e.g. {cmd:cp ~/welcome.txt ~/study/notes/})}");
+  if (!src || !dst) return print("usage: cp <from> <to>   {dim:e.g. {cmd:cp ~/welcome.txt ~/study/notes/}}");
   const t = readFile(resolve(src));
   if (t == null) return print("cp: no such file: " + esc(src));
   let p = resolve(dst);
@@ -3936,7 +3936,7 @@ cmd("cp copy", "copy a file (into your own notes)", (a) => {
   const why = writable(p);
   if (why) return print("{warn:can't —} " + why);
   S.files[p] = plain(t);
-  print("{dim:(copied to " + esc(shortPath(p)) + ")}");
+  print("{dim:copied to " + esc(shortPath(p)) + "}");
 }, SYS);
 cmd("mv rename", "move or rename a file you wrote", (a) => {
   const [src, dst] = a;
@@ -3948,18 +3948,18 @@ cmd("mv rename", "move or rename a file you wrote", (a) => {
   const why = writable(p);
   if (why) return print("{warn:can't —} " + why);
   S.files[p] = S.files[s]; delete S.files[s];
-  print("{dim:(moved to " + esc(shortPath(p)) + ")}");
+  print("{dim:moved to " + esc(shortPath(p)) + "}");
 }, SYS);
 cmd("mkdir", "make a directory", () => print("You can't add a room to Wren's house. You think about a reading nook for a minute, then think about the planning office."), SYS);
 cmd("chmod chown", "change permissions", (a) => {
   const t = a.join(" ");
   if (t.includes("greenhouse")) {
     if (S.flags.ghOpen) return print("drwxr-xr-x. It's open. It's very open.");
-    if (has("oilcan")) { print("{dim:(the door doesn't care about chmod. it cares about oil. luckily you've got the oilcan, so:)}"); return doOil(["greenhouse"]); }
-    return print("chmod: the door does not care about permissions. the door cares about {acc:oil}. {dim:(the shed.)}");
+    if (has("oilcan")) { print("{dim:the door doesn't care about chmod. it cares about oil. luckily you've got the oilcan, so:}"); return doOil(["greenhouse"]); }
+    return print("chmod: the door does not care about permissions. the door cares about {acc:oil}. {dim:the shed.}");
   }
   if (t.includes("biscuit")) return print("chmod: Biscuit's permissions are set by Biscuit.");
-  print("chmod: done. {dim:(nothing visibly changed. that's chmod for you.)}");
+  print("chmod: done. {dim:nothing visibly changed. that's chmod for you.}");
 }, SYS);
 cmd("tree", "the shape of things", (a) => {
   const root = resolve(a[0] || HOME);
@@ -3980,7 +3980,7 @@ cmd("tree", "the shape of things", (a) => {
 /* ---------- the machine ---------- */
 cmd("clear cls", "clear the screen", () => clearScreen(), SYS);
 cmd("history", "everything you've typed", (a) => {
-  if (a[0] === "-c") { S.hist = []; return print("{dim:(history cleared. a fresh start. Biscuit approves of no evidence.)}"); }
+  if (a[0] === "-c") { S.hist = []; return print("{dim:history cleared. a fresh start. Biscuit approves of no evidence.}"); }
   const h = S.hist.slice(-40);
   const off = S.hist.length - h.length;
   h.forEach((l, i) => print("{dim:" + padL(off + i + 1, 5) + "}  " + '<span class="cmd" data-c="' + esc(l).replace(/"/g, "&quot;") + '">' + esc(l) + "</span>"));
@@ -3999,7 +3999,7 @@ cmd("alias", "make a shortcut (alias morning='brew; feed biscuit')", (a, ctx) =>
   S.aliases[m[1]] = m[3];
   print("{ok:alias set:} " + esc(m[1]) + " → " + esc(m[3]));
 }, SYS);
-cmd("unalias", "forget a shortcut", (a) => { delete S.aliases[a[0]]; print("{dim:(forgotten.)}"); }, SYS);
+cmd("unalias", "forget a shortcut", (a) => { delete S.aliases[a[0]]; print("{dim:forgotten.}"); }, SYS);
 cmd("man", "the manual for a command", doMan, SYS);
 cmd("whoami", "who are you", () => print(esc(NAME())), SYS);
 cmd("hostname", "this machine's name", () => print("hearth"), SYS);
@@ -4046,7 +4046,7 @@ cmd("kill pkill killall", "stop a process", (a) => {
   const t = a.filter(x => !x.startsWith("-")).join(" ").toLowerCase();
   const nine = a.includes("-9") || a.includes("-KILL");
   if (!t) return print("kill what?");
-  if (t === "1" || t.includes("biscuit")) return print(nine ? "kill: (1) - Operation not permitted.\n{dim:Biscuit gives you a look of profound disappointment. She has nine lives. You'd need -10.}" : "You can't kill Biscuit. You give her a gentle pat instead. {dim:(that's what kill means, in this house.)}");
+  if (t === "1" || t.includes("biscuit")) return print(nine ? "kill: (1) - Operation not permitted.\n{dim:Biscuit gives you a look of profound disappointment. She has nine lives. You'd need -10.}" : "You can't kill Biscuit. You give her a gentle pat instead. {dim:that's what kill means, in this house.}");
   if (t === "999" || t.includes("wren")) return print("Absolutely not.");
   if (t.includes("kettle") || t === "42") return print("The kettle clicks off. It'll sulk about this.");
   if (t.includes("rain") || t === "101") return print("You can't kill the rain. You've tried, as a species. It's still raining." + (weatherNow().rain ? "" : " (well, not right now.)"));
@@ -4057,62 +4057,62 @@ cmd("kill pkill killall", "stop a process", (a) => {
 }, SYS);
 cmd("ping", "say hello over the wires", async (a) => {
   const h = (a[0] || "").toLowerCase();
-  if (!h) return print("ping who?  {dim:(ping biscuit, ping wren, ping observatory...)}");
+  if (!h) return print("ping who?  {dim:ping biscuit, ping wren, ping observatory...}");
   if (h.includes("biscuit") || h === "cat") { for (let i = 1; i <= 3; i++) { print("64 bytes from biscuit: icmp_seq=" + i + " mrrp=yes time=∞ ms"); await pause(500); } return print("{dim:--- she heard you. she's choosing not to come. ---}"); }
   if (h.includes("wren")) { for (let i = 1; i <= 3; i++) { print("{dim:request timeout for icmp_seq " + i + "}"); await pause(600); } return print("{dim:--- no reply. she's probably on a ferry, talking to a stranger who'll remember her forever. ---}"); }
   const host = { observatory: "juniper", "post-office": "ottoline", postoffice: "ottoline", apiary: "fenn", "okafor-house": "pip", juniper: "juniper", ottoline: "ottoline", fenn: "fenn", pip: "pip", "the-lake": "lake", lake: "lake", localhost: "me", hearth: "me", "127.0.0.1": "me" }[h];
-  if (!host) return print("ping: cannot resolve " + esc(h) + ": unknown host {dim:(see {cmd:cat /etc/hosts})}");
+  if (!host) return print("ping: cannot resolve " + esc(h) + ": unknown host {dim:see {cmd:cat /etc/hosts}}");
   const reply = { juniper: "time=4.2 ms (she's awake. she's always awake.)", ottoline: "time=0.3 ms (instantly. she was waiting.)", fenn: "time=1200 ms (eventually. grumpily.)", pip: "time=0.1 ms PING BACK!!!", lake: "...", me: "time=0.0 ms (it's you. hello, you.)" }[host];
   for (let i = 1; i <= 3; i++) { print(host === "lake" ? "{dim:the lake does not reply. dignified.}" : "64 bytes from " + h + ": icmp_seq=" + i + " " + reply); await pause(450); if (host === "lake") break; }
 }, SYS);
 cmd("sudo", "do something as the boss", async (a, ctx) => {
   const rest = ctx.raw.replace(/^\s*sudo\s*/, "");
-  if (!rest) return print("usage: sudo <command>  {dim:(Wren's password is not 'password'.)}");
+  if (!rest) return print("usage: sudo <command>  {dim:Wren's password is not 'password'.}");
   if (!S.flags.sudoOK) {
     const pw = await ask("[sudo] password for " + NAME() + ": ", true);
     if (pw == null) return;
     if (pw.trim().toLowerCase() !== "biscuit1") {
       sfx("bonk");
-      return print(pick(["Sorry, try again. {dim:(it's not 'password'.)}", "Sorry, try again. {dim:(Wren's passwords are always about the cat.)}", "Sorry, try again. {dim:(it's the cat's name and a number. it's always the cat.)}"]));
+      return print(pick(["Sorry, try again. {dim:it's not 'password'.}", "Sorry, try again. {dim:Wren's passwords are always about the cat.}", "Sorry, try again. {dim:it's the cat's name and a number. it's always the cat.}"]));
     }
     S.flags.sudoOK = true;
-    print("{dim:(HEARTH recognises Wren's password. it doesn't ask how you knew. it's always the cat.)}");
+    print("{dim:HEARTH recognises Wren's password. it doesn't ask how you knew. it's always the cat.}");
   }
   if (/make me a sandwich/i.test(rest)) {
     give("sandwich"); keepsake("sudo");
     return print("Okay.\n{ok:(you got a sandwich.)}");
   }
   if (/^(rm|kill)/.test(rest)) return print("With great power comes great responsibility. You decide not to.");
-  if (/feed/.test(rest)) { S.cat.fed = 0; print("{dim:(as root, you override the feeding schedule. Biscuit will remember this as the day you finally understood.)}"); return pipeline(rest.replace(/^sudo\s*/, "")); }
+  if (/feed/.test(rest)) { S.cat.fed = 0; print("{dim:as root, you override the feeding schedule. Biscuit will remember this as the day you finally understood.}"); return pipeline(rest.replace(/^sudo\s*/, "")); }
   if (/^sleep/.test(rest)) { S.min = Math.max(S.min, 19 * 60); return pipeline("sleep"); }
-  print("{dim:(you feel powerful. nothing else changes.)}");
+  print("{dim:you feel powerful. nothing else changes.}");
   return pipeline(rest);
 }, SYS);
 cmd("theme colour color", "change the screen colour (amber, green, paper, rose, frost)", (a) => {
   const t = (a[0] || "").toLowerCase();
   const all = ["amber", "green", "paper", "rose", "frost"];
-  if (!all.includes(t)) return print("Themes: " + all.map(x => "{cmd:theme " + x + "}").join("  ") + "   {dim:(now: " + S.theme + ")}");
+  if (!all.includes(t)) return print("Themes: " + all.map(x => "{cmd:theme " + x + "}").join("  ") + "   {dim:now: " + S.theme + "}");
   S.theme = t; applyTheme();
   print({ amber: "Amber. Warm as a lamp.", green: "Green phosphor. Very 1987. Very serious.", paper: "Paper. For the daytime, and for people who own a fountain pen.", rose: "Rose. Like a sunset that decided to stay.", frost: "Frost. Blue and quiet, like the first snow." }[t]);
 }, SYS);
 cmd("sound audio volume", "sound on or off", (a) => {
   const on = (a[0] || "").toLowerCase() === "on" ? true : (a[0] || "").toLowerCase() === "off" ? false : !S.sound;
   audioWake(); setSound(on);
-  print(on ? "{ok:Sound on.} Rain, kettle, keys, and the occasional owl." : "Sound off. {dim:(the owls will carry on without you.)}");
+  print(on ? "{ok:Sound on.} Rain, kettle, keys, and the occasional owl." : "Sound off. {dim:the owls will carry on without you.}");
 }, SYS);
-cmd("keys", "show or hide the shortcut keys", (a) => { S.keys = (a[0] || "").toLowerCase() === "off" ? false : (a[0] || "").toLowerCase() === "on" ? true : !S.keys; setKeys(contextKeys()); print(S.keys ? "Shortcut keys on." : "Shortcut keys hidden. {dim:({cmd:keys on} to bring them back.)}"); }, SYS);
+cmd("keys", "show or hide the shortcut keys", (a) => { S.keys = (a[0] || "").toLowerCase() === "off" ? false : (a[0] || "").toLowerCase() === "on" ? true : !S.keys; setKeys(contextKeys()); print(S.keys ? "Shortcut keys on." : "Shortcut keys hidden. {dim:{cmd:keys on} to bring them back.}"); }, SYS);
 cmd("textsize fontsize zoom", "bigger or smaller text (textsize 24)", (a) => {
   const n = clamp(parseInt(a[0], 10) || 22, 14, 34);
   S.fs = n; document.documentElement.style.setProperty("--fs", n + "px");
   print("Text size: " + n + ".");
 }, SYS);
-cmd("save", "save (it does this by itself, but)", () => { save(); print("{ok:Saved.} {dim:(HEARTH saves after everything you do. but it's nice to be sure.)}"); }, SYS);
+cmd("save", "save (it does this by itself, but)", () => { save(); print("{ok:Saved.} {dim:HEARTH saves after everything you do. but it's nice to be sure.}"); }, SYS);
 cmd("reset", "start the whole season over", async () => {
   print("{warn:This forgets everything: the garden, the letters, what Biscuit thinks of you.}");
   const y = await ask("Type {yes} to start over: ".replace(/[{}]/g, ""));
-  if ((y || "").trim().toLowerCase() !== "yes") return print("{dim:(phew. nothing changed.)}");
+  if ((y || "").trim().toLowerCase() !== "yes") return print("{dim:phew. nothing changed.}");
   wipe(); save();
-  print("{dim:(forgetting...)}");
+  print("{dim:forgetting...}");
   await pause(800);
   location.reload();
 }, SYS);
@@ -4128,7 +4128,7 @@ cmd("reboot restart shutdown poweroff", "turn it off and on again", async () => 
   await bootSequence(true);
 }, SYS);
 cmd("exit logout quit bye", "leave", async () => {
-  print("logout: you're the only user. {dim:(the game saves as you go. close it whenever.)}");
+  print("logout: you're the only user. {dim:the game saves as you go. close it whenever.}");
   save();
 }, SYS);
 cmd("fortune", "something someone once said", () => { const [q, who] = pick(FORTUNES); print("{acc:\"" + q + "\"}  {dim:· " + who + "}"); }, SYS);
@@ -4167,7 +4167,7 @@ cmd("hearthfetch neofetch screenfetch fastfetch", "about this computer, prettily
     "{acc:Theme}: " + S.theme,
     "{acc:Cat}: Biscuit (PID 1)",
     "{acc:Weather}: " + weatherNow().name,
-    "{acc:Memory}: 640K {dim:(plenty)}"
+    "{acc:Memory}: 640K {dim:plenty}"
   ];
   for (let i = 0; i < Math.max(art.length, info.length); i++) print((art[i] || "                     ") + "  " + (info[i] || ""));
 }, SYS);
@@ -4188,14 +4188,14 @@ cmd("yes", "agree, repeatedly", async (a) => {
 cmd("sl", "you meant ls", async () => {
   const k = ["      )  )", "     (  (", "    .-----.", "   |       |=,", "   |       | ||", "   '-------'-'"];
   for (const l of k) { print("{acc:" + esc(l) + "}"); await pause(60); }
-  print("{dim:(you meant ls.)}");
+  print("{dim:you meant ls.}");
 }, SYS);
 cmd("git", "version control", () => print("Wren didn't believe in version control. 'I remember what I did,' she wrote, in 1987, and then, in 1993, 'mostly.'"), SYS);
-cmd("make", "make something", (a) => (a.join(" ").includes("tea") ? doBrew([]) : a.join(" ").includes("love") ? print("make: *** You can't make love in a cottage terminal. Have a cup of tea.") : print("make: *** No rule to make target '" + esc(a[0] || "") + "'.  {dim:(did you mean {cmd:cook}? or {cmd:brew}?)}")), SYS);
-cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "python: not installed. {dim:(HEARTH has 640K. it uses most of it listening.)}" : "not installed."), SYS);
-cmd("npm pip3 apt brew-install", "install things", () => print("no network. {dim:(the only cable goes into the lake.)}"), SYS);
+cmd("make", "make something", (a) => (a.join(" ").includes("tea") ? doBrew([]) : a.join(" ").includes("love") ? print("make: *** You can't make love in a cottage terminal. Have a cup of tea.") : print("make: *** No rule to make target '" + esc(a[0] || "") + "'.  {dim:did you mean {cmd:cook}? or {cmd:brew}?}")), SYS);
+cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "python: not installed. {dim:HEARTH has 640K. it uses most of it listening.}" : "not installed."), SYS);
+cmd("npm pip3 apt brew-install", "install things", () => print("no network. {dim:the only cable goes into the lake.}"), SYS);
 cmd("ssh telnet", "connect to elsewhere", (a) => print((a[0] || "").includes("observatory") || (a[0] || "").includes("juniper") ? "Connecting to observatory... {dim:Connection refused. a note: 'if you want to talk, write. or row. — J.V.'}" : "ssh: nowhere to go. everywhere worth going is in this house, or across the lake by post."), SYS);
-cmd("coffee", "coffee", () => print("There's no coffee in the house. Wren doesn't drink it. {dim:(tea's in the kitchen.)}"), SYS);
+cmd("coffee", "coffee", () => print("There's no coffee in the house. Wren doesn't drink it. {dim:tea's in the kitchen.}"), SYS);
 cmd("cron crontab", "scheduled things", () => {
   print("{dim:# the cottage's routine, according to Biscuit}");
   print("0  6  * * *   biscuit --demand-breakfast");
@@ -4205,7 +4205,7 @@ cmd("cron crontab", "scheduled things", () => {
   print("0  22 * * *   house --tick --settle");
 }, SYS);
 cmd("env printenv export set", "environment", (a, ctx) => {
-  if (/export|set/.test(ctx.raw) && a.length) return print("{dim:(HEARTH nods and writes it on a post-it. it'll forget by morning.)}");
+  if (/export|set/.test(ctx.raw) && a.length) return print("{dim:HEARTH nods and writes it on a post-it. it'll forget by morning.}");
   print("USER=" + esc(NAME()) + "\nHOME=/cottage\nSHELL=/bin/hearth\nPWD=" + S.cwd + "\nCAT=biscuit\nKETTLE=" + (teaWarm() ? "warm" : "cold") + "\nWEATHER=" + weatherNow().name + "\nLANG=en_GB.TEA-8");
 }, SYS);
 cmd("which type", "where a command lives", (a) => print(a[0] ? (findCmd(a[0]) ? "/bin/" + esc(a[0]) : S.aliases[a[0]] ? esc(a[0]) + ": aliased to '" + esc(S.aliases[a[0]]) + "'" : esc(a[0]) + " not found") : "which what?"), SYS);
@@ -4215,24 +4215,24 @@ cmd("xyzzy plugh", "", () => print("A hollow voice says \"fool.\"\n{dim:...it's 
 cmd("hack hacker", "", async () => {
   print("{ok:HACKING THE MAINFRAME...}");
   for (let i = 0; i <= 10; i++) { print("{ok:[" + "#".repeat(i) + " ".repeat(10 - i) + "] " + i * 10 + "%}"); await pause(120); }
-  print("{ok:ACCESS GRANTED} to: {acc:the biscuit tin}. You eat one. {dim:(Pip would be so proud.)}");
+  print("{ok:ACCESS GRANTED} to: {acc:the biscuit tin}. You eat one. {dim:Pip would be so proud.}");
   warm(2);
 }, { secret: true });
 cmd("matrix", "", () => print("{ok:The rain on the window does a decent impression.}"), { secret: true });
 cmd("dance", "", () => print("You do a little dance in the " + roomName() + ". " + (catHere() ? "Biscuit leaves the room." : "Nobody sees. Or so you think. (Margaret the spider saw.)")), { secret: true });
 cmd("hug", "", () => print(catHere() ? "You hug Biscuit. She endures it for exactly two seconds, then becomes a liquid and escapes." : "You hug yourself. It's not nothing. You're doing well, you know."), { secret: true });
 cmd("sing hum whistle", "", () => print(pick(["You sing a bit. The kettle joins in, slightly flat.", "You hum. The house hums back. (it's the freezer.)", "You whistle. Somewhere outside, a blackbird answers, better."])), { secret: true });
-cmd("cry", "", () => print("That's alright. You can, here. The house has heard worse and loved everyone anyway.\n{dim:(make a cup of tea, after. {cmd:brew})}"), { secret: true });
+cmd("cry", "", () => print("That's alright. You can, here. The house has heard worse and loved everyone anyway.\n{dim:make a cup of tea, after. {cmd:brew}}"), { secret: true });
 cmd("lantern", "light the dock lantern", () => doLantern(), { group: "living", when: () => S.disks.lantern });
 cmd("catsay cowsay", "Pip's program: a cat says a thing", (a, ctx) => {
-  if (!S.disks.pip) return print(/cowsay/.test(ctx.raw) ? "No cows here. Pip is working on something better, she says." : "catsay: not installed. {dim:(Pip's working on it.)}");
+  if (!S.disks.pip) return print(/cowsay/.test(ctx.raw) ? "No cows here. Pip is working on something better, she says." : "catsay: not installed. {dim:Pip's working on it.}");
   const msg = (a.join(" ") || pick(["feed me", "i have not been fed", "the armchair is mine", "mrrp"])).slice(0, 40);
   print(" " + "_".repeat(msg.length + 2));
   print("< " + esc(msg) + " >");
   print(" " + "-".repeat(msg.length + 2));
   print("{acc:    \\    /\\_/\\}");
   print("{acc:     \\  ( o.o )}");
-  print("{acc:         > ^ <   {dim:(by PIP)}}");
+  print("{acc:         > ^ <   {dim:by PIP}}");
 }, SYS);
 cmd("beep bell", "", () => { sfx("beep"); print("{dim:beep.}"); }, { secret: true });
 
@@ -4244,7 +4244,7 @@ async function execFile(name) {
   if (!n) { print("no such file: " + esc(name)); return false; }
   if (p.startsWith("/bin/")) return runOne(p.slice(5));
   if (n.kind === "dir") { print(esc(name) + " is a place. {cmd:cd " + esc(name) + "}"); return false; }
-  print("permission denied: " + esc(name) + " {dim:(it's a note, not a program. {cmd:cat " + esc(name) + "} it.)}");
+  print("permission denied: " + esc(name) + " {dim:it's a note, not a program. {cmd:cat " + esc(name) + "} it.}");
   return false;
 }
 async function pipGame() {
@@ -4289,11 +4289,11 @@ const MAN_EXTRA = {
 };
 function doMan(a) {
   const n = (a[0] || "").toLowerCase();
-  if (!n) return print("What manual page do you want?  {dim:(e.g. {cmd:man fish}, {cmd:man grep}, {cmd:man man})}");
+  if (!n) return print("What manual page do you want?  {dim:e.g. {cmd:man fish}, {cmd:man grep}, {cmd:man man}}");
   if (n === "man") return print("{hi:MAN(1)}\n\n{acc:NAME}\n    man — the manual.\n\n{acc:DESCRIPTION}\n    Explains things. Like Wren, but in a fixed-width font.\n\n{acc:BUGS}\n    Will not explain Biscuit. Nothing can.");
   if (["biscuit", "cat(8)"].includes(n)) return print("{hi:BISCUIT(8)}\n\n{acc:NAME}\n    biscuit — orange cat, PID 1\n\n{acc:SYNOPSIS}\n    biscuit [--wherever-she-likes]\n\n{acc:DESCRIPTION}\n    See {cmd:cat ~/kitchen/biscuit_manual.txt}.\n\n{acc:BUGS}\n    Several. All load-bearing.");
   const c = findCmd(n);
-  if (!c) return print("No manual entry for " + esc(n) + ". {dim:(try {cmd:help})}");
+  if (!c) return print("No manual entry for " + esc(n) + ". {dim:try {cmd:help}}");
   const aliases = Object.keys(ALIAS_OF).filter(k => ALIAS_OF[k] === c.name);
   print("{hi:" + c.name.toUpperCase() + "(1)}" + "          {dim:HEARTH Manual}");
   print("");
@@ -4485,21 +4485,21 @@ function lanternStatus() {
 async function doLantern() {
   if (roomName() !== "dock") return print("The lantern's on the dock. {cmd:cd dock}");
   if (S.flags.lanternLit) {
-    print("It's lit. You stand by it for a while." + (S.flags.answered ? "" : " {dim:(up at the house, the cellar is still humming that new note.)}"));
+    print("It's lit. You stand by it for a while." + (S.flags.answered ? "" : " {dim:up at the house, the cellar is still humming that new note.}"));
     return;
   }
   const missing = [];
-  if (!has("wick")) missing.push("a wick {dim:(Wren's trunk)}");
-  if (!has("moonflower")) missing.push("a moonflower {dim:(greenhouse, harvested at night)}");
-  if (!has("matches")) missing.push("matches {dim:(kitchen drawer)}");
+  if (!has("wick")) missing.push("a wick {dim:Wren's trunk}");
+  if (!has("moonflower")) missing.push("a moonflower {dim:greenhouse, harvested at night}");
+  if (!has("matches")) missing.push("matches {dim:kitchen drawer}");
   if (S.day < SEASON_END) {
     print("Not yet. It's for Lantern Night, " + dateStr(SEASON_END) + ", " + plural(SEASON_END - S.day, "day") + " away.");
     print(missing.length ? "{dim:You'll need: " + missing.join(", ") + ".}" : "{ok:You've got everything it needs.}");
     S.flags.lanternReady = !missing.length;
     return;
   }
-  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:(they'll wait. Ottoline said.)}");
-  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. After dark. {dim:(from 6pm.)}");
+  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:they'll wait. Ottoline said.}");
+  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. After dark. {dim:from 6pm.}");
   await lanternFinale();
 }
 
@@ -4971,7 +4971,7 @@ function clue(id) {
   S.clues[id] = S.day;
   toast("pinned to the board: <b>" + CLUES[id].title + "</b>");
   sfx("page");
-  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:(you pin it to the corkboard in the study. {cmd:board} to see it.)}"); showLine(true); } }, 50); }
+  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:you pin it to the corkboard in the study. {cmd:board} to see it.}"); showLine(true); } }, 50); }
 }
 
 function doBoard() {
@@ -4990,7 +4990,7 @@ function doBoard() {
     for (const [, c] of near) print("  {dim:?  " + c.hint + "}");
   }
   const hidden = Object.entries(CLUES).filter(([k, c]) => !found[k] && !c.links.some(l => found[l])).length;
-  if (hidden) { print(""); print("{dim:(and some string going off the edge of the board, to nothing yet.)}"); }
+  if (hidden) { print(""); print("{dim:and some string going off the edge of the board, to nothing yet.}"); }
 }
 
 /* ---------- the signal ---------- */
@@ -5041,10 +5041,10 @@ async function doListen(args) {
     print("{hi:listen}  read the receiver in the cellar");
     print("  {cmd:listen}               take a reading");
     print("  {cmd:listen --log}         readings since you arrived");
-    print("  listen --reply WORDS   send words back down the cable {dim:(disabled until it asks)}");
+    print("  listen --reply WORDS   send words back down the cable {dim:disabled until it asks}");
     return;
   }
-  if (roomName() !== "cellar") return print("listen: the receiver's in the cellar. {dim:({cmd:cd cellar})}");
+  if (roomName() !== "cellar") return print("listen: the receiver's in the cellar. {dim:{cmd:cd cellar}}");
   clue("listen"); clue("hum");
   if (/^--log/.test(a)) return listenLog();
   const rm = a.match(/^(--reply|-r|reply)\s*(.*)$/);
@@ -5058,16 +5058,16 @@ async function doListen(args) {
     bar.innerHTML = fmt("  listening {sky:" + dots + "}");
     await pause(70);
   }
-  print("  signal {hi:" + lvl.toFixed(2) + "}" + (lvl > 0.5 ? "  {acc:(strong)}" : lvl > 0.25 ? "  {dim:(rising)}" : ""));
-  if (S.flags.answered) { print("  heard: {dim:...}"); print("{dim:(it's quiet now. not gone. resting.)}"); return; }
+  print("  signal {hi:" + lvl.toFixed(2) + "}" + (lvl > 0.5 ? "  {acc:(strong)}" : lvl > 0.25 ? "  {dim:rising}" : ""));
+  if (S.flags.answered) { print("  heard: {dim:...}"); print("{dim:it's quiet now. not gone. resting.}"); return; }
   if (asking()) {
     await pause(400);
     print("  heard: {acc:three . three . three}");
     await pause(500);
     print("  heard: {warn:NAME ?}");
     await pause(300);
-    print("{dim:(the green light on the box has stopped blinking. it's on. it's waiting.)}");
-    print("{dim:(listen --reply ...)}");
+    print("{dim:the green light on the box has stopped blinking. it's on. it's waiting.}");
+    print("{dim:listen --reply ...}");
     S.flags.sawAsk = true;
     return;
   }
@@ -5087,15 +5087,15 @@ function listenLog() {
 
 async function doReply(words) {
   const w = (words || "").toLowerCase().replace(/[^a-z]/g, "");
-  if (!w) return print("reply with what? {dim:(listen --reply WORDS)}");
+  if (!w) return print("reply with what? {dim:listen --reply WORDS}");
   if (!asking()) {
     sfx("bonk");
-    return print("listen: reply disabled. {dim:(hearth.conf: reply = disabled  # until it asks)}");
+    return print("listen: reply disabled. {dim:hearth.conf: reply = disabled  # until it asks}");
   }
   if (!["lanternfish", "thelanternfish"].includes(w)) {
     S.flags.wrongReplies = (S.flags.wrongReplies || 0) + 1;
     print("{dim:you send it.} The hum holds the same note, patient. That wasn't it.");
-    if (S.flags.wrongReplies >= 2) print("{dim:(Wren: \"answer with its name.\" the name of what? what did they see, in 1962? the board might help: {cmd:board})}");
+    if (S.flags.wrongReplies >= 2) print("{dim:Wren: \"answer with its name.\" the name of what? what did they see, in 1962? the board might help: {cmd:board}}");
     return;
   }
   await trueEnding();
@@ -5152,7 +5152,7 @@ async function trueEnding() {
   await type("When you get back to the house you can hear the radio in the study before you're through the door. It's come on by itself, on a shortwave band you've never touched, and through all the static someone is talking.", 38);
   sfx("beep");
   await pause(900);
-  print("{acc:WREN:} {dim:(kshhh)} ...hear me? It's Wren. Is that you, at the house?");
+  print("{acc:WREN:} {dim:kshhh} ...hear me? It's Wren. Is that you, at the house?");
   await pause(1300);
   print("{acc:WREN:} We saw it from here. Me and Ása, we're out in her boat in the harbour at Tórshavn, and the whole lot lit up. All of it, all at once.");
   await pause(1500);
@@ -5160,7 +5160,7 @@ async function trueEnding() {
   await pause(1500);
   print("{acc:WREN:} I'm home on the second. Leave the lantern on for me. And thank you, love. I mean it.");
   await pause(1200);
-  print("{dim:(kshhhhh)}");
+  print("{dim:kshhhhh}");
   await pause(1800);
   print("");
   print("{hi:              ~  THE END  ~}");
@@ -5186,7 +5186,7 @@ function endStats() {
 }
 
 /* ---------- the files ---------- */
-const DIARY_1962 = `{dim:(a school exercise book, water-stained. "WREN ASHDOWN, 3B" on the cover.)}
+const DIARY_1962 = `{dim:a school exercise book, water-stained. "WREN ASHDOWN, 3B" on the cover.}
 
 {acc:25 oct 1962.}
 
@@ -5210,7 +5210,7 @@ we're not telling anyone. ever.`;
 
 function mysteryTree() {
   // a hidden file in the hall: Wren's .plan
-  ROOT.kids.cottage.kids[".plan"] = F(`{dim:(~/.plan — last edited 11 oct)}
+  ROOT.kids.cottage.kids[".plan"] = F(`{dim:~/.plan — last edited 11 oct}
 
   - ferry from Aberdeen on the 9th
   - meet Á. at last. thirty-eight years of tuesdays.
@@ -5222,7 +5222,7 @@ function mysteryTree() {
     for (let d = 1; d < S.day; d++) {
       const r = seeded(d * 13)();
       const v = Math.min(0.97, 0.06 + Math.min(d, 14) / 14 * 0.55 + (d >= 10 && d <= 18 ? 0.12 : 0) + r * 0.05);
-      k[dateStr(d).toLowerCase().replace(" ", "-") + ".log"] = F(() => "night of " + dateStr(d) + "\n  max " + v.toFixed(2) + "\n  heard: " + (v > 0.5 ? "three . light . three" : "kettle . water") + (d === S.day - 1 && d >= 10 ? "\n  {dim:(comet visible)}" : ""), { owner: "hearth" });
+      k[dateStr(d).toLowerCase().replace(" ", "-") + ".log"] = F(() => "night of " + dateStr(d) + "\n  max " + v.toFixed(2) + "\n  heard: " + (v > 0.5 ? "three . light . three" : "kettle . water") + (d === S.day - 1 && d >= 10 ? "\n  {dim:comet visible}" : ""), { owner: "hearth" });
     }
     return k;
   };
@@ -5265,37 +5265,37 @@ cmd("reply answer", "", (a) => doListen(["--reply"].concat(a)), { secret: true }
 
 const VISITS = [
   { id: "otto_milk_1", day: 7, from: 8 * 60, to: 12 * 60, run: () => [
-    "{dim:(a knock at the front door. by the time you get there, Ottoline is already halfway back down the path.)}",
+    "{dim:a knock at the front door. by the time you get there, Ottoline is already halfway back down the path.}",
     "{acc:OTTOLINE:} Milk! Tuesdays. Wren never told you? Course she didn't.",
     "{acc:OTTOLINE:} " + (S.disks.radio ? "I can hear you've got the radio going. Good." : "You've still not got that radio on, have you."),
-    "{dim:(two pints on the step, and a paper bag with a scone in it that nobody mentions.)}"
+    "{dim:two pints on the step, and a paper bag with a scone in it that nobody mentions.}"
   ], after: () => befriend("ottoline", 1) },
   { id: "otto_milk_2", day: 14, from: 8 * 60, to: 12 * 60, run: () => [
-    "{dim:(a knock. Ottoline, in a coat she's clearly saving for tonight.)}",
+    "{dim:a knock. Ottoline, in a coat she's clearly saving for tonight.}",
     "{acc:OTTOLINE:} Milk. And I'm not stopping, I've forty jam jars to wash.",
     "{acc:OTTOLINE:} We'll be on the water from six. Take your time. We always wait.",
   ], after: () => befriend("ottoline", 1) },
   { id: "fenn_eggs_1", day: 4, from: 7 * 60, to: 11 * 60, run: () => [
-    "{dim:(you hear the gate. when you look out, there's nobody there. on the step: a box of six brown eggs, and a note in pencil.)}",
+    "{dim:you hear the gate. when you look out, there's nobody there. on the step: a box of six brown eggs, and a note in pencil.}",
     "{ok:  Eggs.}",
     "{ok:  A.F.}"
   ], after: () => befriend("fenn", 1) },
   { id: "fenn_eggs_2", day: 11, from: 7 * 60, to: 11 * 60, run: () => [
-    "{dim:(eggs on the step again. this time the note says more.)}",
+    "{dim:eggs on the step again. this time the note says more.}",
     "{ok:  Eggs. The bees won't go near the water this week.}",
     "{ok:  Forty years and they've never done that. A.F.}"
   ], after: () => { befriend("fenn", 1); clue("lights"); } },
   { id: "pip_sat_1", day: 4, from: 13 * 60, to: 17 * 60, when: () => S.letters.includes("pip_hello"), run: () => [
-    "{dim:(a knock, then the door opening before you get to it. a girl with a bike helmet still on.)}",
+    "{dim:a knock, then the door opening before you get to it. a girl with a bike helmet still on.}",
     "{sky:PIP:} It's SATURDAY. Wren lets me use HEARTH on Saturdays. Is that still a thing? It's still a thing.",
-    "{dim:(she sits at the desk for twenty minutes, typing very fast and mostly making the kettle beep. before she goes she leaves a file in your notes folder.)}",
+    "{dim:she sits at the desk for twenty minutes, typing very fast and mostly making the kettle beep. before she goes she leaves a file in your notes folder.}",
     "{sky:PIP:} It's a drawing of Biscuit. Don't look at it till I've gone."
   ], after: () => { befriend("pip", 1); S.files["/cottage/study/notes/biscuit_by_pip.txt"] = "     /\\_/\\\n    ( o o )   BISCUIT\n    =( Y )=   by PIP\n     )   (\n    (_)-(_)   (she is fatter than this)"; } },
   { id: "pip_sat_2", day: 11, from: 13 * 60, to: 17 * 60, when: () => S.letters.includes("pip_hello"), run: () => [
-    "{dim:(Pip again, helmet on, out of breath.)}",
+    "{dim:Pip again, helmet on, out of breath.}",
     "{sky:PIP:} Have you found the voice yet? On the radio. Go between the stations, low down. 77-something. It says KETTLE.",
     "{sky:PIP:} I'm not scared of it. I'm just saying it's there.",
-    "{dim:(she won't stay. she says she has to get home before it's dark, and then looks at the lake.)}"
+    "{dim:she won't stay. she says she has to get home before it's dark, and then looks at the lake.}"
   ], after: () => befriend("pip", 1) }
 ];
 
@@ -5348,11 +5348,11 @@ async function bootSequence(reboot) {
   if (fresh) {
     await pause(400);
     let name = "";
-    print("{dim:(type your name and press enter)}");
+    print("{dim:type your name and press enter}");
     while (!name) {
       const got = await ask("login: ");
       name = (got || "").trim().replace(/[^\p{L}\p{N} _'.-]/gu, "").slice(0, 18);
-      if (name.toLowerCase() === "biscuit") { print("{dim:(no.)}"); name = ""; }
+      if (name.toLowerCase() === "biscuit") { print("{dim:no.}"); name = ""; }
     }
     S.name = name;
     S.min = 6 * 60 + 10;
@@ -5383,7 +5383,7 @@ async function bootSequence(reboot) {
     print("");
     print("  {cmd:cat note.txt}    {cmd:look}");
     print("");
-    print("{dim:(tap anything underlined, or type it. {cmd:help} if you're stuck.)}");
+    print("{dim:tap anything underlined, or type it. {cmd:help} if you're stuck.}");
     S.mailbox = []; S.letters = [];
     deliverMail();
     remember("arrived at the cottage. couldn't sleep. the computer was already on.");
@@ -5396,7 +5396,7 @@ async function bootSequence(reboot) {
     else if (S.journal.length) print("{dim:from your journal, last night: " + esc(S.journal[S.journal.length - 1].text) + "}");
     if (catHere()) print("{dim:" + catLine() + "}");
     if (S.mailbox.length) print("{acc:There's post.} {cmd:mail}");
-    print("{dim:(}{cmd:look}{dim: around, or check the }{cmd:board}{dim:.)}");
+    print("{dim:}{cmd:look}{dim: around, or check the }{cmd:board}{dim:.}");
   }
   print("");
   T.busy = false;

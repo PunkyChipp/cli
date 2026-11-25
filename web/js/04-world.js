@@ -81,8 +81,8 @@ function worldTick() {
     tickAcc -= 1;
     S.min += 1;
     S.warmth = clamp(S.warmth - (fireLit() ? 0 : 0.02) + (fireLit() && roomName() === "parlour" ? 0.04 : 0), 0, 100);
-    if (S.min === 22 * 60 && !T.busy) { print(""); print("{dim:(it's ten o'clock. somewhere a clock agrees. {cmd:sleep} whenever you're ready.)}"); showLine(!T.busy); }
-    if (S.min === 25 * 60 && !T.busy) { print(""); print("{dim:(it's 1am. your eyes are doing that thing.)}"); showLine(!T.busy); keepsake("night_owl"); }
+    if (S.min === 22 * 60 && !T.busy) { print(""); print("{dim:it's ten o'clock. somewhere a clock agrees. {cmd:sleep} whenever you're ready.}"); showLine(!T.busy); }
+    if (S.min === 25 * 60 && !T.busy) { print(""); print("{dim:it's 1am. your eyes are doing that thing.}"); showLine(!T.busy); keepsake("night_owl"); }
     if (S.min >= 25 * 60 + 30 && !T.busy && !T.asking) { T.busy = true; nodOff().then(() => { T.busy = false; showLine(true); }); }
     catWander();
     maybeCatKeyboard();

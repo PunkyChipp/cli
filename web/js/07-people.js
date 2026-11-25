@@ -60,7 +60,7 @@ me run. She said "when you're older." I'm older now (by a month).
 
 Can you teach me a new command? Write it in a file and post it:
 
-   {cmd:write lesson.txt}     {dim:(type, then a line with just a dot)}
+   {cmd:write lesson.txt}     {dim:type, then a line with just a dot}
    {cmd:send lesson.txt to pip}
 
 PIP
@@ -199,7 +199,7 @@ I'll show you the cellar properly.
 
 function letterText(id) {
   const L = LETTERS[id] || (S.dyn && S.dyn[id]);
-  if (!L) return "{dim:(a letter that seems to have gone missing)}";
+  if (!L) return "{dim:a letter that seems to have gone missing}";
   return typeof L.text === "function" ? L.text() : L.text;
 }
 function letterMeta(id) { return LETTERS[id] || (S.dyn && S.dyn[id]); }
@@ -380,7 +380,7 @@ function radioOut(st) {
   const lines = [];
   if (st === "101.3") {
     if (S.min < 12 * 60 && S.min >= 6 * 60) {
-      lines.push("{dim:(a jingle on an out-of-tune piano)}");
+      lines.push("{dim:a jingle on an out-of-tune piano}");
       for (const l of ottoMorning()) lines.push("{acc:OTTOLINE:} " + l);
       if (S.quests.otto_radio !== "done") {
         S.quests.otto_radio = "done"; befriend("ottoline", 2); give("seed:chamomile", 2);
@@ -389,15 +389,15 @@ function radioOut(st) {
         remember("got the radio going. Ottoline said hello on air.");
       }
     } else if (S.min >= 12 * 60 && S.min < 20 * 60) {
-      lines.push("{dim:(afternoon requests. a scratchy record:)} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "} {dim:— for " + pick(["Fenn's bees", "the observatory", "'someone on the hill'", "whoever's at the cottage"]) + ".}");
-    } else lines.push("{dim:(off air. a tape loop of Ottoline saying \"goodnight, Hollow.\")}");
+      lines.push("{dim:afternoon requests. a scratchy record:} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "} {dim:— for " + pick(["Fenn's bees", "the observatory", "'someone on the hill'", "whoever's at the cottage"]) + ".}");
+    } else lines.push("{dim:off air. a tape loop of Ottoline saying \"goodnight, Hollow.\"}");
   } else if (st === "93.1") {
     lines.push("{sky:Weather for Lake Ilse, from the observatory.}");
     lines.push("{sky:Today: " + forecastFor(S.day) + ".}");
     lines.push("{sky:Tomorrow: " + forecastFor(S.day + 1) + ".}");
   } else if (st === "88.8") {
-    lines.push("{dim:(slow piano. somebody in the background of the recording asks for more toast.)}");
-    if (!A.ctx) lines.push("{dim:(tap the screen once to let the sound in.)}");
+    lines.push("{dim:slow piano. somebody in the background of the recording asks for more toast.}");
+    if (!A.ctx) lines.push("{dim:tap the screen once to let the sound in.}");
   } else if (st === "104.5" && S.disks.pip) {
     lines.push("{sky:PIP:} " + PIP_FM[0]);
     const tip = pick(PIP_FM.slice(1, -1));
@@ -407,13 +407,13 @@ function radioOut(st) {
     lines.push("{sky:PIP:} " + PIP_FM[PIP_FM.length - 1]);
   } else if (st === "77.7") {
     lines.push("{dim:kshhhhhhhh}");
-    lines.push("{dim:(under the static, a flat voice, one word at a time:)} {sky:" + heard(signalLevel()) + "}");
-    lines.push("{dim:(it's HEARTH's voice. the same one that reads the error messages.)}");
+    lines.push("{dim:under the static, a flat voice, one word at a time:} {sky:" + heard(signalLevel()) + "}");
+    lines.push("{dim:it's HEARTH's voice. the same one that reads the error messages.}");
     clue("r777");
   } else {
     lines.push("{dim:kshhhhhhhhhhhhhhhhhhhhh}");
-    if (st === "104.5") lines.push("{dim:(very faintly, a kid's voice: \"is this on? IS THIS ON?\" not yet, apparently.)}");
-    else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:(something, nearby on the dial. a voice? lower.)}");
+    if (st === "104.5") lines.push("{dim:very faintly, a kid's voice: \"is this on? IS THIS ON?\" not yet, apparently.}");
+    else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:something, nearby on the dial. a voice? lower.}");
   }
   return lines;
 }

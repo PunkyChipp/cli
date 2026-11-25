@@ -27,11 +27,11 @@ async function bootSequence(reboot) {
   if (fresh) {
     await pause(400);
     let name = "";
-    print("{dim:(type your name and press enter)}");
+    print("{dim:type your name and press enter}");
     while (!name) {
       const got = await ask("login: ");
       name = (got || "").trim().replace(/[^\p{L}\p{N} _'.-]/gu, "").slice(0, 18);
-      if (name.toLowerCase() === "biscuit") { print("{dim:(no.)}"); name = ""; }
+      if (name.toLowerCase() === "biscuit") { print("{dim:no.}"); name = ""; }
     }
     S.name = name;
     S.min = 6 * 60 + 10;
@@ -62,7 +62,7 @@ async function bootSequence(reboot) {
     print("");
     print("  {cmd:cat note.txt}    {cmd:look}");
     print("");
-    print("{dim:(tap anything underlined, or type it. {cmd:help} if you're stuck.)}");
+    print("{dim:tap anything underlined, or type it. {cmd:help} if you're stuck.}");
     S.mailbox = []; S.letters = [];
     deliverMail();
     remember("arrived at the cottage. couldn't sleep. the computer was already on.");
@@ -75,7 +75,7 @@ async function bootSequence(reboot) {
     else if (S.journal.length) print("{dim:from your journal, last night: " + esc(S.journal[S.journal.length - 1].text) + "}");
     if (catHere()) print("{dim:" + catLine() + "}");
     if (S.mailbox.length) print("{acc:There's post.} {cmd:mail}");
-    print("{dim:(}{cmd:look}{dim: around, or check the }{cmd:board}{dim:.)}");
+    print("{dim:}{cmd:look}{dim: around, or check the }{cmd:board}{dim:.}");
   }
   print("");
   T.busy = false;

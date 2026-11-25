@@ -39,12 +39,12 @@ function waterLine(phase, bob) {
 }
 
 async function doFish() {
-  if (roomName() !== "dock") return print("You'll want to be on the dock for that. {cmd:cd ~/dock} {dim:(fish don't live in " + roomName() + "s.)}");
-  if (!has("rod")) return print("You haven't got a rod. {dim:(Wren's is in the garden shed: {cmd:cd ~/garden/shed})}");
+  if (roomName() !== "dock") return print("You'll want to be on the dock for that. {cmd:cd ~/dock} {dim:fish don't live in " + roomName() + "s.}");
+  if (!has("rod")) return print("You haven't got a rod. {dim:Wren's is in the garden shed: {cmd:cd ~/garden/shed}}");
   if (T.cap) return print("you can't fish inside a pipe. you tried, though, and that's what matters.");
   if (weatherNow().rain >= 1 && !has("umbrella")) warm(-3, "cold. wet. you should've brought the duck umbrella.");
   print(pick(["You cast. {acc:plip.}", "The float lands a little short. Fine.", "A good cast, for once."]));
-  if (!S.flags.fishTaught) { S.flags.fishTaught = true; print("{dim:(watch the float. when it goes under, press enter, or tap the screen. not before.)}"); }
+  if (!S.flags.fishTaught) { S.flags.fishTaught = true; print("{dim:watch the float. when it goes under, press enter, or tap the screen. not before.}"); }
   sfx("plip");
   const d = printRaw(fmt(waterLine(0, false)));
   let early = false;
@@ -64,7 +64,7 @@ async function doFish() {
   if (T.skip) { print("{dim:you reel in. another time.}"); spend(5); return; }
   if (early) {
     spend(5);
-    return print(pick(["Nothing's biting yet. You pull the float out.", "Too soon. The float hadn't moved.", "You strike at nothing. The ripples settle."]) + " {dim:(wait until it goes under.)} {cmd:fish}");
+    return print(pick(["Nothing's biting yet. You pull the float out.", "Too soon. The float hadn't moved.", "You strike at nothing. The ripples settle."]) + " {dim:wait until it goes under.} {cmd:fish}");
   }
   const f = rollFish();
   d.innerHTML = fmt(waterLine(phase, true));
@@ -85,7 +85,7 @@ async function doFish() {
   if (f.id === "marmalade") return catchMarmalade();
   if (f.id === "junk:bottle") return catchBottle();
   const size = randi(f.size[0], f.size[1]);
-  print(f.line + (f.size[1] ? " {dim:(" + size + "cm)}" : ""));
+  print(f.line + (f.size[1] ? " {dim:" + size + "cm}" : ""));
   const L = S.fishlog[f.id] || { n: 0, best: 0 };
   const best = size > L.best && L.n > 0;
   L.n++; L.best = Math.max(L.best, size); S.fishlog[f.id] = L;

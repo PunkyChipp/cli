@@ -59,7 +59,7 @@ function clue(id) {
   S.clues[id] = S.day;
   toast("pinned to the board: <b>" + CLUES[id].title + "</b>");
   sfx("page");
-  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:(you pin it to the corkboard in the study. {cmd:board} to see it.)}"); showLine(true); } }, 50); }
+  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:you pin it to the corkboard in the study. {cmd:board} to see it.}"); showLine(true); } }, 50); }
 }
 
 function doBoard() {
@@ -78,7 +78,7 @@ function doBoard() {
     for (const [, c] of near) print("  {dim:?  " + c.hint + "}");
   }
   const hidden = Object.entries(CLUES).filter(([k, c]) => !found[k] && !c.links.some(l => found[l])).length;
-  if (hidden) { print(""); print("{dim:(and some string going off the edge of the board, to nothing yet.)}"); }
+  if (hidden) { print(""); print("{dim:and some string going off the edge of the board, to nothing yet.}"); }
 }
 
 /* ---------- the signal ---------- */
@@ -129,10 +129,10 @@ async function doListen(args) {
     print("{hi:listen}  read the receiver in the cellar");
     print("  {cmd:listen}               take a reading");
     print("  {cmd:listen --log}         readings since you arrived");
-    print("  listen --reply WORDS   send words back down the cable {dim:(disabled until it asks)}");
+    print("  listen --reply WORDS   send words back down the cable {dim:disabled until it asks}");
     return;
   }
-  if (roomName() !== "cellar") return print("listen: the receiver's in the cellar. {dim:({cmd:cd cellar})}");
+  if (roomName() !== "cellar") return print("listen: the receiver's in the cellar. {dim:{cmd:cd cellar}}");
   clue("listen"); clue("hum");
   if (/^--log/.test(a)) return listenLog();
   const rm = a.match(/^(--reply|-r|reply)\s*(.*)$/);
@@ -146,16 +146,16 @@ async function doListen(args) {
     bar.innerHTML = fmt("  listening {sky:" + dots + "}");
     await pause(70);
   }
-  print("  signal {hi:" + lvl.toFixed(2) + "}" + (lvl > 0.5 ? "  {acc:(strong)}" : lvl > 0.25 ? "  {dim:(rising)}" : ""));
-  if (S.flags.answered) { print("  heard: {dim:...}"); print("{dim:(it's quiet now. not gone. resting.)}"); return; }
+  print("  signal {hi:" + lvl.toFixed(2) + "}" + (lvl > 0.5 ? "  {acc:(strong)}" : lvl > 0.25 ? "  {dim:rising}" : ""));
+  if (S.flags.answered) { print("  heard: {dim:...}"); print("{dim:it's quiet now. not gone. resting.}"); return; }
   if (asking()) {
     await pause(400);
     print("  heard: {acc:three . three . three}");
     await pause(500);
     print("  heard: {warn:NAME ?}");
     await pause(300);
-    print("{dim:(the green light on the box has stopped blinking. it's on. it's waiting.)}");
-    print("{dim:(listen --reply ...)}");
+    print("{dim:the green light on the box has stopped blinking. it's on. it's waiting.}");
+    print("{dim:listen --reply ...}");
     S.flags.sawAsk = true;
     return;
   }
@@ -175,15 +175,15 @@ function listenLog() {
 
 async function doReply(words) {
   const w = (words || "").toLowerCase().replace(/[^a-z]/g, "");
-  if (!w) return print("reply with what? {dim:(listen --reply WORDS)}");
+  if (!w) return print("reply with what? {dim:listen --reply WORDS}");
   if (!asking()) {
     sfx("bonk");
-    return print("listen: reply disabled. {dim:(hearth.conf: reply = disabled  # until it asks)}");
+    return print("listen: reply disabled. {dim:hearth.conf: reply = disabled  # until it asks}");
   }
   if (!["lanternfish", "thelanternfish"].includes(w)) {
     S.flags.wrongReplies = (S.flags.wrongReplies || 0) + 1;
     print("{dim:you send it.} The hum holds the same note, patient. That wasn't it.");
-    if (S.flags.wrongReplies >= 2) print("{dim:(Wren: \"answer with its name.\" the name of what? what did they see, in 1962? the board might help: {cmd:board})}");
+    if (S.flags.wrongReplies >= 2) print("{dim:Wren: \"answer with its name.\" the name of what? what did they see, in 1962? the board might help: {cmd:board}}");
     return;
   }
   await trueEnding();
@@ -240,7 +240,7 @@ async function trueEnding() {
   await type("When you get back to the house you can hear the radio in the study before you're through the door. It's come on by itself, on a shortwave band you've never touched, and through all the static someone is talking.", 38);
   sfx("beep");
   await pause(900);
-  print("{acc:WREN:} {dim:(kshhh)} ...hear me? It's Wren. Is that you, at the house?");
+  print("{acc:WREN:} {dim:kshhh} ...hear me? It's Wren. Is that you, at the house?");
   await pause(1300);
   print("{acc:WREN:} We saw it from here. Me and Ása, we're out in her boat in the harbour at Tórshavn, and the whole lot lit up. All of it, all at once.");
   await pause(1500);
@@ -248,7 +248,7 @@ async function trueEnding() {
   await pause(1500);
   print("{acc:WREN:} I'm home on the second. Leave the lantern on for me. And thank you, love. I mean it.");
   await pause(1200);
-  print("{dim:(kshhhhh)}");
+  print("{dim:kshhhhh}");
   await pause(1800);
   print("");
   print("{hi:              ~  THE END  ~}");
@@ -274,7 +274,7 @@ function endStats() {
 }
 
 /* ---------- the files ---------- */
-const DIARY_1962 = `{dim:(a school exercise book, water-stained. "WREN ASHDOWN, 3B" on the cover.)}
+const DIARY_1962 = `{dim:a school exercise book, water-stained. "WREN ASHDOWN, 3B" on the cover.}
 
 {acc:25 oct 1962.}
 
@@ -298,7 +298,7 @@ we're not telling anyone. ever.`;
 
 function mysteryTree() {
   // a hidden file in the hall: Wren's .plan
-  ROOT.kids.cottage.kids[".plan"] = F(`{dim:(~/.plan — last edited 11 oct)}
+  ROOT.kids.cottage.kids[".plan"] = F(`{dim:~/.plan — last edited 11 oct}
 
   - ferry from Aberdeen on the 9th
   - meet Á. at last. thirty-eight years of tuesdays.
@@ -310,7 +310,7 @@ function mysteryTree() {
     for (let d = 1; d < S.day; d++) {
       const r = seeded(d * 13)();
       const v = Math.min(0.97, 0.06 + Math.min(d, 14) / 14 * 0.55 + (d >= 10 && d <= 18 ? 0.12 : 0) + r * 0.05);
-      k[dateStr(d).toLowerCase().replace(" ", "-") + ".log"] = F(() => "night of " + dateStr(d) + "\n  max " + v.toFixed(2) + "\n  heard: " + (v > 0.5 ? "three . light . three" : "kettle . water") + (d === S.day - 1 && d >= 10 ? "\n  {dim:(comet visible)}" : ""), { owner: "hearth" });
+      k[dateStr(d).toLowerCase().replace(" ", "-") + ".log"] = F(() => "night of " + dateStr(d) + "\n  max " + v.toFixed(2) + "\n  heard: " + (v > 0.5 ? "three . light . three" : "kettle . water") + (d === S.day - 1 && d >= 10 ? "\n  {dim:comet visible}" : ""), { owner: "hearth" });
     }
     return k;
   };

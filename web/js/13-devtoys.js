@@ -25,7 +25,7 @@ cmd("grep", "find lines that match (ls | grep txt, grep -r love)", (a, ctx) => {
   const flags = a.filter(x => /^-[a-z]+$/.test(x)).join("");
   const rest = a.filter(x => !/^-[a-z]+$/.test(x));
   const pat = rest.shift();
-  if (pat == null) { print("usage: grep [-i -v -n -r] pattern [file]  {dim:(or pipe into it: {cmd:ls | grep txt})}"); return false; }
+  if (pat == null) { print("usage: grep [-i -v -n -r] pattern [file]  {dim:or pipe into it: {cmd:ls | grep txt}}"); return false; }
   let re;
   try { re = new RegExp(pat, flags.includes("i") ? "i" : ""); } catch (e) { re = new RegExp(pat.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), flags.includes("i") ? "i" : ""); }
   const hit = l => re.test(l) !== flags.includes("v");
@@ -39,7 +39,7 @@ cmd("grep", "find lines that match (ls | grep txt, grep -r love)", (a, ctx) => {
       for (const k of Object.keys(children(p, true))) walk((p === "/" ? "" : p) + "/" + k);
     };
     walk(rest[0] ? resolve(rest[0]) : S.cwd);
-    if (!n) print("{dim:(nothing.)}");
+    if (!n) print("{dim:nothing.}");
     return n > 0;
   }
   const lines = inputLines(rest, ctx);
@@ -72,7 +72,7 @@ cmd("touch", "make an empty file", (a) => {
   const p = resolve(a[0]); const why = writable(p);
   if (why) { const n = nodeAt(p); return print(n && !n.user ? "You touch it. Gently. It's one of Wren's." : "{warn:" + why + "}"); }
   if (S.files[p] == null) S.files[p] = "";
-  print("{dim:(" + esc(shortPath(p)) + " exists now. it's empty. it's full of potential.)}");
+  print("{dim:" + esc(shortPath(p)) + " exists now. it's empty. it's full of potential.}");
 }, SYS);
 cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
   const raw = ctx.raw;
@@ -88,7 +88,7 @@ cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
   if (!targets.length) return print("rm what?");
   for (const t of targets) {
     const p = resolve(t);
-    if (S.files[p] != null) { delete S.files[p]; print("{dim:(removed " + esc(shortPath(p)) + ". gone, like a sock in a dryer.)}"); continue; }
+    if (S.files[p] != null) { delete S.files[p]; print("{dim:removed " + esc(shortPath(p)) + ". gone, like a sock in a dryer.}"); continue; }
     const n = nodeAt(p) || (findHere(t) || {}).node;
     if (!n) { print("rm: no such file: " + esc(t)); continue; }
     if (p.includes("biscuit") || t === "biscuit") { print("You can't remove Biscuit. Biscuit removes you. (from the armchair, mostly.)"); continue; }
@@ -97,7 +97,7 @@ cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
 }, SYS);
 cmd("cp copy", "copy a file (into your own notes)", (a) => {
   const [src, dst] = a.filter(x => !x.startsWith("-"));
-  if (!src || !dst) return print("usage: cp <from> <to>   {dim:(e.g. {cmd:cp ~/welcome.txt ~/study/notes/})}");
+  if (!src || !dst) return print("usage: cp <from> <to>   {dim:e.g. {cmd:cp ~/welcome.txt ~/study/notes/}}");
   const t = readFile(resolve(src));
   if (t == null) return print("cp: no such file: " + esc(src));
   let p = resolve(dst);
@@ -105,7 +105,7 @@ cmd("cp copy", "copy a file (into your own notes)", (a) => {
   const why = writable(p);
   if (why) return print("{warn:can't —} " + why);
   S.files[p] = plain(t);
-  print("{dim:(copied to " + esc(shortPath(p)) + ")}");
+  print("{dim:copied to " + esc(shortPath(p)) + "}");
 }, SYS);
 cmd("mv rename", "move or rename a file you wrote", (a) => {
   const [src, dst] = a;
@@ -117,18 +117,18 @@ cmd("mv rename", "move or rename a file you wrote", (a) => {
   const why = writable(p);
   if (why) return print("{warn:can't —} " + why);
   S.files[p] = S.files[s]; delete S.files[s];
-  print("{dim:(moved to " + esc(shortPath(p)) + ")}");
+  print("{dim:moved to " + esc(shortPath(p)) + "}");
 }, SYS);
 cmd("mkdir", "make a directory", () => print("You can't add a room to Wren's house. You think about a reading nook for a minute, then think about the planning office."), SYS);
 cmd("chmod chown", "change permissions", (a) => {
   const t = a.join(" ");
   if (t.includes("greenhouse")) {
     if (S.flags.ghOpen) return print("drwxr-xr-x. It's open. It's very open.");
-    if (has("oilcan")) { print("{dim:(the door doesn't care about chmod. it cares about oil. luckily you've got the oilcan, so:)}"); return doOil(["greenhouse"]); }
-    return print("chmod: the door does not care about permissions. the door cares about {acc:oil}. {dim:(the shed.)}");
+    if (has("oilcan")) { print("{dim:the door doesn't care about chmod. it cares about oil. luckily you've got the oilcan, so:}"); return doOil(["greenhouse"]); }
+    return print("chmod: the door does not care about permissions. the door cares about {acc:oil}. {dim:the shed.}");
   }
   if (t.includes("biscuit")) return print("chmod: Biscuit's permissions are set by Biscuit.");
-  print("chmod: done. {dim:(nothing visibly changed. that's chmod for you.)}");
+  print("chmod: done. {dim:nothing visibly changed. that's chmod for you.}");
 }, SYS);
 cmd("tree", "the shape of things", (a) => {
   const root = resolve(a[0] || HOME);
@@ -149,7 +149,7 @@ cmd("tree", "the shape of things", (a) => {
 /* ---------- the machine ---------- */
 cmd("clear cls", "clear the screen", () => clearScreen(), SYS);
 cmd("history", "everything you've typed", (a) => {
-  if (a[0] === "-c") { S.hist = []; return print("{dim:(history cleared. a fresh start. Biscuit approves of no evidence.)}"); }
+  if (a[0] === "-c") { S.hist = []; return print("{dim:history cleared. a fresh start. Biscuit approves of no evidence.}"); }
   const h = S.hist.slice(-40);
   const off = S.hist.length - h.length;
   h.forEach((l, i) => print("{dim:" + padL(off + i + 1, 5) + "}  " + '<span class="cmd" data-c="' + esc(l).replace(/"/g, "&quot;") + '">' + esc(l) + "</span>"));
@@ -168,7 +168,7 @@ cmd("alias", "make a shortcut (alias morning='brew; feed biscuit')", (a, ctx) =>
   S.aliases[m[1]] = m[3];
   print("{ok:alias set:} " + esc(m[1]) + " → " + esc(m[3]));
 }, SYS);
-cmd("unalias", "forget a shortcut", (a) => { delete S.aliases[a[0]]; print("{dim:(forgotten.)}"); }, SYS);
+cmd("unalias", "forget a shortcut", (a) => { delete S.aliases[a[0]]; print("{dim:forgotten.}"); }, SYS);
 cmd("man", "the manual for a command", doMan, SYS);
 cmd("whoami", "who are you", () => print(esc(NAME())), SYS);
 cmd("hostname", "this machine's name", () => print("hearth"), SYS);
@@ -215,7 +215,7 @@ cmd("kill pkill killall", "stop a process", (a) => {
   const t = a.filter(x => !x.startsWith("-")).join(" ").toLowerCase();
   const nine = a.includes("-9") || a.includes("-KILL");
   if (!t) return print("kill what?");
-  if (t === "1" || t.includes("biscuit")) return print(nine ? "kill: (1) - Operation not permitted.\n{dim:Biscuit gives you a look of profound disappointment. She has nine lives. You'd need -10.}" : "You can't kill Biscuit. You give her a gentle pat instead. {dim:(that's what kill means, in this house.)}");
+  if (t === "1" || t.includes("biscuit")) return print(nine ? "kill: (1) - Operation not permitted.\n{dim:Biscuit gives you a look of profound disappointment. She has nine lives. You'd need -10.}" : "You can't kill Biscuit. You give her a gentle pat instead. {dim:that's what kill means, in this house.}");
   if (t === "999" || t.includes("wren")) return print("Absolutely not.");
   if (t.includes("kettle") || t === "42") return print("The kettle clicks off. It'll sulk about this.");
   if (t.includes("rain") || t === "101") return print("You can't kill the rain. You've tried, as a species. It's still raining." + (weatherNow().rain ? "" : " (well, not right now.)"));
@@ -226,62 +226,62 @@ cmd("kill pkill killall", "stop a process", (a) => {
 }, SYS);
 cmd("ping", "say hello over the wires", async (a) => {
   const h = (a[0] || "").toLowerCase();
-  if (!h) return print("ping who?  {dim:(ping biscuit, ping wren, ping observatory...)}");
+  if (!h) return print("ping who?  {dim:ping biscuit, ping wren, ping observatory...}");
   if (h.includes("biscuit") || h === "cat") { for (let i = 1; i <= 3; i++) { print("64 bytes from biscuit: icmp_seq=" + i + " mrrp=yes time=∞ ms"); await pause(500); } return print("{dim:--- she heard you. she's choosing not to come. ---}"); }
   if (h.includes("wren")) { for (let i = 1; i <= 3; i++) { print("{dim:request timeout for icmp_seq " + i + "}"); await pause(600); } return print("{dim:--- no reply. she's probably on a ferry, talking to a stranger who'll remember her forever. ---}"); }
   const host = { observatory: "juniper", "post-office": "ottoline", postoffice: "ottoline", apiary: "fenn", "okafor-house": "pip", juniper: "juniper", ottoline: "ottoline", fenn: "fenn", pip: "pip", "the-lake": "lake", lake: "lake", localhost: "me", hearth: "me", "127.0.0.1": "me" }[h];
-  if (!host) return print("ping: cannot resolve " + esc(h) + ": unknown host {dim:(see {cmd:cat /etc/hosts})}");
+  if (!host) return print("ping: cannot resolve " + esc(h) + ": unknown host {dim:see {cmd:cat /etc/hosts}}");
   const reply = { juniper: "time=4.2 ms (she's awake. she's always awake.)", ottoline: "time=0.3 ms (instantly. she was waiting.)", fenn: "time=1200 ms (eventually. grumpily.)", pip: "time=0.1 ms PING BACK!!!", lake: "...", me: "time=0.0 ms (it's you. hello, you.)" }[host];
   for (let i = 1; i <= 3; i++) { print(host === "lake" ? "{dim:the lake does not reply. dignified.}" : "64 bytes from " + h + ": icmp_seq=" + i + " " + reply); await pause(450); if (host === "lake") break; }
 }, SYS);
 cmd("sudo", "do something as the boss", async (a, ctx) => {
   const rest = ctx.raw.replace(/^\s*sudo\s*/, "");
-  if (!rest) return print("usage: sudo <command>  {dim:(Wren's password is not 'password'.)}");
+  if (!rest) return print("usage: sudo <command>  {dim:Wren's password is not 'password'.}");
   if (!S.flags.sudoOK) {
     const pw = await ask("[sudo] password for " + NAME() + ": ", true);
     if (pw == null) return;
     if (pw.trim().toLowerCase() !== "biscuit1") {
       sfx("bonk");
-      return print(pick(["Sorry, try again. {dim:(it's not 'password'.)}", "Sorry, try again. {dim:(Wren's passwords are always about the cat.)}", "Sorry, try again. {dim:(it's the cat's name and a number. it's always the cat.)}"]));
+      return print(pick(["Sorry, try again. {dim:it's not 'password'.}", "Sorry, try again. {dim:Wren's passwords are always about the cat.}", "Sorry, try again. {dim:it's the cat's name and a number. it's always the cat.}"]));
     }
     S.flags.sudoOK = true;
-    print("{dim:(HEARTH recognises Wren's password. it doesn't ask how you knew. it's always the cat.)}");
+    print("{dim:HEARTH recognises Wren's password. it doesn't ask how you knew. it's always the cat.}");
   }
   if (/make me a sandwich/i.test(rest)) {
     give("sandwich"); keepsake("sudo");
     return print("Okay.\n{ok:(you got a sandwich.)}");
   }
   if (/^(rm|kill)/.test(rest)) return print("With great power comes great responsibility. You decide not to.");
-  if (/feed/.test(rest)) { S.cat.fed = 0; print("{dim:(as root, you override the feeding schedule. Biscuit will remember this as the day you finally understood.)}"); return pipeline(rest.replace(/^sudo\s*/, "")); }
+  if (/feed/.test(rest)) { S.cat.fed = 0; print("{dim:as root, you override the feeding schedule. Biscuit will remember this as the day you finally understood.}"); return pipeline(rest.replace(/^sudo\s*/, "")); }
   if (/^sleep/.test(rest)) { S.min = Math.max(S.min, 19 * 60); return pipeline("sleep"); }
-  print("{dim:(you feel powerful. nothing else changes.)}");
+  print("{dim:you feel powerful. nothing else changes.}");
   return pipeline(rest);
 }, SYS);
 cmd("theme colour color", "change the screen colour (amber, green, paper, rose, frost)", (a) => {
   const t = (a[0] || "").toLowerCase();
   const all = ["amber", "green", "paper", "rose", "frost"];
-  if (!all.includes(t)) return print("Themes: " + all.map(x => "{cmd:theme " + x + "}").join("  ") + "   {dim:(now: " + S.theme + ")}");
+  if (!all.includes(t)) return print("Themes: " + all.map(x => "{cmd:theme " + x + "}").join("  ") + "   {dim:now: " + S.theme + "}");
   S.theme = t; applyTheme();
   print({ amber: "Amber. Warm as a lamp.", green: "Green phosphor. Very 1987. Very serious.", paper: "Paper. For the daytime, and for people who own a fountain pen.", rose: "Rose. Like a sunset that decided to stay.", frost: "Frost. Blue and quiet, like the first snow." }[t]);
 }, SYS);
 cmd("sound audio volume", "sound on or off", (a) => {
   const on = (a[0] || "").toLowerCase() === "on" ? true : (a[0] || "").toLowerCase() === "off" ? false : !S.sound;
   audioWake(); setSound(on);
-  print(on ? "{ok:Sound on.} Rain, kettle, keys, and the occasional owl." : "Sound off. {dim:(the owls will carry on without you.)}");
+  print(on ? "{ok:Sound on.} Rain, kettle, keys, and the occasional owl." : "Sound off. {dim:the owls will carry on without you.}");
 }, SYS);
-cmd("keys", "show or hide the shortcut keys", (a) => { S.keys = (a[0] || "").toLowerCase() === "off" ? false : (a[0] || "").toLowerCase() === "on" ? true : !S.keys; setKeys(contextKeys()); print(S.keys ? "Shortcut keys on." : "Shortcut keys hidden. {dim:({cmd:keys on} to bring them back.)}"); }, SYS);
+cmd("keys", "show or hide the shortcut keys", (a) => { S.keys = (a[0] || "").toLowerCase() === "off" ? false : (a[0] || "").toLowerCase() === "on" ? true : !S.keys; setKeys(contextKeys()); print(S.keys ? "Shortcut keys on." : "Shortcut keys hidden. {dim:{cmd:keys on} to bring them back.}"); }, SYS);
 cmd("textsize fontsize zoom", "bigger or smaller text (textsize 24)", (a) => {
   const n = clamp(parseInt(a[0], 10) || 22, 14, 34);
   S.fs = n; document.documentElement.style.setProperty("--fs", n + "px");
   print("Text size: " + n + ".");
 }, SYS);
-cmd("save", "save (it does this by itself, but)", () => { save(); print("{ok:Saved.} {dim:(HEARTH saves after everything you do. but it's nice to be sure.)}"); }, SYS);
+cmd("save", "save (it does this by itself, but)", () => { save(); print("{ok:Saved.} {dim:HEARTH saves after everything you do. but it's nice to be sure.}"); }, SYS);
 cmd("reset", "start the whole season over", async () => {
   print("{warn:This forgets everything: the garden, the letters, what Biscuit thinks of you.}");
   const y = await ask("Type {yes} to start over: ".replace(/[{}]/g, ""));
-  if ((y || "").trim().toLowerCase() !== "yes") return print("{dim:(phew. nothing changed.)}");
+  if ((y || "").trim().toLowerCase() !== "yes") return print("{dim:phew. nothing changed.}");
   wipe(); save();
-  print("{dim:(forgetting...)}");
+  print("{dim:forgetting...}");
   await pause(800);
   location.reload();
 }, SYS);
@@ -297,7 +297,7 @@ cmd("reboot restart shutdown poweroff", "turn it off and on again", async () => 
   await bootSequence(true);
 }, SYS);
 cmd("exit logout quit bye", "leave", async () => {
-  print("logout: you're the only user. {dim:(the game saves as you go. close it whenever.)}");
+  print("logout: you're the only user. {dim:the game saves as you go. close it whenever.}");
   save();
 }, SYS);
 cmd("fortune", "something someone once said", () => { const [q, who] = pick(FORTUNES); print("{acc:\"" + q + "\"}  {dim:· " + who + "}"); }, SYS);
@@ -336,7 +336,7 @@ cmd("hearthfetch neofetch screenfetch fastfetch", "about this computer, prettily
     "{acc:Theme}: " + S.theme,
     "{acc:Cat}: Biscuit (PID 1)",
     "{acc:Weather}: " + weatherNow().name,
-    "{acc:Memory}: 640K {dim:(plenty)}"
+    "{acc:Memory}: 640K {dim:plenty}"
   ];
   for (let i = 0; i < Math.max(art.length, info.length); i++) print((art[i] || "                     ") + "  " + (info[i] || ""));
 }, SYS);
@@ -357,14 +357,14 @@ cmd("yes", "agree, repeatedly", async (a) => {
 cmd("sl", "you meant ls", async () => {
   const k = ["      )  )", "     (  (", "    .-----.", "   |       |=,", "   |       | ||", "   '-------'-'"];
   for (const l of k) { print("{acc:" + esc(l) + "}"); await pause(60); }
-  print("{dim:(you meant ls.)}");
+  print("{dim:you meant ls.}");
 }, SYS);
 cmd("git", "version control", () => print("Wren didn't believe in version control. 'I remember what I did,' she wrote, in 1987, and then, in 1993, 'mostly.'"), SYS);
-cmd("make", "make something", (a) => (a.join(" ").includes("tea") ? doBrew([]) : a.join(" ").includes("love") ? print("make: *** You can't make love in a cottage terminal. Have a cup of tea.") : print("make: *** No rule to make target '" + esc(a[0] || "") + "'.  {dim:(did you mean {cmd:cook}? or {cmd:brew}?)}")), SYS);
-cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "python: not installed. {dim:(HEARTH has 640K. it uses most of it listening.)}" : "not installed."), SYS);
-cmd("npm pip3 apt brew-install", "install things", () => print("no network. {dim:(the only cable goes into the lake.)}"), SYS);
+cmd("make", "make something", (a) => (a.join(" ").includes("tea") ? doBrew([]) : a.join(" ").includes("love") ? print("make: *** You can't make love in a cottage terminal. Have a cup of tea.") : print("make: *** No rule to make target '" + esc(a[0] || "") + "'.  {dim:did you mean {cmd:cook}? or {cmd:brew}?}")), SYS);
+cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "python: not installed. {dim:HEARTH has 640K. it uses most of it listening.}" : "not installed."), SYS);
+cmd("npm pip3 apt brew-install", "install things", () => print("no network. {dim:the only cable goes into the lake.}"), SYS);
 cmd("ssh telnet", "connect to elsewhere", (a) => print((a[0] || "").includes("observatory") || (a[0] || "").includes("juniper") ? "Connecting to observatory... {dim:Connection refused. a note: 'if you want to talk, write. or row. — J.V.'}" : "ssh: nowhere to go. everywhere worth going is in this house, or across the lake by post."), SYS);
-cmd("coffee", "coffee", () => print("There's no coffee in the house. Wren doesn't drink it. {dim:(tea's in the kitchen.)}"), SYS);
+cmd("coffee", "coffee", () => print("There's no coffee in the house. Wren doesn't drink it. {dim:tea's in the kitchen.}"), SYS);
 cmd("cron crontab", "scheduled things", () => {
   print("{dim:# the cottage's routine, according to Biscuit}");
   print("0  6  * * *   biscuit --demand-breakfast");
@@ -374,7 +374,7 @@ cmd("cron crontab", "scheduled things", () => {
   print("0  22 * * *   house --tick --settle");
 }, SYS);
 cmd("env printenv export set", "environment", (a, ctx) => {
-  if (/export|set/.test(ctx.raw) && a.length) return print("{dim:(HEARTH nods and writes it on a post-it. it'll forget by morning.)}");
+  if (/export|set/.test(ctx.raw) && a.length) return print("{dim:HEARTH nods and writes it on a post-it. it'll forget by morning.}");
   print("USER=" + esc(NAME()) + "\nHOME=/cottage\nSHELL=/bin/hearth\nPWD=" + S.cwd + "\nCAT=biscuit\nKETTLE=" + (teaWarm() ? "warm" : "cold") + "\nWEATHER=" + weatherNow().name + "\nLANG=en_GB.TEA-8");
 }, SYS);
 cmd("which type", "where a command lives", (a) => print(a[0] ? (findCmd(a[0]) ? "/bin/" + esc(a[0]) : S.aliases[a[0]] ? esc(a[0]) + ": aliased to '" + esc(S.aliases[a[0]]) + "'" : esc(a[0]) + " not found") : "which what?"), SYS);
@@ -384,24 +384,24 @@ cmd("xyzzy plugh", "", () => print("A hollow voice says \"fool.\"\n{dim:...it's 
 cmd("hack hacker", "", async () => {
   print("{ok:HACKING THE MAINFRAME...}");
   for (let i = 0; i <= 10; i++) { print("{ok:[" + "#".repeat(i) + " ".repeat(10 - i) + "] " + i * 10 + "%}"); await pause(120); }
-  print("{ok:ACCESS GRANTED} to: {acc:the biscuit tin}. You eat one. {dim:(Pip would be so proud.)}");
+  print("{ok:ACCESS GRANTED} to: {acc:the biscuit tin}. You eat one. {dim:Pip would be so proud.}");
   warm(2);
 }, { secret: true });
 cmd("matrix", "", () => print("{ok:The rain on the window does a decent impression.}"), { secret: true });
 cmd("dance", "", () => print("You do a little dance in the " + roomName() + ". " + (catHere() ? "Biscuit leaves the room." : "Nobody sees. Or so you think. (Margaret the spider saw.)")), { secret: true });
 cmd("hug", "", () => print(catHere() ? "You hug Biscuit. She endures it for exactly two seconds, then becomes a liquid and escapes." : "You hug yourself. It's not nothing. You're doing well, you know."), { secret: true });
 cmd("sing hum whistle", "", () => print(pick(["You sing a bit. The kettle joins in, slightly flat.", "You hum. The house hums back. (it's the freezer.)", "You whistle. Somewhere outside, a blackbird answers, better."])), { secret: true });
-cmd("cry", "", () => print("That's alright. You can, here. The house has heard worse and loved everyone anyway.\n{dim:(make a cup of tea, after. {cmd:brew})}"), { secret: true });
+cmd("cry", "", () => print("That's alright. You can, here. The house has heard worse and loved everyone anyway.\n{dim:make a cup of tea, after. {cmd:brew}}"), { secret: true });
 cmd("lantern", "light the dock lantern", () => doLantern(), { group: "living", when: () => S.disks.lantern });
 cmd("catsay cowsay", "Pip's program: a cat says a thing", (a, ctx) => {
-  if (!S.disks.pip) return print(/cowsay/.test(ctx.raw) ? "No cows here. Pip is working on something better, she says." : "catsay: not installed. {dim:(Pip's working on it.)}");
+  if (!S.disks.pip) return print(/cowsay/.test(ctx.raw) ? "No cows here. Pip is working on something better, she says." : "catsay: not installed. {dim:Pip's working on it.}");
   const msg = (a.join(" ") || pick(["feed me", "i have not been fed", "the armchair is mine", "mrrp"])).slice(0, 40);
   print(" " + "_".repeat(msg.length + 2));
   print("< " + esc(msg) + " >");
   print(" " + "-".repeat(msg.length + 2));
   print("{acc:    \\    /\\_/\\}");
   print("{acc:     \\  ( o.o )}");
-  print("{acc:         > ^ <   {dim:(by PIP)}}");
+  print("{acc:         > ^ <   {dim:by PIP}}");
 }, SYS);
 cmd("beep bell", "", () => { sfx("beep"); print("{dim:beep.}"); }, { secret: true });
 
@@ -413,7 +413,7 @@ async function execFile(name) {
   if (!n) { print("no such file: " + esc(name)); return false; }
   if (p.startsWith("/bin/")) return runOne(p.slice(5));
   if (n.kind === "dir") { print(esc(name) + " is a place. {cmd:cd " + esc(name) + "}"); return false; }
-  print("permission denied: " + esc(name) + " {dim:(it's a note, not a program. {cmd:cat " + esc(name) + "} it.)}");
+  print("permission denied: " + esc(name) + " {dim:it's a note, not a program. {cmd:cat " + esc(name) + "} it.}");
   return false;
 }
 async function pipGame() {
@@ -458,11 +458,11 @@ const MAN_EXTRA = {
 };
 function doMan(a) {
   const n = (a[0] || "").toLowerCase();
-  if (!n) return print("What manual page do you want?  {dim:(e.g. {cmd:man fish}, {cmd:man grep}, {cmd:man man})}");
+  if (!n) return print("What manual page do you want?  {dim:e.g. {cmd:man fish}, {cmd:man grep}, {cmd:man man}}");
   if (n === "man") return print("{hi:MAN(1)}\n\n{acc:NAME}\n    man — the manual.\n\n{acc:DESCRIPTION}\n    Explains things. Like Wren, but in a fixed-width font.\n\n{acc:BUGS}\n    Will not explain Biscuit. Nothing can.");
   if (["biscuit", "cat(8)"].includes(n)) return print("{hi:BISCUIT(8)}\n\n{acc:NAME}\n    biscuit — orange cat, PID 1\n\n{acc:SYNOPSIS}\n    biscuit [--wherever-she-likes]\n\n{acc:DESCRIPTION}\n    See {cmd:cat ~/kitchen/biscuit_manual.txt}.\n\n{acc:BUGS}\n    Several. All load-bearing.");
   const c = findCmd(n);
-  if (!c) return print("No manual entry for " + esc(n) + ". {dim:(try {cmd:help})}");
+  if (!c) return print("No manual entry for " + esc(n) + ". {dim:try {cmd:help}}");
   const aliases = Object.keys(ALIAS_OF).filter(k => ALIAS_OF[k] === c.name);
   print("{hi:" + c.name.toUpperCase() + "(1)}" + "          {dim:HEARTH Manual}");
   print("");
