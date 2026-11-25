@@ -95,3 +95,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 22 — hints
 - Rewrote every hint (also shown on the paper card) from clipped instructions ("the trunk, in the attic.", "{sit}. that's allowed.") into sentences like a note from someone who knows the house: "You've got the key. Wren's trunk is up in the attic.", "Fenn wants lavender, and Wren keeps the good seeds hidden...", "You could just sit for a bit. Nobody's in a hurry." They still never give away the answer to the mystery.
+
+## 23 — Ottoline on the radio
+- Every day of Ottoline's morning show was exactly three short lines, which is its own kind of tell. Rewrote all fourteen days with uneven lengths (two to three lines, some long), tangents, names, and the way a local radio host actually talks: "Derek says he'll have it done by eleven, which means one", "Abernathy, lakes aren't loud. And he looked at me and said, this one is, and went out. So that's Fenn.", "She sounded quite odd about it, to be honest."
