@@ -129,3 +129,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 - 93.1 is now Juniper reading a forecast off a card, one plain sentence per kind of weather (fog still says the old fish come up).
 - Pip FM rewritten in Pip's caps voice; tips and news sound like a kid, clue triggers made case-insensitive.
 - Ottoline's afternoon requests get a line of her own instead of a dash-aside. "foggy, like the lake's thinking" is just "foggy".
+
+## 32 — kitchen, fire, woodpile, Biscuit
+- Chopping wood: whole sentences instead of "Two logs. A robin watches." fragments; the fire, candle and purr lines lose their simile and list-of-three.
+- Wrong-target replies (feed, thump, cook) now tell you what does work instead of making a joke ("Or not here. Or not real." gone).
+- The "learned a recipe" line no longer uses a dash aside.
