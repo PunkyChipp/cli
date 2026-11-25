@@ -98,3 +98,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 23 — Ottoline on the radio
 - Every day of Ottoline's morning show was exactly three short lines, which is its own kind of tell. Rewrote all fourteen days with uneven lengths (two to three lines, some long), tangents, names, and the way a local radio host actually talks: "Derek says he'll have it done by eleven, which means one", "Abernathy, lakes aren't loud. And he looked at me and said, this one is, and went out. So that's Fenn.", "She sounded quite odd about it, to be honest."
+
+## 24 — the garden
+- Rewrote the garden's planting, watering and harvesting lines. Cut the quips ("Seeds don't take to carpet", "unless you count Biscuit, and you shouldn't", "The soil appreciates the thought", "The mister hisses at you. It's got this.") and the stock simile on the moonflower ("like it's remembering the moon", now "a faint blue-gold, enough to see your fingers by"). Harvesting now reads "You pick ... and put them in your coat pocket" instead of a "You harvest:" label.
