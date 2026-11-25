@@ -3523,31 +3523,31 @@ function doHelp(a) {
 }
 
 function hintText() {
-  const H = s => "{acc:hint:} " + s;
-  if (!S.read["/cottage/study/note.txt"]) return H("there's a note from Wren, in the study. {cmd:cat ~/study/note.txt}");
-  if (S.mailbox.length) return H("you've got post. {cmd:mail}");
-  if (!S.stats.teas) return H("the kettle's in the kitchen. {cmd:cd kitchen}, {cmd:brew}.");
-  if (!S.flags.fedOnce) return H("Biscuit wants feeding. {cmd:feed biscuit}");
-  if (!S.disks.radio && !has("disk:radio")) return H("the radio disk is \"with the bread\". {cmd:ls ~/kitchen/bread_bin}");
-  if (has("disk:radio")) return H("disks go in the drive in the study. {cmd:cd study}, {cmd:insert}.");
-  if (!S.flags.planted) return H("you've seeds in your coat. {cmd:cd garden}, {cmd:plant}. then {cmd:water}.");
-  if (S.quests.otto_radio === "open" && S.disks.radio && S.min < 12 * 60) return H("Ottoline's on {cmd:radio 101.3} until noon.");
-  if (!has("rod") && !S.stats.fish) return H("Wren's fishing rod is in the shed. {cmd:ls ~/garden/shed}");
-  if (S.quests.fenn_lav === "open" && !has("seed:lavender") && !has("lavender") && !S.plots.some(p => p.crop === "lavender")) return H("Wren hid the good seeds. \"use your -a's.\" {cmd:ls -a ~/garden/shed}");
-  if (S.quests.fenn_lav === "open" && has("lavender")) return H("{cmd:send lavender to fenn}");
-  if (S.quests.pip_lesson === "open") return H("Pip wants a lesson. {cmd:write lesson.txt}, then {cmd:send lesson.txt to pip}.");
-  if (!S.flags.lampLit) return H(has("lamp") ? (has("matches") ? "{cmd:light lamp}" : "you need matches. kitchen drawer.") : "the attic's dark. there's an oil lamp in the {cmd:cd cellar}.");
-  if (!S.flags.ghOpen) return H(has("oilcan") ? "{cmd:cd garden}, {cmd:oil greenhouse}" : "the greenhouse door needs oil. the oilcan's in the shed.");
-  if (S.quests.jun_soup === "open") return H(S.recipes.carrot_soup ? (has("carrot_soup") ? "{cmd:send carrot soup to juniper}" : canMake("carrot_soup") ? "{cmd:cd kitchen}, {cmd:cook carrot soup}" : "soup needs two carrots. they take three nights.") : "there's a soup card in the kitchen: {cmd:cat ~/kitchen/recipes/carrot_soup.card}");
-  if (has("disk:sky") || has("disk:pip") || has("disk:lantern")) return H("there's a disk in your pocket. {cmd:cd study}, {cmd:insert}.");
-  if (!S.flags.gotKey) return H("the trunk key is on Biscuit's collar. she'll part with it when she trusts you. that takes days, and a fish wouldn't hurt.");
-  if (!S.taken["/cottage/attic/trunk/lantern.dsk"]) return H("the trunk, in the attic.");
-  if (has("seed:moonflower") && S.gh.every(p => p.crop !== "moonflower")) return H("moonflowers go in the greenhouse.");
-  if (!has("moonflower") && !S.flags.lanternLit && S.gh.some(p => p.crop === "moonflower")) return H("moonflowers open at night. harvest after dark.");
-  if (!S.flags.lanternLit && S.day < SEASON_END) return H("the lantern's ready, or nearly. the 25th is " + plural(SEASON_END - S.day, "day") + " away. there's a lot in this house you haven't looked at yet. {cmd:board}");
-  if (!S.flags.lanternLit) return H(isNight() ? "{cmd:cd dock}. {cmd:lantern}." : "tonight, after dark, on the dock.");
-  if (!S.flags.answered) return H(S.flags.sawAsk ? "it asked you something. Wren said what to answer with. the board has what you know: {cmd:board}" : "did you hear the cellar change, after the lantern?");
-  return H(pick(["the carp comes up in fog, or at dawn.", "your jar's not full. {cmd:jar}", "write to someone.", "{cmd:sit}. that's allowed."]));
+  const H = s => "{acc:hint:} " + s;  // (also shown, without the label, on the paper card)
+  if (!S.read["/cottage/study/note.txt"]) return H("You haven't read Wren's note yet. It's the envelope on the desk in the study: {cmd:cat ~/study/note.txt}");
+  if (S.mailbox.length) return H("There's post waiting for you. {cmd:mail}");
+  if (!S.stats.teas) return H("You could start with a cup of tea. The kettle's in the kitchen: {cmd:cd kitchen}, then {cmd:brew}.");
+  if (!S.flags.fedOnce) return H("Biscuit hasn't been fed yet today. {cmd:feed biscuit}");
+  if (!S.disks.radio && !has("disk:radio")) return H("Wren's list says the radio disk is with the bread. Try the bread bin in the kitchen: {cmd:ls ~/kitchen/bread_bin}");
+  if (has("disk:radio")) return H("You've got a disk in your pocket. The drive is in the study, so {cmd:cd study} and then {cmd:insert}.");
+  if (!S.flags.planted) return H("There are seeds in your coat pocket. Go out to the {cmd:cd garden}, {cmd:plant} something, and give it some {cmd:water}.");
+  if (S.quests.otto_radio === "open" && S.disks.radio && S.min < 12 * 60) return H("Ottoline's on the radio until midday, if you want to hear her say hello: {cmd:radio 101.3}");
+  if (!has("rod") && !S.stats.fish) return H("Wren's fishing rod is hanging up in the shed: {cmd:ls ~/garden/shed}");
+  if (S.quests.fenn_lav === "open" && !has("seed:lavender") && !has("lavender") && !S.plots.some(p => p.crop === "lavender")) return H("Fenn wants lavender, and Wren keeps the good seeds hidden. Her note said \"use your -a's\", which means {cmd:ls -a ~/garden/shed}");
+  if (S.quests.fenn_lav === "open" && has("lavender")) return H("You've got lavender now. Fenn's been waiting since 1998: {cmd:send lavender to fenn}");
+  if (S.quests.pip_lesson === "open") return H("Pip asked you to teach her a command. Write one in a file with {cmd:write lesson.txt}, then {cmd:send lesson.txt to pip}.");
+  if (!S.flags.lampLit) return H(has("lamp") ? (has("matches") ? "You've got the lamp and the matches. {cmd:light lamp}" : "The lamp needs lighting, and the matches are in the kitchen drawer.") : "You can't see anything in the attic without a light. There's an oil lamp down in the {cmd:cd cellar}.");
+  if (!S.flags.ghOpen) return H(has("oilcan") ? "Take the oilcan to the greenhouse door: {cmd:cd garden}, then {cmd:oil greenhouse}." : "The greenhouse door is rusted shut. There's an oilcan in the shed.");
+  if (S.quests.jun_soup === "open") return H(S.recipes.carrot_soup ? (has("carrot_soup") ? "The soup's made. {cmd:send carrot soup to juniper}" : canMake("carrot_soup") ? "You've got the carrots for Juniper's soup: {cmd:cd kitchen}, then {cmd:cook carrot soup}." : "Juniper's soup needs two carrots, and carrots take three nights to grow.") : "Juniper wants soup. There's a recipe card for it in the kitchen: {cmd:cat ~/kitchen/recipes/carrot_soup.card}");
+  if (has("disk:sky") || has("disk:pip") || has("disk:lantern")) return H("You've got a disk in your pocket that wants putting in HEARTH: {cmd:cd study}, then {cmd:insert}.");
+  if (!S.flags.gotKey) return H("The key to Wren's trunk is on Biscuit's collar, and she won't let you have it until she trusts you. That takes a few days of feeding and fuss. A fish would help.");
+  if (!S.taken["/cottage/attic/trunk/lantern.dsk"]) return H("You've got the key. Wren's trunk is up in the attic.");
+  if (has("seed:moonflower") && S.gh.every(p => p.crop !== "moonflower")) return H("Moonflowers only grow in the greenhouse pots.");
+  if (!has("moonflower") && !S.flags.lanternLit && S.gh.some(p => p.crop === "moonflower")) return H("The moonflower only opens at night, so you'll have to pick it after dark.");
+  if (!S.flags.lanternLit && S.day < SEASON_END) return H("The lantern's nearly sorted and the 25th is " + plural(SEASON_END - S.day, "day") + " away. There's a lot in this house you haven't looked at properly yet. {cmd:board}");
+  if (!S.flags.lanternLit) return H(isNight() ? "It's time. Go down to the {cmd:cd dock} and light the {cmd:lantern}." : "It's Lantern Night. Wait until it's dark, then go down to the dock.");
+  if (!S.flags.answered) return H(S.flags.sawAsk ? "The box in the cellar asked you something. Wren's letter said what to answer with, and everything you've worked out is on the {cmd:board}." : "Did you hear the cellar change its note, after you lit the lantern?");
+  return H(pick(["People say the carp comes up in fog, or just after dawn.", "There's still room in the jar. {cmd:jar}", "It's been a while since you wrote to anyone.", "You could just {cmd:sit} for a bit. Nobody's in a hurry."]));
 }
 
 function doOil(a) {

@@ -92,3 +92,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 21 — the kitchen
 - Rewrote the tea, cooking and eating lines as full sentences that notice something ("You make it strong with a bit of milk and drink it standing at the window.", "You rinse the soil off a carrot under the tap and eat it raw. It's sweeter than shop ones."). The kettle is no longer a rule-of-three ("ticks, then grumbles, then whistles").
 - Dropped the "(warmer)" / "(calmer)" tags after actions. The warmth meter on the paper card already shows it, and the tag made every cosy moment read like a stat change.
+
+## 22 — hints
+- Rewrote every hint (also shown on the paper card) from clipped instructions ("the trunk, in the attic.", "{sit}. that's allowed.") into sentences like a note from someone who knows the house: "You've got the key. Wren's trunk is up in the attic.", "Fenn wants lavender, and Wren keeps the good seeds hidden...", "You could just sit for a bit. Nobody's in a hurry." They still never give away the answer to the mystery.
