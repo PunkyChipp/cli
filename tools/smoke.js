@@ -103,7 +103,7 @@ async function type(line, waitFor) {
   await step("history expansion !!", async () => { await type("echo again"); G.S.hist.push("echo again"); G.S.hist.push("!!"); const o = await type("!!"); expect(o.includes("again"), o); });
   await step("grep -r through the house", () => type("grep -r carp ~", "carp"));
   await step("man pages", () => type("man fish", "NAME"));
-  await step("kill biscuit refuses", () => type("kill -9 biscuit", "nine lives"));
+  await step("kill biscuit refuses", () => type("kill -9 biscuit", "PID 1 is Biscuit"));
   await step("rm -rf / is a no", () => type("rm -rf /", "No."));
   await step("sleep is refused in the morning", () => type("sleep", "It's only"));
   await step("mystery: the cellar, listen, the plan, the log, 77.7", async () => {

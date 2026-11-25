@@ -72,7 +72,7 @@ cmd("touch", "make an empty file", (a) => {
   const p = resolve(a[0]); const why = writable(p);
   if (why) { const n = nodeAt(p); return print(n && !n.user ? "You touch it. Gently. It's one of Wren's." : "{warn:" + why + "}"); }
   if (S.files[p] == null) S.files[p] = "";
-  print("{dim:" + esc(shortPath(p)) + " exists now. it's empty. it's full of potential.}");
+  print("{dim:" + esc(shortPath(p)) + " exists now. there's nothing in it yet.}");
 }, SYS);
 cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
   const raw = ctx.raw;
@@ -88,11 +88,11 @@ cmd("rm del delete", "remove a file you wrote", (a, ctx) => {
   if (!targets.length) return print("rm what?");
   for (const t of targets) {
     const p = resolve(t);
-    if (S.files[p] != null) { delete S.files[p]; print("{dim:removed " + esc(shortPath(p)) + ". gone, like a sock in a dryer.}"); continue; }
+    if (S.files[p] != null) { delete S.files[p]; print("{dim:removed " + esc(shortPath(p)) + ".}"); continue; }
     const n = nodeAt(p) || (findHere(t) || {}).node;
     if (!n) { print("rm: no such file: " + esc(t)); continue; }
-    if (p.includes("biscuit") || t === "biscuit") { print("You can't remove Biscuit. Biscuit removes you. (from the armchair, mostly.)"); continue; }
-    print(n.kind === "dir" ? "You can't remove a whole " + esc(t) + ". Wren would come home to a hole in the house." : "You can't bring yourself to throw away one of Wren's things.");
+    if (p.includes("biscuit") || t === "biscuit") { print("Biscuit isn't a file. She's on the armchair, and she's staying there."); continue; }
+    print(n.kind === "dir" ? "That's a whole room of Wren's house. You leave it where it is." : "You can't bring yourself to throw away one of Wren's things.");
   }
 }, SYS);
 cmd("cp copy", "copy a file (into your own notes)", (a) => {
@@ -111,7 +111,7 @@ cmd("mv rename", "move or rename a file you wrote", (a) => {
   const [src, dst] = a;
   if (!src || !dst) return print("usage: mv <from> <to>");
   const s = resolve(src);
-  if (S.files[s] == null) return print(nodeAt(s) ? "That's Wren's. It lives where it lives." : "mv: no such file: " + esc(src));
+  if (S.files[s] == null) return print(nodeAt(s) ? "That's one of Wren's. You can {cmd:cp} it into your notes, but you can't move it." : "mv: no such file: " + esc(src));
   let p = resolve(dst);
   if (isDir(p)) p = p + "/" + s.split("/").pop();
   const why = writable(p);
@@ -119,16 +119,16 @@ cmd("mv rename", "move or rename a file you wrote", (a) => {
   S.files[p] = S.files[s]; delete S.files[s];
   print("{dim:moved to " + esc(shortPath(p)) + "}");
 }, SYS);
-cmd("mkdir", "make a directory", () => print("You can't add a room to Wren's house. You think about a reading nook for a minute, then think about the planning office."), SYS);
+cmd("mkdir", "make a directory", () => print("You can't add rooms to the house. Your own files go in {cmd:~/study/notes}."), SYS);
 cmd("chmod chown", "change permissions", (a) => {
   const t = a.join(" ");
   if (t.includes("greenhouse")) {
-    if (S.flags.ghOpen) return print("drwxr-xr-x. It's open. It's very open.");
-    if (has("oilcan")) { print("{dim:the door doesn't care about chmod. it cares about oil. luckily you've got the oilcan, so:}"); return doOil(["greenhouse"]); }
-    return print("chmod: the door does not care about permissions. the door cares about {acc:oil}. {dim:the shed.}");
+    if (S.flags.ghOpen) return print("drwxr-xr-x. It's already open.");
+    if (has("oilcan")) { print("{dim:it's the hinges that are stuck, not the permissions. you've got the oilcan, so:}"); return doOil(["greenhouse"]); }
+    return print("chmod: it's the hinges that are stuck, not the permissions. {dim:there's an oilcan in the shed.}");
   }
   if (t.includes("biscuit")) return print("chmod: Biscuit's permissions are set by Biscuit.");
-  print("chmod: done. {dim:nothing visibly changed. that's chmod for you.}");
+  print("chmod: done.");
 }, SYS);
 cmd("tree", "the shape of things", (a) => {
   const root = resolve(a[0] || HOME);
@@ -149,7 +149,7 @@ cmd("tree", "the shape of things", (a) => {
 /* ---------- the machine ---------- */
 cmd("clear cls", "clear the screen", () => clearScreen(), SYS);
 cmd("history", "everything you've typed", (a) => {
-  if (a[0] === "-c") { S.hist = []; return print("{dim:history cleared. a fresh start. Biscuit approves of no evidence.}"); }
+  if (a[0] === "-c") { S.hist = []; return print("{dim:history cleared.}"); }
   const h = S.hist.slice(-40);
   const off = S.hist.length - h.length;
   h.forEach((l, i) => print("{dim:" + padL(off + i + 1, 5) + "}  " + '<span class="cmd" data-c="' + esc(l).replace(/"/g, "&quot;") + '">' + esc(l) + "</span>"));
@@ -201,7 +201,7 @@ cmd("ps", "what's running", () => {
   if (S.flags.radioOn) print("  103 ?        S     radio --station=" + S.flags.radioOn);
   print("  512 tty1     S     hearth --minder=" + esc(NAME()));
   if (S.fox) print("  808 ?        S     " + esc(S.fox.toLowerCase()) + " (fox) --garden --nocturnal");
-  print(S.flags.lanternLit ? "  999 ?        R     wren --home --in-the-kitchen" : "  999 ?        S     wren --travelling --far-away --thinking-of-you");
+  print(S.flags.lanternLit ? "  999 ?        R     wren --home --in-the-kitchen" : "  999 ?        S     wren --away --sending-postcards");
 }, SYS);
 cmd("top htop", "what's using the most", () => {
   print("{hi:HEARTH top}  - " + clock(S.min) + "  up " + plural(S.day, "day") + ",  1 user,  1 cat");
@@ -215,24 +215,24 @@ cmd("kill pkill killall", "stop a process", (a) => {
   const t = a.filter(x => !x.startsWith("-")).join(" ").toLowerCase();
   const nine = a.includes("-9") || a.includes("-KILL");
   if (!t) return print("kill what?");
-  if (t === "1" || t.includes("biscuit")) return print(nine ? "kill: (1) - Operation not permitted.\n{dim:Biscuit gives you a look of profound disappointment. She has nine lives. You'd need -10.}" : "You can't kill Biscuit. You give her a gentle pat instead. {dim:that's what kill means, in this house.}");
+  if (t === "1" || t.includes("biscuit")) return print(nine ? "kill: (1) - Operation not permitted.\n{dim:PID 1 is Biscuit. Wren set it up that way on purpose.}" : "You can't kill Biscuit. You give her a gentle pat instead. {dim:that's what kill means, in this house.}");
   if (t === "999" || t.includes("wren")) return print("Absolutely not.");
-  if (t.includes("kettle") || t === "42") return print("The kettle clicks off. It'll sulk about this.");
-  if (t.includes("rain") || t === "101") return print("You can't kill the rain. You've tried, as a species. It's still raining." + (weatherNow().rain ? "" : " (well, not right now.)"));
+  if (t.includes("kettle") || t === "42") return print("The kettle clicks off.");
+  if (t.includes("rain") || t === "101") return print("kill: HEARTH only lists the rain, it doesn't run it." + (weatherNow().rain ? " It's still raining." : ""));
   if (t.includes("radio")) { S.flags.radioOn = null; return print("Radio off."); }
   if (t.includes("stove") || t === "77") { S.fireUntil = now(); return print("You shut the stove's air vent and the fire dies down to embers."); }
-  if (t.includes("hearth") || t === "512") return print("You can't kill HEARTH from inside HEARTH. It's a philosophical problem. Have a cup of tea.");
+  if (t.includes("hearth") || t === "512") return print("kill: (512) - that's you. HEARTH carries on.");
   print("kill: no such process: " + esc(t));
 }, SYS);
 cmd("ping", "say hello over the wires", async (a) => {
   const h = (a[0] || "").toLowerCase();
   if (!h) return print("ping who?  {dim:ping biscuit, ping wren, ping observatory...}");
-  if (h.includes("biscuit") || h === "cat") { for (let i = 1; i <= 3; i++) { print("64 bytes from biscuit: icmp_seq=" + i + " mrrp=yes time=∞ ms"); await pause(500); } return print("{dim:--- she heard you. she's choosing not to come. ---}"); }
-  if (h.includes("wren")) { for (let i = 1; i <= 3; i++) { print("{dim:request timeout for icmp_seq " + i + "}"); await pause(600); } return print("{dim:--- no reply. she's probably on a ferry, talking to a stranger who'll remember her forever. ---}"); }
+  if (h.includes("biscuit") || h === "cat") { for (let i = 1; i <= 3; i++) { print("64 bytes from biscuit: icmp_seq=" + i + " mrrp=yes time=∞ ms"); await pause(500); } return print("{dim:--- one ear turned towards you. she doesn't get up. ---}"); }
+  if (h.includes("wren")) { for (let i = 1; i <= 3; i++) { print("{dim:request timeout for icmp_seq " + i + "}"); await pause(600); } return print("{dim:--- no reply. she's a long way off, and she said she'd write. ---}"); }
   const host = { observatory: "juniper", "post-office": "ottoline", postoffice: "ottoline", apiary: "fenn", "okafor-house": "pip", juniper: "juniper", ottoline: "ottoline", fenn: "fenn", pip: "pip", "the-lake": "lake", lake: "lake", localhost: "me", hearth: "me", "127.0.0.1": "me" }[h];
   if (!host) return print("ping: cannot resolve " + esc(h) + ": unknown host {dim:see {cmd:cat /etc/hosts}}");
-  const reply = { juniper: "time=4.2 ms (she's awake. she's always awake.)", ottoline: "time=0.3 ms (instantly. she was waiting.)", fenn: "time=1200 ms (eventually. grumpily.)", pip: "time=0.1 ms PING BACK!!!", lake: "...", me: "time=0.0 ms (it's you. hello, you.)" }[host];
-  for (let i = 1; i <= 3; i++) { print(host === "lake" ? "{dim:the lake does not reply. dignified.}" : "64 bytes from " + h + ": icmp_seq=" + i + " " + reply); await pause(450); if (host === "lake") break; }
+  const reply = { juniper: "time=4.2 ms", ottoline: "time=0.3 ms", fenn: "time=1200 ms", pip: "time=0.1 ms PING BACK!!!", lake: "...", me: "time=0.0 ms" }[host];
+  for (let i = 1; i <= 3; i++) { print(host === "lake" ? "{dim:request timeout. the lake doesn't have an address.}" : "64 bytes from " + h + ": icmp_seq=" + i + " " + reply); await pause(450); if (host === "lake") break; }
 }, SYS);
 cmd("sudo", "do something as the boss", async (a, ctx) => {
   const rest = ctx.raw.replace(/^\s*sudo\s*/, "");

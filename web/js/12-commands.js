@@ -585,7 +585,7 @@ function doOil(a) {
   const what = (a.join(" ") || "").toLowerCase();
   if (!has("oilcan")) return print("You'd need the oilcan. {dim:it's in the garden shed.}");
   if (what.includes("greenhouse") || what.includes("door") || what.includes("hinge") || (!what && roomName() === "garden")) {
-    if (S.flags.ghOpen) return print("The greenhouse door swings like a dream already. You give it another drop for luck.");
+    if (S.flags.ghOpen) return print("The greenhouse door is already open. You put another drop on the top hinge anyway.");
     if (roomName() !== "garden") return print("The greenhouse is off the garden. {cmd:cd garden}");
     S.flags.ghOpen = true;
     sfx("door");

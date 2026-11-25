@@ -149,3 +149,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Lantern description and status are full sentences now (the oil cup is empty until you fill it; "It's lit, with a small blue-gold flame that doesn't flicker").
 - "It's still light. After dark. from 6pm." and "bed from 7pm. or nap." rewritten as one plain sentence each.
 - Two more ordinary morning lines (the post van and the gate; the pipes knocking).
+
+## 36 — file and process commands
+- rm, mv, mkdir, touch, chmod, history -c, kill, ping, ps: cut the stock jokes ("like a sock in a dryer", "you've tried, as a species", "a philosophical problem", "profound disappointment", ping's bracketed asides). Replies now say what happened, or what you can do instead.
+- ps shows Wren as "--away --sending-postcards".
+- smoke test expectation for kill -9 biscuit updated.
