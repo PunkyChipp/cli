@@ -84,3 +84,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 19 — the true ending
 - Rewrote the secret ending's narration and Wren's radio message. Cut three near-cliché lines ("she's laughing, or crying, or both", "a sound that isn't a word", "like a shoal") and replaced them with specific ones: "you've never heard the cellar completely quiet before", Pip saying "oh" very quietly, "you went and worked it out in a fortnight". Juniper's moment is narrated, not a bracketed stage direction.
+
+## 20 — the jar
+- Rewrote all 24 keepsakes as specific things you'd actually keep from this place instead of generic tokens: "the teaspoon you used the first morning", "the tea towel the radio disk was wrapped in", "one of Wren's old lures, out of the carp's lip", "a bus ticket you found as a bookmark". The twee one ("a scale of light, which fades if you look straight at it") is now "the sheet of paper you worked the name out on". Fixed "saw Wren's Comet" (it was never called that).
+- Jar heading and toast reworded to match ("you put it in the jar: ...").

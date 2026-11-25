@@ -817,7 +817,7 @@ function doJar() {
   print("{dim:      |}  " + pad(got.length + " / " + Object.keys(KEEPSAKES).length, 9) + "{dim:|}");
   print("{dim:      |___________|}");
   print("");
-  print("{hi:the keepsake jar} {dim:— little things, from the season:}");
+  print("{hi:the jar on the windowsill}  {dim:things you've kept, this autumn}");
   for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) if (S.keeps[k]) print("  {acc:" + thing + "}  {dim:· " + why + "}");
   const left = Object.keys(KEEPSAKES).length - got.length;
   if (left) print("  {dim:...and room for " + left + " more.}");

@@ -489,37 +489,37 @@ function remember(line) { if (!S.today.includes(line)) S.today.push(line); }
 
 /** Keepsakes: little things that go in the jar on the windowsill. */
 const KEEPSAKES = {
-  first_tea:   ["a tea-stained spoon", "brewed your first cup"],
-  first_fish:  ["a perch scale, shiny", "caught your first fish"],
-  first_plant: ["a muddy seed packet", "planted something"],
-  first_harv:  ["a carrot top", "harvested your first crop"],
-  pet10:       ["a tuft of orange fur", "petted Biscuit ten times"],
-  marmalade:   ["a golden scale the size of a coin", "caught Wren's carp, and let him go"],
-  radio:       ["a radio dial knob", "got the radio working"],
-  allstars:    ["a hand-drawn star chart", "found every constellation"],
-  comet:       ["a pencil sketch of a comet", "saw Wren's Comet"],
-  bottle:      ["a message in a bottle", "fished up a bottle"],
-  baker:       ["a flour handprint", "cooked five meals"],
-  friend:      ["a pressed flower", "became dear friends with someone"],
-  allfriends:  ["a village photograph", "befriended the whole Hollow"],
-  fox:         ["a fox whisker (you think)", "named the fox"],
-  lantern:     ["a lantern wick, burned down", "lit the lantern on Lantern Night"],
-  answered:    ["a scale of light, which fades if you look straight at it", "answered it"],
-  writer:      ["a pencil stub", "wrote your own file"],
-  sudo:        ["a sandwich crust", "used sudo for good"],
-  night_owl:   ["a moth", "stayed up past 1am"],
-  greenhouse:  ["a rusty hinge", "opened the greenhouse"],
-  attic:       ["a dusty photograph", "explored the attic"],
-  fishall:     ["a laminated fish poster", "caught every kind of fish"],
-  hacker:      ["a tiny paper crown", "used a pipe |"],
-  bookworm:    ["a bookmark", "read every book on the shelf"]
+  first_tea:   ["the teaspoon you used the first morning", "made your first cup of tea"],
+  first_fish:  ["a perch scale stuck to your sleeve", "caught your first fish"],
+  first_plant: ["the empty seed envelope", "planted something"],
+  first_harv:  ["a carrot top you couldn't throw away", "harvested something you grew"],
+  pet10:       ["some of Biscuit's orange fur off your jumper", "made friends with the cat"],
+  marmalade:   ["one of Wren's old lures, out of the carp's lip", "caught Wren's carp and let him go"],
+  radio:       ["the tea towel the radio disk was wrapped in", "got the radio going"],
+  allstars:    ["Juniper's star notes, all ticked off", "found every one of the constellations"],
+  comet:       ["the back of an envelope with the comet drawn on it", "saw the comet"],
+  bottle:      ["the bottle from 1962", "fished up the bottle"],
+  baker:       ["a recipe card with your own notes added", "cooked five meals"],
+  friend:      ["the first letter that was signed with love", "became close to one of the neighbours"],
+  allfriends:  ["a list of everyone's birthdays, from Ottoline", "got close to everyone in the Hollow"],
+  fox:         ["a bit of fur off the fence where the fox gets through", "gave the fox a name"],
+  lantern:     ["the burnt end of the lantern wick", "lit the lantern on Lantern Night"],
+  answered:    ["the sheet of paper you worked the name out on", "answered it"],
+  writer:      ["a pencil worn down to a stub", "wrote a file of your own"],
+  sudo:        ["the crusts of the sandwich", "used sudo"],
+  night_owl:   ["a moth that came in to the desk lamp", "stayed up past one in the morning"],
+  greenhouse:  ["the old hinge pin from the greenhouse door", "got the greenhouse door open"],
+  attic:       ["a photo from one of the attic boxes", "went up into the attic"],
+  fishall:     ["the fish guide, with every fish ticked", "caught every kind of fish in the lake"],
+  hacker:      ["a note from Pip that says HACKER", "used a pipe"],
+  bookworm:    ["a bus ticket you found as a bookmark", "read every book on the parlour shelf"]
 };
 function keepsake(id) {
   if (S.keeps[id] || !KEEPSAKES[id]) return;
   S.keeps[id] = S.day;
-  toast("into the jar: <b>" + KEEPSAKES[id][0] + "</b>");
+  toast("you put it in the jar: <b>" + KEEPSAKES[id][0] + "</b>");
   sfx("chime");
-  if (Object.keys(S.keeps).length === Object.keys(KEEPSAKES).length) setTimeout(() => toast("the jar is full. <b>you should be very proud.</b>"), 3500);
+  if (Object.keys(S.keeps).length === Object.keys(KEEPSAKES).length) setTimeout(() => toast("the jar is full. <b>you'll need another jar.</b>"), 3500);
 }
 
 let toastT = 0;
@@ -3786,7 +3786,7 @@ function doJar() {
   print("{dim:      |}  " + pad(got.length + " / " + Object.keys(KEEPSAKES).length, 9) + "{dim:|}");
   print("{dim:      |___________|}");
   print("");
-  print("{hi:the keepsake jar} {dim:— little things, from the season:}");
+  print("{hi:the jar on the windowsill}  {dim:things you've kept, this autumn}");
   for (const [k, [thing, why]] of Object.entries(KEEPSAKES)) if (S.keeps[k]) print("  {acc:" + thing + "}  {dim:· " + why + "}");
   const left = Object.keys(KEEPSAKES).length - got.length;
   if (left) print("  {dim:...and room for " + left + " more.}");
