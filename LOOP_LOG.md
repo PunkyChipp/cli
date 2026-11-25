@@ -78,3 +78,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 
 ## 17 — the corkboard
 - Rewrote all 15 corkboard cards so they read like notes the player scribbled and pinned up, in first person, with the hedges people actually use ("As far as I can tell...", "I'm fairly sure...", "I've seen it now too."), instead of tidy third-person summaries ("It reads a signal off the cable.").
+
+## 18 — Lantern Night
+- Rewrote the Lantern Night scene so it reads like someone telling you what happened rather than a trailer: "It takes you three matches, because your hands are cold.", the lanterns lighting "along the line" from boat to boat, counting the boats "because the photo on the mantelpiece told you to", and the twenty-first light "just there, very still". Juniper's beat is now narrated instead of a stage direction in brackets.
