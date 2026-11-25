@@ -121,3 +121,6 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 29 — the first letters
 - Rewrote Pip's first letter so it reads like an eleven-year-old actually wrote it (lowercase, run-ons, "the green door", "11 and a half", "it can't of been"), and gave Fenn's and Wren's first two postcards a specific, slightly odd detail each (the man snoring "in two notes", the hat fished out of Lerwick harbour with a net).
 - Capitalised the "You pin it to the corkboard" notice now it has no brackets.
+
+## 30 — mid-season letters
+- Rewrote Fenn's trout letter, Ottoline's bake-sale letter (now a proper run-on grudge about Fenn's honey cake, with the PS and PPS she's supposed to love), and Pip's two later letters so they match the kid voice of her first one ("she said 'is this hacking' and I said yes").

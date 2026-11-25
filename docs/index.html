@@ -1893,10 +1893,11 @@ Ottoline
 {dim:p.s. five nights, if you water them.}`,
     reward: { "seed:pumpkin": 2 }, onOpen: () => { S.quests.otto_pump = S.quests.otto_pump || "open"; S.flags.gotPieCard = true; } },
 
-  pip_weird: { from: "pip", day: 7, subject: "SCIENCE", text: () => `I'm doing a SCIENCE PROJECT on the lake. Can you fish me up
-something weird? Not a normal fish. (A weird fish counts.)
+  pip_weird: { from: "pip", day: 7, subject: "SCIENCE", text: () => `I am doing a SCIENCE PROJECT about the lake for school (not for
+school, for me). can you fish something weird out of it for me?
+not a normal fish. something WEIRD. a weird fish is ok though.
 
-PIP`, onOpen: () => { S.quests.pip_weird = S.quests.pip_weird || "open"; } },
+from PIP (scientist)`, onOpen: () => { S.quests.pip_weird = S.quests.pip_weird || "open"; } },
 
   wren_pc3: { from: "wren", day: 8, file: "3_torshavn.postcard", subject: "a postcard: grass roofs", text: () => `{dim:[black wooden houses with grass on their roofs]}
 
@@ -1910,19 +1911,26 @@ she's heard it too. the whole time. off the harbour.
 
   fenn_trout: { from: "fenn", day: 8, subject: "Supper.", text: () => `${NAME()}.
 
-Knees bad. Can't get down to the water. Would like a trout.
-They come up clear mornings and evenings. Not in the grey.
+Knees are bad this week. Can't get down the bank to the water.
+Would like a trout for my supper if you're fishing.
+They come up on clear mornings and in the evening. Not when it's grey.
 
 {dim:A. Fenn.}`, onOpen: () => { S.quests.fenn_trout = S.quests.fenn_trout || "open"; } },
 
   otto_bake: { from: "ottoline", day: 9, subject: "bake sale", text: () => `${NAME()},
 
-Bake sale on the green before Lantern Night. Fenn's honey cake
-sells first every year and he's unbearable about it.
+The bake sale's on the green the day before Lantern Night, and
+every single year Fenn brings a honey cake, and every single year
+it sells first, and every single year he stands there with his
+hands behind his back looking pleased with himself.
 
-Send me something sweet. Let's beat him.
+Send me something sweet. A pie, a cake, biscuits, anything. I want
+to beat him just once before I die.
 
-Ottoline`, onOpen: () => { S.quests.otto_bake = S.quests.otto_bake || "open"; } },
+Ottoline
+
+{dim:p.s. don't tell him I said that.}
+{dim:p.p.s. the bit about dying was a joke. mostly.}`, onOpen: () => { S.quests.otto_bake = S.quests.otto_bake || "open"; } },
 
   juniper_comet: { from: "juniper", day: 10, subject: "look west", text: () => `${NAME()},
 
@@ -1945,16 +1953,19 @@ see it in her log.
 
 {acc:W.}`, onOpen: () => clue("lights") },
 
-  pip_game: { from: "pip", day: 12, subject: "I MADE A GAME", text: () => `I used what you taught me and I MADE A GAME. It's in your notes
-folder now (I asked Ottoline to copy it over, she doesn't know how
-computers work so I told her what to type).
+  pip_game: { from: "pip", day: 12, subject: "I MADE A GAME", text: () => `guess what. I used the command you taught me and some stuff I
+found out on the library computer and I MADE A GAME.
+
+it's in your notes folder. I got Ottoline to put it there because
+she has a key for when she does your post. she typed it in and
+I told her what to type. she said "is this hacking" and I said yes.
 
   {cmd:cd ~/study/notes}
   {cmd:./pip_game.sh}
 
-It is very hard.
+it is very hard. don't be sad if you lose.
 
-PIP`, onOpen: () => { S.files["/cottage/study/notes/pip_game.sh"] = "#!/bin/pip\n# GUESS THE NUMBER by PIP OKAFOR\n# ./pip_game.sh"; }, when: () => S.quests.pip_lesson === "done" },
+from PIP`, onOpen: () => { S.files["/cottage/study/notes/pip_game.sh"] = "#!/bin/pip\n# GUESS THE NUMBER by PIP OKAFOR\n# ./pip_game.sh"; }, when: () => S.quests.pip_lesson === "done" },
 
   otto_eve: { from: "ottoline", day: 13, subject: "tomorrow", text: () => `${NAME()},
 
