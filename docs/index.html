@@ -4245,7 +4245,7 @@ cmd("hack hacker", "", async () => {
   print("{ok:ACCESS GRANTED} to: {acc:the biscuit tin}. You eat one. {dim:Pip taught Wren this one. Wren never told her it doesn't do anything.}");
   warm(2);
 }, { secret: true });
-cmd("matrix", "", () => print("{ok:wake up.}  {dim:you are already awake. it's just Wren's screensaver.}"), { secret: true });
+cmd("matrix", "", () => print("{ok:Green letters start falling down the screen.} {dim:it's Wren's screensaver. any key stops it.}"), { secret: true });
 cmd("dance", "", () => print("You do a little dance in the " + roomName() + ". " + (catHere() ? "Biscuit leaves the room." : "Nobody sees except Margaret, the spider over the door.")), { secret: true });
 cmd("hug", "", () => print(catHere() ? "You pick Biscuit up and hug her. She puts up with it for about two seconds and then pushes off your chest with her back legs." : "You wrap your arms round yourself. It's colder in here than you thought. {cmd:stoke} the stove?"), { secret: true });
 cmd("sing hum whistle", "", () => print(pick(["You sing a bit of something you heard on 101.3. You don't know the second verse.", "You hum. Under the floor, the cellar hums too, a bit lower.", "You whistle. A blackbird in the garden starts up as well."])), { secret: true });
