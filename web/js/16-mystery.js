@@ -19,37 +19,37 @@
 const CLUES = {
   // the cellar
   hum:    { thread: "the cellar", title: "The hum", hint: "something in the cellar", links: ["cable", "listen"],
-            text: () => "The beige box in the cellar hums, day and night. Wren's note says it's the freezer. The freezer's unplugged." },
+            text: () => "The beige box in the cellar hums all the time, day and night. Someone has taped a note to it saying it's the freezer. The freezer isn't even plugged in." },
   cable:  { thread: "the cellar", title: "The cable", hint: "where does the box's cable go?", links: ["hum", "lights"],
-            text: () => "A cable runs from the cellar box, down the garden, along the dock, and forty metres down into the lake. Wren laid it in 1987. \"Down, not up.\"" },
+            text: () => "There's a cable from the box in the cellar that goes out under the garden, along the dock, and straight down into the lake. Wren laid it in 1987. In the margin of her manual she wrote \"down, not up.\"" },
   listen: { thread: "the cellar", title: "listen", hint: "Wren ran something down there, at night", links: ["hum", "r777", "log", "ask"],
-            text: () => "Wren had a program called {cmd:listen}. She ran it in the cellar most nights. It reads a signal off the cable." },
+            text: () => "Wren had a program called {cmd:listen} that she ran in the cellar most nights. As far as I can tell it reads whatever is coming up the cable." },
   r777:   { thread: "the cellar", title: "77.7", hint: "there's something on the radio, between the stations", links: ["listen"],
-            text: () => "On 77.7 a flat voice says single words, slowly. Kettle. Light. Three. It's HEARTH, reading the signal aloud with the only words it has." },
+            text: () => "If you tune the radio to 77.7 there's a flat voice saying one word at a time, kettle, light, three. I'm fairly sure it's HEARTH reading out the signal, using whatever words it happens to know." },
   log:    { thread: "the cellar", title: "The log", hint: "Wren would have written it down", links: ["listen", "tor", "origin"],
-            text: () => "Every night since 1987, in /var/log/listen. It has never once read zero. It jumps every 25th of October." },
+            text: () => "Wren has written the signal down every night since 1987, in /var/log/listen. It has never once been zero. It goes up every year on the 25th of October." },
   tor:    { thread: "the cellar", title: "TÓR", hint: "someone else is in the log", links: ["log"],
-            text: () => "Since 1988 the log notes a second station on the same signal: TÓR, in the Faroe Islands. Someone else has been listening." + (S.flags.metAsa ? " Wren's gone to meet her. Her name is Ása." : "") },
+            text: () => "From 1988 onwards the log mentions another station picking up the same signal, call sign TÓR, in the Faroe Islands. So somebody else has been listening all this time." + (S.flags.metAsa ? " Her name is Ása, and that's where Wren has gone." : "") },
   // the lake
   lights: { thread: "the lake", title: "Lights in the water", hint: "people say they've seen things in the lake at night", links: ["cable", "colour", "count"],
-            text: () => "Some nights there's a light down in the lake. Deep, blue-gold, slow. Pip's seen it. So have you." },
+            text: () => "Some nights there's a light a long way down in the lake, blue-gold, moving slowly. Pip says she's seen it. I've seen it now too." },
   colour: { thread: "the lake", title: "The colour", hint: "Wren left a note in the greenhouse", links: ["lights"],
-            text: () => "Moonflowers glow blue-gold. So do the lights in the lake. Wren: \"that's not a coincidence. I don't know what it is.\"" },
+            text: () => "Moonflowers give off the same blue-gold as the light in the lake. Wren noticed. Her note says it isn't a coincidence but she doesn't know what it is." },
   count:  { thread: "the lake", title: "Count the lights", hint: "an old photograph", links: ["lights", "origin"],
-            text: () => "The first Lantern Night, 1974. More lights on the water than there were boats." },
+            text: () => "There's a photo of the first Lantern Night, in 1974. If you count, there are more lights on the water than there were boats." },
   origin: { thread: "the lake", title: "Why Lantern Night", hint: "how did Lantern Night start?", links: ["count", "log"],
-            text: () => "Wren started Lantern Night in 1974, and the signal jumps every Lantern Night since. The lanterns aren't for the village. They're a reply." },
+            text: () => "Lantern Night was Wren's idea, in 1974, and the signal has jumped on that night every year since. I don't think the lanterns are for the village. I think they're an answer." },
   // 1962
   bottle: { thread: "1962", title: "The bottle", hint: "the lake keeps things. go fishing", links: ["1962", "comet"],
-            text: () => "A bottle out of the lake: Wren and Juniper, 1962, aged fourteen. They flashed a torch at the comet three times, and the lake flashed back." },
+            text: () => "I fished a bottle out of the lake with a note from 1962 in it, from Wren and Juniper when they were fourteen. They flashed a torch at the comet three times, and the lake flashed back." },
   "1962": { thread: "1962", title: "October 1962", hint: "Wren kept a diary, somewhere locked", links: ["bottle", "name"],
-            text: () => "Wren's diary: that night the whole bay lit up \"like a shoal of lamps, all swimming the same way.\"" },
+            text: () => "In Wren's diary from 1962 she says the whole bay lit up that night, \"like a shoal of lamps, all swimming the same way.\"" },
   comet:  { thread: "1962", title: "The comet", hint: "Juniper knows the sky", links: ["bottle", "name"],
-            text: () => "It comes round every sixty-four years. 1962, and now. Low in the west after dark." + (S.flags.sawComet ? " You've seen it." : "") },
+            text: () => "The comet comes back every sixty-four years, so 1962 and now. It\'s low in the west after dark." + (S.flags.sawComet ? " I\'ve seen it through the telescope." : "") },
   name:   { thread: "1962", title: "Its name", hint: "what did they call it?", links: ["1962", "comet", "ask"],
-            text: () => S.flags.nameKnown ? "Juniper told you. They called the comet {acc:the Lantern Fish}, after what they saw in the water." : "They named the comet after what they saw in the lake. The diary only gives initials: L——— F———." },
+            text: () => S.flags.nameKnown ? "Juniper told me in the end. They called it {acc:the Lantern Fish}, after what came up out of the water." : "They gave the comet a name, after whatever they saw in the lake. Wren promised not to write it down, so the diary only has the first letters, L and F." },
   ask:    { thread: "1962", title: "If it asks", hint: "Wren left something in her trunk", links: ["name", "listen"],
-            text: () => "Wren: \"if it ever asks you something, answer with its name. you'll know when.\"" }
+            text: () => "From Wren\'s letter in the trunk: \"if it ever asks you something, answer with its name. you\'ll know when.\"" }
 };
 const THREADS = ["the cellar", "the lake", "1962"];
 
@@ -59,7 +59,7 @@ function clue(id) {
   S.clues[id] = S.day;
   toast("pinned to the board: <b>" + CLUES[id].title + "</b>");
   sfx("page");
-  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:(you pin it to the corkboard in the study. {cmd:board} to see it.)}"); showLine(true); } }, 50); }
+  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:You pin it to the corkboard in the study. {cmd:board}}"); showLine(true); } }, 50); }
 }
 
 function doBoard() {
@@ -78,7 +78,7 @@ function doBoard() {
     for (const [, c] of near) print("  {dim:?  " + c.hint + "}");
   }
   const hidden = Object.entries(CLUES).filter(([k, c]) => !found[k] && !c.links.some(l => found[l])).length;
-  if (hidden) { print(""); print("{dim:(and some string going off the edge of the board, to nothing yet.)}"); }
+  if (hidden) { print(""); print("{dim:and some string going off the edge of the board, to nothing yet.}"); }
 }
 
 /* ---------- the signal ---------- */
@@ -129,10 +129,10 @@ async function doListen(args) {
     print("{hi:listen}  read the receiver in the cellar");
     print("  {cmd:listen}               take a reading");
     print("  {cmd:listen --log}         readings since you arrived");
-    print("  listen --reply WORDS   send words back down the cable {dim:(disabled until it asks)}");
+    print("  listen --reply WORDS   send words back down the cable {dim:disabled until it asks}");
     return;
   }
-  if (roomName() !== "cellar") return print("listen: the receiver's in the cellar. {dim:({cmd:cd cellar})}");
+  if (roomName() !== "cellar") return print("listen: the receiver's in the cellar. {dim:{cmd:cd cellar}}");
   clue("listen"); clue("hum");
   if (/^--log/.test(a)) return listenLog();
   const rm = a.match(/^(--reply|-r|reply)\s*(.*)$/);
@@ -146,16 +146,16 @@ async function doListen(args) {
     bar.innerHTML = fmt("  listening {sky:" + dots + "}");
     await pause(70);
   }
-  print("  signal {hi:" + lvl.toFixed(2) + "}" + (lvl > 0.5 ? "  {acc:(strong)}" : lvl > 0.25 ? "  {dim:(rising)}" : ""));
-  if (S.flags.answered) { print("  heard: {dim:...}"); print("{dim:(it's quiet now. not gone. resting.)}"); return; }
+  print("  signal {hi:" + lvl.toFixed(2) + "}" + (lvl > 0.5 ? "  {acc:(strong)}" : lvl > 0.25 ? "  {dim:rising}" : ""));
+  if (S.flags.answered) { print("  heard: {dim:...}"); print("{dim:it's quiet now. not gone. resting.}"); return; }
   if (asking()) {
     await pause(400);
     print("  heard: {acc:three . three . three}");
     await pause(500);
     print("  heard: {warn:NAME ?}");
     await pause(300);
-    print("{dim:(the green light on the box has stopped blinking. it's on. it's waiting.)}");
-    print("{dim:(listen --reply ...)}");
+    print("{dim:the green light on the box has stopped blinking. it's on. it's waiting.}");
+    print("{dim:listen --reply ...}");
     S.flags.sawAsk = true;
     return;
   }
@@ -175,15 +175,15 @@ function listenLog() {
 
 async function doReply(words) {
   const w = (words || "").toLowerCase().replace(/[^a-z]/g, "");
-  if (!w) return print("reply with what? {dim:(listen --reply WORDS)}");
+  if (!w) return print("reply with what? {dim:listen --reply WORDS}");
   if (!asking()) {
     sfx("bonk");
-    return print("listen: reply disabled. {dim:(hearth.conf: reply = disabled  # until it asks)}");
+    return print("listen: reply disabled. {dim:hearth.conf: reply = disabled  # until it asks}");
   }
   if (!["lanternfish", "thelanternfish"].includes(w)) {
     S.flags.wrongReplies = (S.flags.wrongReplies || 0) + 1;
     print("{dim:you send it.} The hum holds the same note, patient. That wasn't it.");
-    if (S.flags.wrongReplies >= 2) print("{dim:(Wren: \"answer with its name.\" the name of what? what did they see, in 1962? the board might help: {cmd:board})}");
+    if (S.flags.wrongReplies >= 2) print("{dim:Wren: \"answer with its name.\" the name of what? what did they see, in 1962? the board might help: {cmd:board}}");
     return;
   }
   await trueEnding();
@@ -199,11 +199,11 @@ async function trueEnding() {
   print("");
   print("{dim:the hum stops.}");
   await pause(1600);
-  await type("For a second there's no sound in the cellar at all. Then the box gives three short clicks, and the green light goes out.", 38);
+  await type("The hum stops, and you realise you've never heard the cellar completely quiet before. The box clicks three times. The green light goes out.", 38);
   await pause(800);
-  await type("You go up the cellar steps, through the kitchen, out of the back door, down through the wet grass in your socks.", 38);
+  await type("You go up the cellar steps two at a time and out of the back door and down the garden. You're in your socks and the grass is soaking and you don't care.", 38);
   await pause(800);
-  await type("The boats are still out. Nobody's talking.", 38);
+  await type("The boats are all still out on the water, and nobody on any of them is saying anything.", 38);
   await pause(1000);
   print("");
   const W2 = 46;
@@ -227,28 +227,28 @@ async function trueEnding() {
     await pause(T.skip ? 0 : 280);
   }
   print("");
-  await type("The whole bay is lit from underneath. Blue-gold, from the deep part out to the reeds, thousands of small lights, and all of them moving the same way, slowly, like a shoal.", 38);
+  await type("The whole bay is lit up from underneath, from the deep part right out to the reeds. Thousands of small blue-gold lights, all moving the same way, slowly, the way fish do when there are a lot of them together.", 38);
   await pause(800);
-  await type("They turn once under the boats. Somebody — Pip — makes a sound that isn't a word.", 38);
+  await type("They turn round once, right under the boats. You hear Pip say \"oh\" very quietly, which you didn't think Pip could do.", 38);
   await pause(800);
-  await type("Then they go down, together, and the lake is dark, and the comet is still there over the hill.", 38);
+  await type("Then they all go down together, and the lake goes dark again, and the comet is still there over the hill, the same as it was.", 38);
   await pause(1500);
   print("");
-  print("{hi:JUNIPER} {dim:(across the water, from the observatory, not shouting, but you hear it):} ...Oh, Wren.");
+  print("{dim:Across the water, from the open door of the observatory, you hear Juniper say Wren's name. Just that.}");
   await pause(1600);
   print("");
-  await type("Back in the house, the radio in the study has come on by itself. It's on a shortwave band you've never tuned to. Someone's speaking, through a lot of static.", 38);
+  await type("When you get back to the house you can hear the radio in the study before you're through the door. It's come on by itself, on a shortwave band you've never touched, and through all the static someone is talking.", 38);
   sfx("beep");
   await pause(900);
-  print("{acc:WREN:} {dim:(kshhh)} ...hear me? It's Wren. Is that you, at the house?");
+  print("{acc:WREN:} {dim:kshhh} ...hear me? It's Wren. Is that you, at the house?");
   await pause(1300);
-  print("{acc:WREN:} We saw it from here. Ása and me, in her boat, off Tórshavn. The whole harbour lit up. Every light in the water, all at once.");
+  print("{acc:WREN:} We saw it from here. Me and Ása, we're out in her boat in the harbour at Tórshavn, and the whole lot lit up. All of it, all at once.");
   await pause(1500);
-  print("{acc:WREN:} Sixty-four years I've been trying to say the right thing to it. {dim:(she's laughing, or crying, or both.)} You worked it out.");
+  print("{acc:WREN:} Sixty-four years I've been trying to say the right thing to it, and you went and worked it out in a fortnight.");
   await pause(1500);
-  print("{acc:WREN:} I'll be home on the second. Leave the lantern lit. And — thank you, love. Really.");
+  print("{acc:WREN:} I'm home on the second. Leave the lantern on for me. And thank you, love. I mean it.");
   await pause(1200);
-  print("{dim:(kshhhhh)}");
+  print("{dim:kshhhhh}");
   await pause(1800);
   print("");
   print("{hi:              ~  THE END  ~}");
@@ -274,7 +274,7 @@ function endStats() {
 }
 
 /* ---------- the files ---------- */
-const DIARY_1962 = `{dim:(a school exercise book, water-stained. "WREN ASHDOWN, 3B" on the cover.)}
+const DIARY_1962 = `{dim:a school exercise book, water-stained. "WREN ASHDOWN, 3B" on the cover.}
 
 {acc:25 oct 1962.}
 
@@ -298,7 +298,7 @@ we're not telling anyone. ever.`;
 
 function mysteryTree() {
   // a hidden file in the hall: Wren's .plan
-  ROOT.kids.cottage.kids[".plan"] = F(`{dim:(~/.plan — last edited 11 oct)}
+  ROOT.kids.cottage.kids[".plan"] = F(`{dim:~/.plan — last edited 11 oct}
 
   - ferry from Aberdeen on the 9th
   - meet Á. at last. thirty-eight years of tuesdays.
@@ -310,7 +310,7 @@ function mysteryTree() {
     for (let d = 1; d < S.day; d++) {
       const r = seeded(d * 13)();
       const v = Math.min(0.97, 0.06 + Math.min(d, 14) / 14 * 0.55 + (d >= 10 && d <= 18 ? 0.12 : 0) + r * 0.05);
-      k[dateStr(d).toLowerCase().replace(" ", "-") + ".log"] = F(() => "night of " + dateStr(d) + "\n  max " + v.toFixed(2) + "\n  heard: " + (v > 0.5 ? "three . light . three" : "kettle . water") + (d === S.day - 1 && d >= 10 ? "\n  {dim:(comet visible)}" : ""), { owner: "hearth" });
+      k[dateStr(d).toLowerCase().replace(" ", "-") + ".log"] = F(() => "night of " + dateStr(d) + "\n  max " + v.toFixed(2) + "\n  heard: " + (v > 0.5 ? "three . light . three" : "kettle . water") + (d === S.day - 1 && d >= 10 ? "\n  {dim:comet visible}" : ""), { owner: "hearth" });
     }
     return k;
   };

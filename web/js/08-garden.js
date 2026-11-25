@@ -73,53 +73,53 @@ function inGarden() { return roomName() === "garden"; }
 function inGh() { return roomName() === "greenhouse"; }
 
 function doPlant(args) {
-  if (!inGarden() && !inGh()) return print("You need to be in the {cmd:cd ~/garden} (or the greenhouse) to plant things. Seeds don't take to carpet.");
+  if (!inGarden() && !inGh()) return print("You'll need to be out in the {cmd:cd garden} to plant anything, or in the greenhouse.");
   const seeds = Object.keys(S.inv).filter(k => k.startsWith("seed:")).map(k => k.slice(5));
   let crop = (args[0] || "").toLowerCase().replace(/s$/, "").replace(/^seed:/, "");
   if (crop === "carrots") crop = "carrot";
   if (!crop) {
-    if (!seeds.length) return print("You haven't got any seeds. {dim:(check the shed. check it thoroughly.)}");
+    if (!seeds.length) return print("You haven't got any seeds left. {dim:there might be some in the shed, if you look properly.}");
     if (seeds.length === 1) crop = seeds[0];
     else return print("Plant what? You've got: " + seedList());
   }
-  if (!CROPS[crop]) { const g = closest(crop, Object.keys(CROPS)); return print("There's no such thing as " + esc(crop) + " seeds." + (g ? " {dim:(did you mean {cmd:plant " + g + "}?)}" : "")); }
+  if (!CROPS[crop]) { const g = closest(crop, Object.keys(CROPS)); return print("There's no such thing as " + esc(crop) + " seeds." + (g ? " {dim:did you mean {cmd:plant " + g + "}?}" : "")); }
   if (!has("seed:" + crop)) return print("You're out of " + crop + " seeds." + (seeds.length ? " You have: " + seedList() : ""));
   const gh = inGh();
-  if (CROPS[crop].gh && !gh) return print("Moonflowers only grow in the greenhouse. They need the warm and the dark. {dim:(Wren's note in there says so too.)}");
+  if (CROPS[crop].gh && !gh) return print("Moonflowers won't grow out here. According to Wren they need the warmth of the greenhouse.");
   const beds = gh ? S.gh : S.plots;
   let i = args[1] ? parseInt(String(args[1]).replace(/\D/g, ""), 10) - 1 : beds.findIndex(p => !p.crop);
   if (isNaN(i) || i < 0 || i >= beds.length) i = beds.findIndex(p => !p.crop);
-  if (i < 0) return print("Every " + (gh ? "pot" : "bed") + " is full. {dim:(harvest something first.)}");
+  if (i < 0) return print("Every " + (gh ? "pot" : "bed") + " has something in it already. You'll have to harvest something first.");
   if (beds[i].crop) return print((gh ? "Pot " : "Plot ") + (i + 1) + " already has " + beds[i].crop + " in it.");
   take("seed:" + crop);
   beds[i] = { crop, age: 0, wet: gh || weatherNow().rain > 0 };
   spend(6); sfx("dig");
   print(pick([
-    "A hole with your finger, the " + crop + " seed in, soil back over.",
-    "You plant the " + crop + " in " + (gh ? "pot " : "plot ") + (i + 1) + ".",
-    "In goes the " + crop + ". A worm comes up to look and goes back down."
+    "You make a hole with your finger, drop the " + crop + " seed in and press the soil back over it.",
+    "You plant the " + crop + " in " + (gh ? "pot " : "plot ") + (i + 1) + " and pat the soil down with the flat of your hand.",
+    "You plant the " + crop + ". A worm comes up to see what's going on and then goes back down again."
   ]));
-  if (!gh && !beds[i].wet) print("{dim:(it'll want some {cmd:water} before tonight.)}");
+  if (!gh && !beds[i].wet) print("{dim:It could do with some {cmd:water} before tonight.}");
   if (!S.flags.planted) { S.flags.planted = true; keepsake("first_plant"); }
   remember("planted " + crop + ".");
 }
 
 function doWater() {
-  if (inGh()) return print("The mister hisses at you. It's got this. {dim:(the greenhouse waters itself.)}");
-  if (!inGarden()) return print("Nothing to water in here, unless you count Biscuit, and you shouldn't.");
+  if (inGh()) return print("You don't need to water in here. The mister on the ceiling does it every few minutes.");
+  if (!inGarden()) return print("There's nothing to water in here. The beds are out in the garden.");
   const thirsty = S.plots.filter(p => p.crop && !p.wet);
-  if (weatherNow().rain) { S.plots.forEach(p => (p.wet = true)); return print("It's raining. The beds are fine."); }
-  if (!S.plots.some(p => p.crop)) return print("You water the empty beds. The soil appreciates the thought.");
-  if (!thirsty.length) return print("Everything's watered.");
+  if (weatherNow().rain) { S.plots.forEach(p => (p.wet = true)); return print("It's raining, so the beds are getting watered anyway."); }
+  if (!S.plots.some(p => p.crop)) return print("There's nothing planted yet, so there's nothing to water.");
+  if (!thirsty.length) return print("You've already watered everything today.");
   S.plots.forEach(p => { if (p.crop) p.wet = true; });
   spend(8); sfx("water");
-  print("You fill the can at the water butt and go along the beds." + pick(["", " A blackbird follows you.", " You water a snail by accident."]));
+  print("You fill the watering can from the water butt by the shed and go along the beds." + pick(["", " A blackbird follows you from bed to bed, hoping you'll turn up a worm.", " You accidentally water a snail, which doesn't seem to mind."]));
   remember("watered the garden.");
 }
 
 function doHarvest() {
   const gh = inGh();
-  if (!inGarden() && !gh) return print("Nothing to harvest here. {dim:(the garden's that way: {cmd:cd ~/garden})}");
+  if (!inGarden() && !gh) return print("There's nothing to harvest in here. {dim:{cmd:cd garden}}");
   const beds = gh ? S.gh : S.plots;
   const got = [];
   let closedBud = false;
@@ -133,10 +133,10 @@ function doHarvest() {
     if (c.regrow) beds[i] = { crop: p.crop, age: 0, wet: p.wet };
     else beds[i] = { crop: null, age: 0, wet: false };
   });
-  if (!got.length) return print(closedBud ? "The moonflower's still a tight little bud. It only opens after dark. {dim:(come back tonight.)}" : "Nothing's ready yet. {dim:(things grow overnight — {cmd:garden} shows how long.)}");
+  if (!got.length) return print(closedBud ? "The moonflower is still shut tight. It only opens after dark, so you'll have to come back tonight." : "Nothing's ready yet. Plants grow overnight, and {cmd:garden} will tell you how long each one has left.");
   spend(10); sfx("dig");
-  print("You harvest: {ok:" + got.join(", ") + "}.");
-  if (got.some(g => g.includes("moonflower"))) print("{dim:The moonflower glows faintly in your hand, a pale blue-gold, like it's remembering the moon.}");
+  print("You pick " + got.join(", ") + " and put " + (got.length > 1 ? "them" : "it") + " in your coat pocket.");
+  if (got.some(g => g.includes("moonflower"))) print("{dim:The moonflower keeps glowing after you've picked it, a faint blue-gold, enough to see your fingers by.}");
   keepsake("first_harv");
   remember("harvested " + got.join(", ") + ".");
 }

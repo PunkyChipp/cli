@@ -36,36 +36,42 @@ Ottoline
 {dim:p.s. Biscuit came to the shop on Monday and told me she hadn't been fed since Christmas.}
 {dim:p.p.s. if you hear the cellar, don't worry. it's always done that.}`, onOpen: () => { S.quests.otto_radio = S.quests.otto_radio || "open"; } },
 
-  wren_pc1: { from: "wren", day: 2, file: "1_the_night_train.postcard", subject: "a postcard: a train on a viaduct", text: () => `{dim:[a steam train on a viaduct, hand-tinted]}
+  wren_pc1: { from: "wren", day: 2, file: "1_the_night_train.postcard", subject: "a postcard: a train on a viaduct", text: () => `{dim:[a steam train crossing a viaduct, hand-coloured, a bit faded]}
 
-on the sleeper north. narrow bunk. a man across
-the way snores in a perfect third.
-did you find my note? left side of the kettle.
+on the sleeper to Aberdeen. the bunk is about a foot too
+short. the man in the next compartment snores in two
+notes, one going in and one coming out.
+did you find the note on the screen? LEFT side of the kettle.
 
 {acc:W.}`, onOpen: () => remember("a postcard from Wren, on a sleeper train.") },
 
   fenn_lavender: { from: "fenn", day: 2, subject: "Lavender.", text: () => `${NAME()}.
 
-Fenn. Bees. The house up the hill.
-Wren promised my bees lavender in 1998. Seeds are in her
-shed. Three sprigs would do.
+Abernathy Fenn. Bees. White house at the top of the lane.
+
+Wren said she'd grow my bees some lavender. That was 1998.
+She keeps the seed in her shed. Three sprigs would do them.
 
 {dim:A. Fenn.}`, onOpen: () => { S.quests.fenn_lav = S.quests.fenn_lav || "open"; } },
 
-  pip_hello: { from: "pip", day: 3, subject: "HELLO (from Pip)", text: () => `HELLO. I'm Pip. I'm 11. I live behind the post office.
+  pip_hello: { from: "pip", day: 3, subject: "HELLO (from Pip)", text: () => `hello its Pip. I live behind the post office (the green door). I am 11 and a half.
 
-Wren let me use HEARTH on Saturdays. I know ls and cd and cat.
-I ALSO know there's a program in the cellar she wouldn't let
-me run. She said "when you're older." I'm older now (by a month).
+Wren used to let me come round on Saturdays and use HEARTH. I can
+do ls and cd and cat and I can make the kettle beep from the study,
+which Ottoline thinks is a ghost. please don't tell her.
 
-Can you teach me a new command? Write it in a file and post it:
+there is a program in the cellar Wren never let me run. she said
+"when you're older." I am older now. a bit.
 
-   {cmd:write lesson.txt}     {dim:(type, then a line with just a dot)}
+can you teach me a new command? you write it in a file and post it.
+like this:
+
+   {cmd:write lesson.txt}     {dim:type it, then a line with just a dot on}
    {cmd:send lesson.txt to pip}
 
-PIP
+from PIP
 
-{dim:p.s. I saw a light IN the lake on tuesday. under the water. Mum says it was the moon. it was not the moon.}`, onOpen: () => { S.quests.pip_lesson = S.quests.pip_lesson || "open"; clue("lights"); } },
+{dim:p.s. on tuesday I saw a light IN the lake. like under the water. Mum says it was the moon reflecting but the moon was behind the hill so it can't of been.}`, onOpen: () => { S.quests.pip_lesson = S.quests.pip_lesson || "open"; clue("lights"); } },
 
   juniper_soup: { from: "juniper", day: 4, subject: "from across the water", text: () => `${NAME()},
 
@@ -82,11 +88,12 @@ since 1988.
 
 {dim:p.s. I can see your study light from the eyepiece. Nobody's had it on this late since she left.}`, onOpen: () => { S.quests.jun_soup = S.quests.jun_soup || "open"; } },
 
-  wren_pc2: { from: "wren", day: 5, file: "2_shetland.postcard", subject: "a postcard: ponies", text: () => `{dim:[three Shetland ponies, sideways in the wind]}
+  wren_pc2: { from: "wren", day: 5, file: "2_shetland.postcard", subject: "a postcard: ponies", text: () => `{dim:[three Shetland ponies standing sideways to the wind]}
 
-Lerwick. the wind took my hat. a pony ate
-a page of my book.
-how's the noise? louder? it'll get louder.
+Lerwick. it blew my hat into the harbour and a man in a boat
+fished it out for me with a net. one of the ponies on this card
+ate a page out of my book while I was looking at the view.
+is the noise louder yet? it will be.
 
 {acc:W.}`, onOpen: () => { remember("a postcard from Shetland. she asked if the noise was louder."); clue("hum"); } },
 
@@ -101,10 +108,11 @@ Ottoline
 {dim:p.s. five nights, if you water them.}`,
     reward: { "seed:pumpkin": 2 }, onOpen: () => { S.quests.otto_pump = S.quests.otto_pump || "open"; S.flags.gotPieCard = true; } },
 
-  pip_weird: { from: "pip", day: 7, subject: "SCIENCE", text: () => `I'm doing a SCIENCE PROJECT on the lake. Can you fish me up
-something weird? Not a normal fish. (A weird fish counts.)
+  pip_weird: { from: "pip", day: 7, subject: "SCIENCE", text: () => `I am doing a SCIENCE PROJECT about the lake for school (not for
+school, for me). can you fish something weird out of it for me?
+not a normal fish. something WEIRD. a weird fish is ok though.
 
-PIP`, onOpen: () => { S.quests.pip_weird = S.quests.pip_weird || "open"; } },
+from PIP (scientist)`, onOpen: () => { S.quests.pip_weird = S.quests.pip_weird || "open"; } },
 
   wren_pc3: { from: "wren", day: 8, file: "3_torshavn.postcard", subject: "a postcard: grass roofs", text: () => `{dim:[black wooden houses with grass on their roofs]}
 
@@ -118,19 +126,26 @@ she's heard it too. the whole time. off the harbour.
 
   fenn_trout: { from: "fenn", day: 8, subject: "Supper.", text: () => `${NAME()}.
 
-Knees bad. Can't get down to the water. Would like a trout.
-They come up clear mornings and evenings. Not in the grey.
+Knees are bad this week. Can't get down the bank to the water.
+Would like a trout for my supper if you're fishing.
+They come up on clear mornings and in the evening. Not when it's grey.
 
 {dim:A. Fenn.}`, onOpen: () => { S.quests.fenn_trout = S.quests.fenn_trout || "open"; } },
 
   otto_bake: { from: "ottoline", day: 9, subject: "bake sale", text: () => `${NAME()},
 
-Bake sale on the green before Lantern Night. Fenn's honey cake
-sells first every year and he's unbearable about it.
+The bake sale's on the green the day before Lantern Night, and
+every single year Fenn brings a honey cake, and every single year
+it sells first, and every single year he stands there with his
+hands behind his back looking pleased with himself.
 
-Send me something sweet. Let's beat him.
+Send me something sweet. A pie, a cake, biscuits, anything. I want
+to beat him just once before I die.
 
-Ottoline`, onOpen: () => { S.quests.otto_bake = S.quests.otto_bake || "open"; } },
+Ottoline
+
+{dim:p.s. don't tell him I said that.}
+{dim:p.p.s. the bit about dying was a joke. mostly.}`, onOpen: () => { S.quests.otto_bake = S.quests.otto_bake || "open"; } },
 
   juniper_comet: { from: "juniper", day: 10, subject: "look west", text: () => `${NAME()},
 
@@ -153,16 +168,19 @@ see it in her log.
 
 {acc:W.}`, onOpen: () => clue("lights") },
 
-  pip_game: { from: "pip", day: 12, subject: "I MADE A GAME", text: () => `I used what you taught me and I MADE A GAME. It's in your notes
-folder now (I asked Ottoline to copy it over, she doesn't know how
-computers work so I told her what to type).
+  pip_game: { from: "pip", day: 12, subject: "I MADE A GAME", text: () => `guess what. I used the command you taught me and some stuff I
+found out on the library computer and I MADE A GAME.
+
+it's in your notes folder. I got Ottoline to put it there because
+she has a key for when she does your post. she typed it in and
+I told her what to type. she said "is this hacking" and I said yes.
 
   {cmd:cd ~/study/notes}
   {cmd:./pip_game.sh}
 
-It is very hard.
+it is very hard. don't be sad if you lose.
 
-PIP`, onOpen: () => { S.files["/cottage/study/notes/pip_game.sh"] = "#!/bin/pip\n# GUESS THE NUMBER by PIP OKAFOR\n# ./pip_game.sh"; }, when: () => S.quests.pip_lesson === "done" },
+from PIP`, onOpen: () => { S.files["/cottage/study/notes/pip_game.sh"] = "#!/bin/pip\n# GUESS THE NUMBER by PIP OKAFOR\n# ./pip_game.sh"; }, when: () => S.quests.pip_lesson === "done" },
 
   otto_eve: { from: "ottoline", day: 13, subject: "tomorrow", text: () => `${NAME()},
 
@@ -199,7 +217,7 @@ I'll show you the cellar properly.
 
 function letterText(id) {
   const L = LETTERS[id] || (S.dyn && S.dyn[id]);
-  if (!L) return "{dim:(a letter that seems to have gone missing)}";
+  if (!L) return "{dim:a letter that seems to have gone missing}";
   return typeof L.text === "function" ? L.text() : L.text;
 }
 function letterMeta(id) { return LETTERS[id] || (S.dyn && S.dyn[id]); }
@@ -270,7 +288,7 @@ function reply(to, item) {
   }
   if (to === "ottoline" && item === "pumpkin" && S.quests.otto_pump === "open") {
     S.quests.otto_pump = "done"; L.reward = { "seed:carrot": 3, jam: 1 }; L.friend = 3; L.subject = "the pumpkin";
-    say(`${NAME()},\n\nIt's on the counter and everyone who comes in for stamps says "oh".\nI'm going to carve it into Biscuit.\n\nCarrot seeds, and a jar of quince jelly. Wren says it's "fine".\nFrom her that's a medal.`);
+    say(`${NAME()},\n\nIt's on the counter and everyone who comes in for stamps says "oh".\nI'm going to carve it into Biscuit.\n\nCarrot seeds, and a jar of my quince jelly. Wren always says\nit's "fine", which is the nicest thing she's ever said about food.`);
     remember("Ottoline's going to carve my pumpkin into Biscuit.");
     return L;
   }
@@ -303,7 +321,7 @@ function reply(to, item) {
   }
   if (to === "pip" && S.quests.pip_weird === "open" && (item.startsWith("junk:") || item === "fish:eel")) {
     S.quests.pip_weird = "done"; L.reward = { bracelet: 1 }; L.friend = 3; L.subject = "RESULTS";
-    say(`${item === "junk:boot" ? "A BOOT. nobody's foot was in it. I checked." : item === "fish:eel" ? "AN EEL. Mum screamed. 10/10." : item === "junk:bottle" ? "a bottle with a NOTE in. I read it. sorry. it's about the lights. I KNEW it." : "a tin can with a snail in. his name is Derek now."}\nHypothesis confirmed: the lake is weird.\n\nFriendship bracelet enclosed. It's orange because of Biscuit.`);
+    say(`${item === "junk:boot" ? "A BOOT. nobody's foot was in it. I checked." : item === "fish:eel" ? "AN EEL. Mum screamed. 10/10." : item === "junk:bottle" ? "a bottle with a NOTE in. I read it. sorry. it's about the lights. I KNEW it." : "a tin can with a snail in. his name is Colin now."}\nHypothesis confirmed: the lake is weird.\n\nFriendship bracelet enclosed. It's orange because of Biscuit.`);
     remember("Pip's science project is going well, she says.");
     return L;
   }
@@ -313,19 +331,20 @@ function reply(to, item) {
   L.friend = fav ? 2 : 1;
   const nice = itemName(item);
   const lines = {
-    ottoline: fav ? [`${cap(nice)}! Wren told you, didn't she.`, `Oh, ${nice}. That's lovely. Thank you.`] : [`Thank you for the ${nice}. It's in the shop window with a card: "from the cottage".`, `${cap(nice)}! You're as bad as Wren.`],
-    fenn: fav ? [`${cap(nice)}. Good.`, `${cap(nice)}. Wren's been talking. Thank you.`] : [`Got the ${nice}. Didn't need it. Glad of it.`, `${cap(nice)}. Kind of you. Hens send regards.`],
-    pip: fav ? [`${nice.toUpperCase()}!!!`, `you sent me ${nice}. Mum says I have to say thank you properly so: THANK YOU PROPERLY.`] : [`thank you for the ${nice}. I've named it Gary.`, `a ${nice}! I'm going to do science on it.`],
-    juniper: fav ? [`${cap(nice)}. Exactly right. Thank you.`, `I had the ${nice} at the eyepiece. Saturn was very good last night.`] : [`Thank you for the ${nice}. It's on the sill by the charts.`, `${cap(nice)}. It's quiet up here. Your parcels help.`]
+    ottoline: fav ? [`${cap(nice)}! Somebody's been telling you what I like, and I bet I know who.\n\nThank you. It's going straight in the back where the customers can't get at it.`, `Oh, ${nice}. You shouldn't have, and I'm very glad you did.\n\nI've told everyone who's been in this morning, so the whole village knows now.`]
+      : [`Thank you for the ${nice}. I've put it in the shop window with a little card saying FROM THE COTTAGE, and three people have asked about it already.`, `${cap(nice)}! You're getting as bad as Wren. She was always leaving things in the box for me.`],
+    fenn: fav ? [`${cap(nice)}. That's good of you.\n\nThe bees approve. So do I.`, `${cap(nice)}. Wren's been telling you things, hasn't she.\n\nThank you.`] : [`Got the ${nice}. Didn't need it, but I'm glad of it.`, `${cap(nice)}. Kind of you.\n\nThe hens are laying again, so expect eggs.`],
+    pip: fav ? [`${nice.toUpperCase()}!!! how did you know. HOW DID YOU KNOW`, `you sent me ${nice}!! Mum says I have to write a proper thank you so this is it: THANK YOU VERY MUCH FOR THE ${nice.toUpperCase()}. from Pip.`] : [`thank you for the ${nice}. I have put it on my shelf next to my rocks.`, `a ${nice}! I am going to do an experiment on it. (I am going to look at it really closely.)`],
+    juniper: fav ? [`${cap(nice)}. That was exactly right. Thank you.`, `I had the ${nice} last night at the eyepiece. Saturn was very clear, and I wasn't cold, which is a first this month.`] : [`Thank you for the ${nice}. It's on the windowsill beside my charts, where I can see it.`, `${cap(nice)}. It's very quiet up here, so a parcel is an event. Thank you.`]
   };
   if (item.startsWith("junk:")) {
-    const jl = { ottoline: "A boot. Is this a Wren joke? It's in the window anyway.", fenn: "Boot. Wrong size. Planting thyme in it.", pip: "WEIRD STUFF. more please", juniper: "A boot. I've decided not to ask." };
+    const jl = { ottoline: "A boot. An old wet boot, in a parcel. I'm assuming this is one of Wren's jokes and you're carrying it on. I've put it in the window.", fenn: "Boot. Wrong size for me. I've put thyme in it.", pip: "WEIRD STUFF!! more please. for science", juniper: "Thank you for the boot. I've decided not to ask." };
     L.friend = to === "pip" ? 2 : 0;
     say(`${NAME()},\n\n${jl[to]}`);
     return L;
   }
   if (item.startsWith("file:")) {
-    const fl = { ottoline: "Got your note. Lovely to hear from the cottage.", fenn: "Read your note. Good note.", pip: "I'm going to frame your file. can you frame a file", juniper: "I read your note twice. Keep writing things down. It's how anyone ever finds anything out." };
+    const fl = { ottoline: "Got your note. It's lovely to hear from the cottage again. Wren hardly ever wrote, she just turned up.", fenn: "Read your note. It was a good note.", pip: "I am going to print your file out and put it on my wall. can you print a file. I will find out", juniper: "I read your note twice. Keep writing things down. It's the only way anyone finds anything out." };
     say(`${NAME()},\n\n${fl[to]}`);
     return L;
   }
@@ -342,44 +361,52 @@ const STATIONS = {
 };
 function forecastFor(day) {
   const w = weatherFor(day);
-  return w.word + (w.rain ? ". gardens can water themselves" : "") + (w.fog ? ". old fish weather" : "") + (w.name === "clear" ? ". stars tonight" : "");
+  return {
+    clear: "clear, light north-westerly. Good seeing after dark",
+    cloudy: "overcast and dry. Cloud base about four hundred metres",
+    drizzle: "drizzle on and off. No need to water anything",
+    rain: "rain, most of the day. No need to water anything",
+    fog: "fog on the water until late. The old fish come up in this",
+    windy: "gusty from the west. Tie down anything loose in the garden",
+    snow: "snow. Not much, but it will settle"
+  }[w.name] || w.word;
 }
 const OTTO_DAYS = {
-  1: ["Morning, Hollow. Drizzle, and the post van has a flat, so if your parcel's late, that's why.", "Fourteen days to Lantern Night.", "And if the cottage on the east shore can hear this: hello. Welcome."],
-  2: ["Morning. Grey today.", "Fenn's asking about lavender again. He's been asking since 1998.", "Somebody's dog has been at my bins. I know whose. I'm not saying."],
-  3: ["Morning, all. Clear and cold. Get your washing out.", "Pip Okafor came into the shop and asked for a modem. I gave her a lolly.", "Here's one for the cottage."],
-  4: ["Morning. Juniper's heating has gone again.", "If anyone's making soup this week, the observatory would have some.", "Weather's on 93.1. Piano on 88.8 at night. Me, here."],
-  5: ["Morning, Hollow. Proper rain, so leave the watering can.", "Postcard on the counter for the cottage, from Shetland. Ponies.", "My pumpkins are the size of oranges. Don't."],
-  6: ["Morning. Nothing much happening, which I like.", "Fenn says his bees are agitated. He says the lake's been loud at night. I said lakes aren't loud. He said 'this one is.'", "Eight days."],
-  7: ["Morning. Pip's doing a science project on the lake. Lock up your boots.", "Bake sale's the day before the lanterns.", "Here's a song for whoever's still in their dressing gown."],
-  8: ["Morning. Fog. Can't see the hill, can't see the observatory.", "Wren always said the old fish come up in fog. The golden one.", "Postcard in from the Faroes for the cottage. Grass on the roofs."],
-  9: ["Morning. Bake sale entries open.", "Fenn's knees are bad. If anyone has a trout spare.", "Five days."],
-  10: ["Morning. Juniper rang, on the actual telephone, to say there's a comet back. Low in the west after dark.", "She said last time it came round she and Wren watched it from the cottage dock. Sixty-four years ago.", "Clear tonight."],
-  11: ["Morning. Clear again. Last good night for the comet, Juniper says.", "Boats being painted all along the shore.", "Three days."],
-  12: ["Morning. Pip says she's 'released a game'.", "Carving tomorrow night.", "Juniper says Lantern Night will be clear. She's not been wrong about the sky yet."],
-  13: ["Morning. Windy. Hold on to your pumpkins.", "Tomorrow, if you're new: we row out at dusk and wait for the dock lantern at the cottage. When it's lit, we light ours.", "That's all it is."],
-  14: ["It's Lantern Night. Morning, everyone.", "Boats out from dusk. Watch the cottage dock.", "Whoever's minding the cottage this year: we'll be there. Take your time."]
+  1: ["Morning, Hollow, it's Ottoline. It's drizzling, the post van's got a flat tyre outside the church, and Derek says he'll have it done by eleven, which means one.", "Fourteen days to Lantern Night, for anyone counting. I am.", "And if anybody's listening over at Wren's cottage on the east shore, hello, and welcome. I hope you found the milk."],
+  2: ["Morning. Grey one today.", "Fenn was in yesterday asking about lavender. He's been asking about lavender since 1998, so if anyone's got any, please, for all our sakes.", "Also somebody's dog has been at my bins two nights running. I know whose dog it is. I'm not going to say. But I know."],
+  3: ["Morning, all. Lovely and clear for once, so if you've got washing, get it out now while you can.", "Pip Okafor came in yesterday and asked me if we sold modems. I gave her a lolly and she seemed happy with that.", "This next one's for the cottage, because I don't think they know anyone yet."],
+  4: ["Morning. Juniper's heating has packed in again up at the observatory. She rang to tell me in that voice she does where you can't tell if she's cross.", "So if anyone's making soup this week, there's somebody across the lake who'd have some.", "Weather's on 93.1, Wren's piano programme's on 88.8 after dark, and I'm here. I'm always here."],
+  5: ["It's raining properly this morning, so you can leave the watering can where it is.", "There's a postcard on the counter for the cottage, from Shetland, with ponies on. I did not read it. Well. I read the front."],
+  6: ["Morning. Not much happening, which suits me.", "Fenn was in for stamps and he says his bees are agitated. He says the lake's been loud at night. I said, Abernathy, lakes aren't loud. And he looked at me and said, this one is, and went out. So that's Fenn.", "Eight days to go."],
+  7: ["Morning. Pip's doing a science project on the lake, she tells me, so if you're missing anything that floats, that's where it's gone.", "Bake sale's on the green the day before Lantern Night. Get your names down.", "This one's for anybody who's still in their dressing gown at this time. You know who you are."],
+  8: ["Morning. Thick fog. I can't see the hill from the shop and I can't see the observatory at all.", "Wren always used to say the old fish come up in the fog. The big golden one. I've never seen it myself, but she swore.", "Oh, and another postcard in for the cottage, from the Faroes. Little houses with grass growing on the roofs."],
+  9: ["Morning. Bake sale entries are open. Fenn has entered his honey cake, as he does every single year, and it will win, as it does every single year, unless somebody does something about it.", "His knees are bad this week as well, so if anyone's got a trout going spare he wouldn't say no.", "Five days."],
+  10: ["Morning. Now, Juniper rang this morning, on the actual telephone, which she never does, to say there's a comet back. Low in the west after it gets dark.", "She says the last time it came round, she and Wren watched it from the end of the cottage dock. That's sixty-four years ago. She sounded quite odd about it, to be honest.", "It should be clear tonight."],
+  11: ["Morning. Clear again, and Juniper says tonight's the last good night for the comet, so wrap up and go and look.", "Half the boats on the shore are being painted. The whole village smells of varnish.", "Three days."],
+  12: ["Morning. Pip came in to tell me she's 'released a game', and I said, released it where, and she just looked at me.", "Pumpkin carving's tomorrow night in the hall.", "And Juniper says Lantern Night will be clear. She's never been wrong about the sky, so I'm taking that as gospel."],
+  13: ["Morning. It's blowing a gale out there, so hold on to your pumpkins.", "If you're new to the Hollow, here's how tomorrow goes. We all row out at dusk and wait on the water for the lantern at the end of the cottage dock. When that's lit, we light ours. That's the whole thing.", "That's all it's ever been."],
+  14: ["It's Lantern Night. Morning, everybody.", "Boats out from dusk. Watch the dock at the cottage.", "And whoever's minding the cottage this year, don't you worry. We'll be out there, and we'll wait as long as it takes."]
 };
 function ottoMorning() {
   if (S.day > SEASON_END) return ["Morning, Hollow. Snow on the hill and the post van's in a ditch.", pick(["Biscuit was seen sitting in the post office window yesterday. Nobody let her in.", "Fenn's bees are asleep for the winter. He says pop up the hill if you like.", "Juniper says the sky's never clearer than in winter.", "The lake's been quiet since the 25th. Quieter than I can remember."]), "Keep warm."];
   return OTTO_DAYS[S.day] || ["Morning, Hollow.", "Nothing to report.", "Have a nice day."];
 }
 const PIP_FM = [
-  "THIS IS PIP FM. 104.5. PIRATE RADIO.",
-  "hacker tip: {acc:ls -a} shows hidden files. that's where the secrets are. that's ALWAYS where they are.",
-  "hacker tip: {acc:history} shows everything you ever typed. so be careful.",
-  "hacker tip: a | sends what one command says into another one. {acc:ls | grep txt}.",
-  "news: I saw the light in the lake AGAIN. it was further out this time. it was bigger. nobody believes me.",
-  "news: Fenn says the bees won't go near the water this week. that is SCIENTIFIC EVIDENCE.",
-  "news: Wren's cellar has a program I'm not allowed to run. it's called listen. if you're listening: run it.",
-  "this has been PIP FM. I have to go, it's tea."
+  "THIS IS PIP FM ON 104.5. IT'S A PIRATE STATION SO DON'T TELL ANYONE.",
+  "HACKER TIP. {acc:ls -a} SHOWS THE HIDDEN FILES. THE ONES WITH A DOT AT THE FRONT. THAT'S WHERE PEOPLE PUT SECRETS. EVERY TIME.",
+  "HACKER TIP. TYPE {acc:history} AND IT SHOWS YOU EVERYTHING YOU EVER TYPED. I FOUND OUT WREN TYPED \"is pip asleep\" ONCE.",
+  "HACKER TIP. THE STRAIGHT LINE KEY | MAKES ONE COMMAND TALK TO ANOTHER ONE. TRY {acc:ls | grep txt}. I DIDN'T BELIEVE IT EITHER.",
+  "NEWS. I SAW THE LIGHT IN THE LAKE AGAIN ON TUESDAY. IT WAS FURTHER OUT AND IT WAS BIGGER. MUM SAYS IT'S THE MOON. IT WASN'T THE MOON.",
+  "NEWS. FENN SAYS HIS BEES WON'T GO NEAR THE WATER. BEES KNOW THINGS. THAT IS ACTUAL SCIENCE.",
+  "NEWS. THERE'S A PROGRAM IN WREN'S CELLAR CALLED listen AND I'M NOT ALLOWED TO RUN IT. YOU ARE THOUGH. PROBABLY.",
+  "THAT'S PIP FM. I HAVE TO GO, IT'S FISH FINGERS."
 ];
 
 function radioOut(st) {
   const lines = [];
   if (st === "101.3") {
     if (S.min < 12 * 60 && S.min >= 6 * 60) {
-      lines.push("{dim:(a jingle on an out-of-tune piano)}");
+      lines.push("{dim:a jingle on an out-of-tune piano}");
       for (const l of ottoMorning()) lines.push("{acc:OTTOLINE:} " + l);
       if (S.quests.otto_radio !== "done") {
         S.quests.otto_radio = "done"; befriend("ottoline", 2); give("seed:chamomile", 2);
@@ -388,31 +415,32 @@ function radioOut(st) {
         remember("got the radio going. Ottoline said hello on air.");
       }
     } else if (S.min >= 12 * 60 && S.min < 20 * 60) {
-      lines.push("{dim:(afternoon requests. a scratchy record:)} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "} {dim:— for " + pick(["Fenn's bees", "the observatory", "'someone on the hill'", "whoever's at the cottage"]) + ".}");
-    } else lines.push("{dim:(off air. a tape loop of Ottoline saying \"goodnight, Hollow.\")}");
+      lines.push("{acc:OTTOLINE:} " + pick(["This one's for Fenn's bees, from Fenn. He didn't ask me to say that.", "A request from the observatory. No message. There's never a message.", "This is for someone on the hill who says they know who they are.", "Next one's for whoever's at the cottage. Put the kettle on."]));
+      lines.push("{dim:a scratchy record:} {acc:" + pick(["Moonlight on the Water", "The Kettle's On", "I'll Row Across to You", "Wellington Boot Waltz"]) + "}");
+    } else lines.push("{dim:off air. a tape loop of Ottoline saying \"goodnight, Hollow.\"}");
   } else if (st === "93.1") {
-    lines.push("{sky:Weather for Lake Ilse, from the observatory.}");
-    lines.push("{sky:Today: " + forecastFor(S.day) + ".}");
-    lines.push("{sky:Tomorrow: " + forecastFor(S.day + 1) + ".}");
+    lines.push("{dim:a recording, the same every hour. Juniper's voice, reading off a card:}");
+    lines.push("{sky:Lake Ilse, from the observatory. Today, " + forecastFor(S.day) + ".}");
+    lines.push("{sky:Tomorrow, " + forecastFor(S.day + 1) + ". That's all.}");
   } else if (st === "88.8") {
-    lines.push("{dim:(slow piano. somebody in the background of the recording asks for more toast.)}");
-    if (!A.ctx) lines.push("{dim:(tap the screen once to let the sound in.)}");
+    lines.push("{dim:slow piano. somebody in the background of the recording asks for more toast.}");
+    if (!A.ctx) lines.push("{dim:tap the screen once to let the sound in.}");
   } else if (st === "104.5" && S.disks.pip) {
     lines.push("{sky:PIP:} " + PIP_FM[0]);
     const tip = pick(PIP_FM.slice(1, -1));
     lines.push("{sky:PIP:} " + tip);
-    if (tip.includes("light in the lake")) clue("lights");
-    if (tip.includes("listen")) clue("listen");
+    if (/light in the lake/i.test(tip)) clue("lights");
+    if (/listen/i.test(tip)) clue("listen");
     lines.push("{sky:PIP:} " + PIP_FM[PIP_FM.length - 1]);
   } else if (st === "77.7") {
     lines.push("{dim:kshhhhhhhh}");
-    lines.push("{dim:(under the static, a flat voice, one word at a time:)} {sky:" + heard(signalLevel()) + "}");
-    lines.push("{dim:(it's HEARTH's voice. the same one that reads the error messages.)}");
+    lines.push("{dim:under the static, a flat voice, one word at a time:} {sky:" + heard(signalLevel()) + "}");
+    lines.push("{dim:it's HEARTH's voice. the same one that reads the error messages.}");
     clue("r777");
   } else {
     lines.push("{dim:kshhhhhhhhhhhhhhhhhhhhh}");
-    if (st === "104.5") lines.push("{dim:(very faintly: \"is this on? IS THIS ON?\" — not yet.)}");
-    else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:(something, nearby on the dial. a voice? lower.)}");
+    if (st === "104.5") lines.push("{dim:very faintly, a kid's voice: \"is this on? IS THIS ON?\" not yet, apparently.}");
+    else if (Math.abs(parseFloat(st) - 77.7) < 1.5) lines.push("{dim:something, nearby on the dial. a voice? lower.}");
   }
   return lines;
 }

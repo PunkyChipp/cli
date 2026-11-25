@@ -10,7 +10,7 @@ const FISH = [
   { id: "perch", w: 30, win: 1200, size: [14, 32], when: () => !isNight(), line: "A perch. Green and striped, spines up." },
   { id: "roach", w: 24, win: 1200, size: [12, 28], when: () => true, line: "A roach. Silver, red-finned." },
   { id: "trout", w: 14, win: 850, size: [25, 48], when: () => (isMorning() || isEvening()) && !weatherNow().rain && weatherNow().cloud < 0.6, line: "A brown trout, speckled, heavier than it looks." },
-  { id: "pike", w: 7, win: 700, size: [50, 95], when: () => isEvening() || S.min >= 20 * 60, line: "A pike. All teeth. You get it off the hook very carefully." },
+  { id: "pike", w: 7, win: 700, size: [50, 95], when: () => isEvening() || S.min >= 20 * 60, line: "A pike, with a lot of teeth. You get it off the hook very carefully." },
   { id: "eel", w: 16, win: 900, size: [40, 80], when: () => isNight() && weatherNow().rain > 0, line: "An eel. It wraps itself round your wrist." },
   { id: "moonperch", w: 14, win: 900, size: [15, 25], when: () => S.day > SEASON_END && isNight() && weatherNow().cloud < 0.5, line: "A perch, but faintly lit from inside. Blue-gold. It fades as you look at it." },
   { id: "marmalade", w: 3, win: 550, size: [90, 90], keep: false, when: () => S.day >= 4 && (weatherNow().fog > 0.5 || (S.min >= 6 * 60 && S.min < 8 * 60)), line: "" },
@@ -39,12 +39,12 @@ function waterLine(phase, bob) {
 }
 
 async function doFish() {
-  if (roomName() !== "dock") return print("You'll want to be on the dock for that. {cmd:cd ~/dock} {dim:(fish don't live in " + roomName() + "s.)}");
-  if (!has("rod")) return print("You haven't got a rod. {dim:(Wren's is in the garden shed: {cmd:cd ~/garden/shed})}");
-  if (T.cap) return print("you can't fish inside a pipe. you tried, though, and that's what matters.");
+  if (roomName() !== "dock") return print("You fish off the end of the dock. {cmd:cd ~/dock}");
+  if (!has("rod")) return print("You haven't got a rod. {dim:Wren's is in the garden shed: {cmd:cd ~/garden/shed}}");
+  if (T.cap) return print("fish needs the whole screen. run it on its own.");
   if (weatherNow().rain >= 1 && !has("umbrella")) warm(-3, "cold. wet. you should've brought the duck umbrella.");
-  print(pick(["You cast. {acc:plip.}", "The float lands a little short. Fine.", "A good cast, for once."]));
-  if (!S.flags.fishTaught) { S.flags.fishTaught = true; print("{dim:(watch the float. when it goes under, press enter, or tap the screen. not before.)}"); }
+  print(pick(["You cast. {acc:plip.}", "The float lands a bit short of where you meant, but it'll do.", "A good cast, right out past the reeds."]));
+  if (!S.flags.fishTaught) { S.flags.fishTaught = true; print("{dim:watch the float. when it goes under, press enter, or tap the screen. not before.}"); }
   sfx("plip");
   const d = printRaw(fmt(waterLine(0, false)));
   let early = false;
@@ -52,7 +52,7 @@ async function doFish() {
   const waitMs = T.autoFish ? 10 : rand(2200, 6500);
   const t0 = Date.now();
   let phase = 0;
-  const musings = ["a heron further down the shore.", "a leaf drifts past the float.", "a dog barks twice across the lake.", "the float bobs. wind.", "a dragonfly lands on the rod.", "the cable at your feet ticks, very faintly."];
+  const musings = ["a heron further down the shore.", "a leaf drifts past the float.", "a dog barks twice across the lake.", "the float bobs. it's only the wind.", "a dragonfly lands on the rod.", "the cable at your feet ticks, very faintly."];
   let mused = false;
   while (Date.now() - t0 < waitMs && !early && !T.skip) {
     phase++;
@@ -64,12 +64,12 @@ async function doFish() {
   if (T.skip) { print("{dim:you reel in. another time.}"); spend(5); return; }
   if (early) {
     spend(5);
-    return print(pick(["Nothing's biting yet. You pull the float out.", "Too soon. The float hadn't moved.", "You strike at nothing. The ripples settle."]) + " {dim:(wait until it goes under.)} {cmd:fish}");
+    return print(pick(["Nothing's biting yet. You pull the float out.", "Too soon. The float hadn't moved.", "You strike at nothing. The ripples settle."]) + " {dim:wait until it goes under.} {cmd:fish}");
   }
   const f = rollFish();
   d.innerHTML = fmt(waterLine(phase, true));
   sfx("plip");
-  print("{warn:the float goes under —}  {dim:now! (enter, space or tap)}");
+  print("{warn:the float goes under!}  {dim:now: enter, space or tap}");
   const got = T.autoFish ? true : await new Promise(res => {
     let done = false;
     T.keyWait = () => { if (!done) { done = true; res(true); } };
@@ -85,15 +85,15 @@ async function doFish() {
   if (f.id === "marmalade") return catchMarmalade();
   if (f.id === "junk:bottle") return catchBottle();
   const size = randi(f.size[0], f.size[1]);
-  print(f.line + (f.size[1] ? " {dim:(" + size + "cm)}" : ""));
+  print(f.line + (f.size[1] ? " {dim:" + size + "cm}" : ""));
   const L = S.fishlog[f.id] || { n: 0, best: 0 };
   const best = size > L.best && L.n > 0;
   L.n++; L.best = Math.max(L.best, size); S.fishlog[f.id] = L;
-  if (best) print("{ok:(your biggest " + f.id + " yet!)}");
+  if (best) print("{ok:That's the biggest " + f.id + " you've had.}");
   if (f.keep !== false) { give(f.junk ? f.id : "fish:" + f.id); }
   if (!f.junk) { S.stats.fish++; keepsake("first_fish"); }
   if (KEEPERS.every(k => S.fishlog[k])) keepsake("fishall");
-  if (catHere() && !f.junk && f.keep !== false) print("{dim:Biscuit has materialised at your elbow. She's very interested. Extremely interested. ({cmd:feed biscuit " + f.id + "}?)}");
+  if (catHere() && !f.junk && f.keep !== false) print("{dim:Biscuit has come down the garden and is sitting at your elbow, staring at it.} {cmd:feed biscuit " + f.id + "}");
   remember(f.junk ? "fished up " + itemName(f.id) + ". the lake has a sense of humour." : "caught " + (f.keep === false ? "and released " : "") + "a " + f.id + ".");
 }
 
@@ -142,21 +142,21 @@ async function catchBottle() {
 
 async function doRow() {
   if (roomName() !== "dock") return print("The boat's tied up at the dock.");
-  if (weatherNow().wind > 0.8) return print("Too windy. The boat's pulling at its rope. Not today.");
+  if (weatherNow().wind > 0.8) return print("It's too windy. The boat keeps yanking at its rope and you decide to leave it till tomorrow.");
   print("You untie the boat, get in, and push off.");
   sfx("splash");
   await pause(900);
   const w = weatherNow();
   const lines = [];
-  if (w.fog > 0.5) lines.push("Fog all round. The oars, the drips off them, and nothing else. You can't see the dock behind you.");
-  else if (isNight()) lines.push(w.cloud < 0.5 ? "Stars in the water. You row through them." : "Dark, and the lake feels much bigger than it does in the day. The study window is a small yellow square behind you.");
-  else lines.push(pick(["Flat calm. Each stroke leaves two little whirlpools.", "From the middle of the lake the cottage looks small and very old."]));
+  if (w.fog > 0.5) lines.push("There's fog all round. You can hear the oars and the water dripping off them, and you can't see the dock behind you any more.");
+  else if (isNight()) lines.push(w.cloud < 0.5 ? "The stars are reflected in the water, and the oars break them up." : "Dark, and the lake feels much bigger than it does in the day. The study window is a small yellow square behind you.");
+  else lines.push(pick(["It's flat calm. Each stroke leaves two little whirlpools behind the boat.", "From the middle of the lake the cottage looks small and very old."]));
   lines.push(pick([
     "A heron gets up out of the reeds as you pass.",
     "The observatory dome on the far side is " + (isNight() ? "open, with a light in the slit." : "white against the hill. Someone waves from the door. You wave back."),
     "Up the hill, Fenn is standing among his hives, not moving.",
     "You stop rowing and drift for a while.",
-    "Two grebes, doing their dance."
+    "Two grebes are doing their dance, rising up out of the water face to face."
   ]));
   if (S.day > SEASON_END) lines.push("Thin ice at the edges. It creaks when the oars touch it.");
   if (isNight() && !S.flags.answered && signalLevel() > 0.4 && w.cloud < 0.8) {

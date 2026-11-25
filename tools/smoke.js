@@ -86,16 +86,16 @@ async function type(line, waitFor) {
   await step("typo suggestions", () => type("lok", "did you mean"));
   await step("brew tea", async () => { await type("cd kitchen"); G.S.flags.thumped = true; await type("brew"); expect(G.S.stats.teas === 1, "no tea"); });
   await step("feed biscuit", async () => { await type("feed biscuit"); expect(G.S.flags.fedOnce, "not fed"); });
-  await step("take the radio disk from inside the bread bin", () => type("take radio.dsk", "Taken"));
+  await step("take the radio disk from inside the bread bin", () => type("take radio.dsk", "You take"));
   await step("insert disk in the study", async () => { await type("cd study"); await type("insert radio.dsk"); expect(G.S.disks.radio, "radio not installed"); });
   await step("radio 101.3 completes Ottoline's quest", async () => { await type("radio 101.3", "OTTOLINE"); expect(G.S.quests.otto_radio === "done", "quest not done"); });
   await step("hidden seed tin with ls -a", async () => { await type("cd ~/garden/shed"); const o = await type("ls -a"); expect(o.includes(".seed_tin"), "no tin"); });
-  await step("take lavender seeds", async () => { await type("cd .seed_tin"); await type("take lavender seeds", "Taken"); expect(G.has("seed:lavender", 3), "no seeds"); });
+  await step("take lavender seeds", async () => { await type("cd .seed_tin"); await type("take lavender seeds", "You take"); expect(G.has("seed:lavender", 3), "no seeds"); });
   await step("take rod & oilcan", async () => { await type("cd ~/garden/shed"); await type("take rod"); await type("take oilcan"); expect(G.has("rod") && G.has("oilcan"), "missing"); });
   await step("plant + water", async () => { await type("cd ~/garden"); await type("plant lavender"); await type("plant carrot"); await type("plant carrot"); await type("water"); expect(G.S.plots.filter(p => p.crop).length === 3, "not planted"); });
   await step("oil the greenhouse open", async () => { await type("oil greenhouse"); expect(G.S.flags.ghOpen, "still stuck"); await type("cd greenhouse"); expect(G.S.cwd.endsWith("greenhouse"), "can't enter"); });
   await step("fishing", async () => { await type("cd dock"); for (let i = 0; i < 6; i++) { G.T.skip = false; await G.shell("fish"); } expect(G.S.stats.fish > 0 || Object.keys(G.S.inv).some(k => k.startsWith("junk:")), "caught nothing in 4 casts"); });
-  await step("lamp lights the attic", async () => { await type("cd kitchen"); await type("take matches"); await type("cd cellar"); await type("take lamp"); await type("light lamp"); expect(G.S.flags.atticLit, "attic dark"); await type("cd attic", "Rafters"); });
+  await step("lamp lights the attic", async () => { await type("cd kitchen"); await type("take matches"); await type("cd cellar"); await type("take lamp"); await type("light lamp"); expect(G.S.flags.atticLit, "attic dark"); await type("cd attic", "trunk"); });
   await step("trunk is locked without the key", () => type("cd trunk", "padlocked"));
   await step("pipes, grep, wc", async () => { const o = await type("ls ~/study | grep txt | wc -l"); expect(/\b1\b/.test(o), "expected 1 txt file, got " + o); });
   await step("redirect into a file", async () => { await type("cd ~/study/notes"); await type("echo dear diary > diary.txt"); await type("cat diary.txt", "dear diary"); });
@@ -103,7 +103,7 @@ async function type(line, waitFor) {
   await step("history expansion !!", async () => { await type("echo again"); G.S.hist.push("echo again"); G.S.hist.push("!!"); const o = await type("!!"); expect(o.includes("again"), o); });
   await step("grep -r through the house", () => type("grep -r carp ~", "carp"));
   await step("man pages", () => type("man fish", "NAME"));
-  await step("kill biscuit refuses", () => type("kill -9 biscuit", "nine lives"));
+  await step("kill biscuit refuses", () => type("kill -9 biscuit", "PID 1 is Biscuit"));
   await step("rm -rf / is a no", () => type("rm -rf /", "No."));
   await step("sleep is refused in the morning", () => type("sleep", "It's only"));
   await step("mystery: the cellar, listen, the plan, the log, 77.7", async () => {

@@ -15,14 +15,14 @@ const WEATHER_ART = {
 };
 
 const MORNINGS = {
-  2: "Biscuit is sitting on your chest. Not asleep. Watching.",
-  3: "Clear. You can see the observatory on the far shore, small and white, like a tooth.",
-  5: "Rain on the roof. Downstairs, the hum is going, under it.",
-  6: "You dreamt about the lake. You can't remember any of it except that it was lit.",
-  8: "Fog right up to the windows.",
-  10: "You wake up and lie there and listen. The hum is louder. You're sure of it now.",
-  12: "Frost on the inside of the window.",
-  14: "Lantern Night. You can hear oars already, someone testing a boat."
+  2: "You wake up because something is standing on you. It's Biscuit, on your chest, looking straight at your face and waiting for you to notice.",
+  3: "It's clear for the first time since you got here. From the bedroom window you can see the observatory on the far shore, a small white dome on the hill.",
+  5: "Rain on the roof all night. When you go downstairs the hum is still there underneath it, the same as always.",
+  6: "You had a dream about the lake. You can't remember much of it, except that the water was lit up from below.",
+  8: "The fog has come right up to the house. You can't see the end of the garden from the kitchen window.",
+  10: "You lie in bed for a while listening. You're fairly sure now that the hum is louder than it was when you arrived.",
+  12: "It went cold overnight. There's frost on the inside of the bedroom window, and you can see your breath in the hall.",
+  14: "It's Lantern Night. You can already hear someone down on the water testing a boat, and Ottoline's voice carrying across the lake."
 };
 async function morning(fellAsleep) {
   const w = weatherFor(S.day);
@@ -33,18 +33,20 @@ async function morning(fellAsleep) {
   print(art[2] + "   {dim:" + clock(S.min) + ", " + w.word + "}");
   print("");
   await pause(300);
-  if (fellAsleep) await type("You wake up at the desk with a crick in your neck and the cat on your back.", 70);
+  if (fellAsleep) await type("You wake up at the desk with your face on your arm and a stiff neck. At some point in the night Biscuit got on your back and went to sleep there.", 70);
   else await type(MORNINGS[S.day] || pick([
-    w.rain ? "Rain on the roof." : w.snow ? "Snow. Everything's gone quiet." : "Light through the curtains.",
-    "Biscuit, downstairs, is telling the whole house about breakfast.",
-    "Woodsmoke from somewhere. The house ticking as it warms up."
+    w.rain ? "It's raining. You lie and listen to it on the roof for a bit before you get up." : w.snow ? "It's snowed, and everything outside has gone very quiet." : "The sun's coming through the gap in the curtains.",
+    "Biscuit is downstairs telling the whole house that she hasn't had breakfast.",
+    "Somebody across the lake has lit a fire already. You can smell it from the bed.",
+    "You hear the post van grinding up the lane, and then the gate.",
+    "The pipes knock twice when you turn the tap on. They did that yesterday as well."
   ]), 70);
   const o = S.flags.overnight || [];
   const grew = o.filter(x => x !== "dry");
-  if (grew.length) print("{ok:Ready in the garden: " + [...new Set(grew)].join(", ") + ".}");
-  else if (o.includes("dry")) print("{dim:(something in the garden went thirsty yesterday and didn't grow.)}");
-  if (S.mailbox.length) { sfx("mail"); print("{acc:Post.} " + plural(S.mailbox.length, "letter") + " on the mat. {cmd:mail}"); }
-  if (S.day === SEASON_END + 1) print("{dim:It snowed in the night.}");
+  if (grew.length) print("{ok:From the window you can see the " + [...new Set(grew)].join(" and the ") + " in the garden " + (grew.length > 1 ? "are" : "is") + " ready.}");
+  else if (o.includes("dry")) print("{dim:Something in the garden didn't get watered yesterday, so it hasn't grown.}");
+  if (S.mailbox.length) { sfx("mail"); print("{acc:There's post on the mat}, " + (S.mailbox.length === 1 ? "one letter." : plural(S.mailbox.length, "letter") + ".") + " {cmd:mail}"); }
+  if (S.day === SEASON_END + 1) print("{dim:It snowed in the night. The first of the winter.}");
   print("");
 }
 
@@ -164,34 +166,34 @@ function afterCommand() {
 
 /* ---------- Lantern Night ---------- */
 function lanternStatus() {
-  if (S.flags.lanternLit) return "Lit. A steady blue-gold flame." + (S.flags.answered ? "" : " The cable beside it is warm.");
+  if (S.flags.lanternLit) return "It's lit, with a small blue-gold flame that doesn't flicker." + (S.flags.answered ? "" : " The cable beside it is warm to touch.");
   const need = [];
   if (!S.disks.lantern) need.push("the lantern disk installed in HEARTH");
   if (!has("wick")) need.push("a wick");
-  if (!has("moonflower")) need.push("a moonflower (for the oil)");
+  if (!has("moonflower")) need.push("a moonflower for the oil");
   if (!has("matches")) need.push("matches");
-  return "An iron lantern on a pole. The glass has been cleaned recently.\n" +
-    (need.length ? "{dim:It needs: " + need.join(", ") + ".}" : "{ok:It has everything it needs.} " + (S.day >= SEASON_END ? "{dim:After dark: {cmd:lantern}.}" : "{dim:The 25th.}"));
+  return "An iron lantern on a pole. Somebody has cleaned the glass not long ago, and the oil cup is empty.\n" +
+    (need.length ? "{dim:It needs: " + need.join(", ") + ".}" : "{ok:It has everything it needs.} " + (S.day >= SEASON_END ? "{dim:After dark: {cmd:lantern}.}" : "{dim:It's for the 25th.}"));
 }
 
 async function doLantern() {
   if (roomName() !== "dock") return print("The lantern's on the dock. {cmd:cd dock}");
   if (S.flags.lanternLit) {
-    print("It's lit. You stand by it for a while." + (S.flags.answered ? "" : " {dim:(up at the house, the cellar is still humming that new note.)}"));
+    print("It's lit. You stand by it for a while." + (S.flags.answered ? "" : " {dim:up at the house, the cellar is still humming that new note.}"));
     return;
   }
   const missing = [];
-  if (!has("wick")) missing.push("a wick {dim:(Wren's trunk)}");
-  if (!has("moonflower")) missing.push("a moonflower {dim:(greenhouse, harvested at night)}");
-  if (!has("matches")) missing.push("matches {dim:(kitchen drawer)}");
+  if (!has("wick")) missing.push("a wick {dim:Wren's trunk}");
+  if (!has("moonflower")) missing.push("a moonflower {dim:greenhouse, harvested at night}");
+  if (!has("matches")) missing.push("matches {dim:kitchen drawer}");
   if (S.day < SEASON_END) {
-    print("Not yet. It's for Lantern Night — " + dateStr(SEASON_END) + ", " + plural(SEASON_END - S.day, "day") + " away.");
+    print("Not yet. It's for Lantern Night, " + dateStr(SEASON_END) + ", " + plural(SEASON_END - S.day, "day") + " away.");
     print(missing.length ? "{dim:You'll need: " + missing.join(", ") + ".}" : "{ok:You've got everything it needs.}");
     S.flags.lanternReady = !missing.length;
     return;
   }
-  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:(they'll wait. Ottoline said.)}");
-  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. After dark. {dim:(from 6pm.)}");
+  if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:they'll wait. Ottoline said.}");
+  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. They won't start till it's dark, after six.");
   await lanternFinale();
 }
 
@@ -204,11 +206,11 @@ async function lanternFinale() {
   keepsake("lantern");
   clearScreen();
   await pause(500);
-  await type(late ? "It isn't the 25th any more. They've waited anyway. There are boats on the water, in the dark." : "It's dark. Out on the lake there are oars, and low voices, and somebody laughing and being shushed. The whole Hollow is out there, waiting.", 45);
+  await type(late ? "It's past the 25th, but they've waited anyway. When you get to the end of the dock there are boats out on the water, sitting in the dark." : "By the time you get to the end of the dock it's properly dark. You can hear oars out on the lake, and people talking quietly, and somebody laughing and being told to shush. It sounds like the whole of the Hollow is out there.", 45);
   await pause(700);
-  await type("You open the little glass door, fit the wick, and press the moonflower into the oil cup. It glows faintly in your fingers. Blue-gold.", 45);
+  await type("You open the little glass door on the lantern and fit the new wick, then press the moonflower down into the oil cup. Your fingers glow faintly where you've touched it.", 45);
   await pause(700);
-  await type("You strike a match.", 35);
+  await type("It takes you three matches, because your hands are cold.", 35);
   sfx("crackle");
   await pause(1200);
   print("");
@@ -232,30 +234,30 @@ async function lanternFinale() {
   print("{acc:It catches.} A small steady flame, blue-gold.");
   sfx("chime");
   await pause(1400);
-  await type("Then, out on the water, one light. Then another.", 45);
+  await type("For a few seconds nothing happens. Then someone out on the water lights theirs, and then the boat next to them does, and it goes along the line.", 45);
   for (const i of order) { lit.push(i); render(); sfx("tick"); await pause(T.skip ? 0 : 240); }
   await pause(600);
   print("");
-  print("{acc:OTTOLINE} {dim:(far too loud):} There it is!");
+  print("{acc:OTTOLINE} {dim:(much too loud):} There it is! I told you!");
   await pause(900);
-  print("{sky:PIP} {dim:(waving a torch in circles):} HELLO! HELLO!");
+  print("{sky:PIP} {dim:(waving her torch round and round):} HELLO! IT'S ME! HELLO!");
   await pause(900);
-  print("{ok:FENN} {dim:(from the hill, to nobody):} Good.");
+  print("{ok:FENN} {dim:(from up on the hill, not really to anyone):} Good.");
   await pause(900);
-  print("{hi:JUNIPER} {dim:(the dome opens across the water. a lamp in the slit flashes three times.)}");
+  print("{hi:JUNIPER} {dim:doesn't say anything. Across the lake the observatory dome swings open, and a lamp in the slit flashes three times.}");
   await pause(1600);
   print("");
-  await type("You count the boats. Twenty.", 45);
+  await type("You count the boats, because the photo on the mantelpiece told you to. There are twenty.", 45);
   await pause(800);
-  await type("You count the lights on the water.", 45);
+  await type("Then you count the lights.", 45);
   await pause(1200);
-  await type("Twenty-one. One of them is a long way under the surface, and it isn't moving with the others.", 45);
+  await type("You get to twenty-one. The last one is a long way under the surface, out over the deep part, and it isn't bobbing about like the others. It's just there, very still.", 45);
   clue("count"); clue("lights");
   await pause(1500);
   print("");
-  await type("Up at the house, through the open back door, you hear the hum in the cellar change its note.", 45);
+  await type("Behind you, up at the house, you can hear through the open back door that the hum in the cellar has changed. It's a different note now.", 45);
   print("");
-  print("{dim:(the lantern is lit. Lantern Night is done. the night isn't, if you want it.)}");
+  print("{dim:The lantern's lit. Most people will row home soon. You don't have to go in yet.}");
   remember("lit the lantern. twenty boats, twenty-one lights. the cellar changed its note.");
   T.ending = false;
   spend(30);
