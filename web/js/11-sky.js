@@ -116,7 +116,7 @@ async function doSky(args) {
       await type("You watch it until your neck aches from bending to the eyepiece. Across the lake, Juniper is probably doing the same. The last time it came round, she and Wren were fourteen and watching it from the end of your dock.", 45);
       keepsake("comet");
       clue("comet");
-      remember("saw the comet. Juniper and Wren saw it from this exact roof in 1962.");
+      remember("saw the comet. Wren and Juniper watched it from the end of the dock in 1962.");
       if (S.quests.jun_comet === "open") print("{dim:Juniper said to send her something if you saw it. It doesn't matter what. {cmd:send}}");
     }
   } else if (dir === "west" && S.day < 10) print("{dim:There's nothing unusual in the west tonight.}");

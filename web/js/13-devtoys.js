@@ -352,7 +352,7 @@ cmd("credits about", "who made this", () => {
 cmd("yes", "agree, repeatedly", async (a) => {
   const w = a.join(" ") || "y";
   for (let i = 0; i < 14; i++) { print(esc(w)); await pause(40); }
-  print("{dim:^C  (Biscuit stood on ctrl+c for you.)}");
+  print("{dim:^C}\n{dim:Biscuit has stepped on the keyboard.}");
 }, SYS);
 cmd("sl", "you meant ls", async () => {
   const k = ["      )  )", "     (  (", "    .-----.", "   |       |=,", "   |       | ||", "   '-------'-'"];
@@ -360,10 +360,10 @@ cmd("sl", "you meant ls", async () => {
   print("{dim:you meant ls.}");
 }, SYS);
 cmd("git", "version control", () => print("Wren didn't believe in version control. 'I remember what I did,' she wrote, in 1987, and then, in 1993, 'mostly.'"), SYS);
-cmd("make", "make something", (a) => (a.join(" ").includes("tea") ? doBrew([]) : a.join(" ").includes("love") ? print("make: *** You can't make love in a cottage terminal. Have a cup of tea.") : print("make: *** No rule to make target '" + esc(a[0] || "") + "'.  {dim:did you mean {cmd:cook}? or {cmd:brew}?}")), SYS);
-cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "python: not installed. {dim:HEARTH has 640K. it uses most of it listening.}" : "not installed."), SYS);
-cmd("npm pip3 apt brew-install", "install things", () => print("no network. {dim:the only cable goes into the lake.}"), SYS);
-cmd("ssh telnet", "connect to elsewhere", (a) => print((a[0] || "").includes("observatory") || (a[0] || "").includes("juniper") ? "Connecting to observatory... {dim:Connection refused. a note: 'if you want to talk, write. or row. — J.V.'}" : "ssh: nowhere to go. everywhere worth going is in this house, or across the lake by post."), SYS);
+cmd("make", "make something", (a) => (a.join(" ").includes("tea") ? doBrew([]) : print("make: *** No rule to make target '" + esc(a[0] || "") + "'.  {dim:did you mean {cmd:cook}? or {cmd:brew}?}")), SYS);
+cmd("python python3 node ruby perl", "other languages", (a, ctx) => print(/python/.test(ctx.raw) ? "python: not installed. {dim:HEARTH has 640K and the listen program uses most of it.}" : "not installed."), SYS);
+cmd("npm pip3 apt brew-install", "install things", () => print("no network. {dim:the only cable on this machine goes off the end of the dock.}"), SYS);
+cmd("ssh telnet", "connect to elsewhere", (a) => print((a[0] || "").includes("observatory") || (a[0] || "").includes("juniper") ? "Connecting to observatory... {dim:Connection refused. a note: 'if you want to talk, write. or row. — J.V.'}" : "ssh: no network. {dim:if you want to reach someone, {cmd:send} them something.}"), SYS);
 cmd("coffee", "coffee", () => print("There's no coffee in the house. Wren doesn't drink it. {dim:tea's in the kitchen.}"), SYS);
 cmd("cron crontab", "scheduled things", () => {
   print("{dim:# the cottage's routine, according to Biscuit}");
@@ -380,21 +380,21 @@ cmd("env printenv export set", "environment", (a, ctx) => {
 cmd("which type", "where a command lives", (a) => print(a[0] ? (findCmd(a[0]) ? "/bin/" + esc(a[0]) : S.aliases[a[0]] ? esc(a[0]) + ": aliased to '" + esc(S.aliases[a[0]]) + "'" : esc(a[0]) + " not found") : "which what?"), SYS);
 cmd("true", "do nothing, successfully", () => true, Object.assign({ secret: true }, SYS));
 cmd("false", "do nothing, unsuccessfully", () => false, Object.assign({ secret: true }, SYS));
-cmd("xyzzy plugh", "", () => print("A hollow voice says \"fool.\"\n{dim:...it's just Biscuit. she's in the vents. she's also a fool.}"), { secret: true });
+cmd("xyzzy plugh", "", () => print("A hollow voice says \"fool.\"\n{dim:it's the wind in the stove pipe.}"), { secret: true });
 cmd("hack hacker", "", async () => {
   print("{ok:HACKING THE MAINFRAME...}");
   for (let i = 0; i <= 10; i++) { print("{ok:[" + "#".repeat(i) + " ".repeat(10 - i) + "] " + i * 10 + "%}"); await pause(120); }
-  print("{ok:ACCESS GRANTED} to: {acc:the biscuit tin}. You eat one. {dim:Pip would be so proud.}");
+  print("{ok:ACCESS GRANTED} to: {acc:the biscuit tin}. You eat one. {dim:Pip taught Wren this one. Wren never told her it doesn't do anything.}");
   warm(2);
 }, { secret: true });
-cmd("matrix", "", () => print("{ok:The rain on the window does a decent impression.}"), { secret: true });
-cmd("dance", "", () => print("You do a little dance in the " + roomName() + ". " + (catHere() ? "Biscuit leaves the room." : "Nobody sees. Or so you think. (Margaret the spider saw.)")), { secret: true });
-cmd("hug", "", () => print(catHere() ? "You hug Biscuit. She endures it for exactly two seconds, then becomes a liquid and escapes." : "You hug yourself. It's not nothing. You're doing well, you know."), { secret: true });
-cmd("sing hum whistle", "", () => print(pick(["You sing a bit. The kettle joins in, slightly flat.", "You hum. The house hums back. (it's the freezer.)", "You whistle. Somewhere outside, a blackbird answers, better."])), { secret: true });
-cmd("cry", "", () => print("That's alright. You can, here. The house has heard worse and loved everyone anyway.\n{dim:make a cup of tea, after. {cmd:brew}}"), { secret: true });
+cmd("matrix", "", () => print("{ok:wake up.}  {dim:you are already awake. it's just Wren's screensaver.}"), { secret: true });
+cmd("dance", "", () => print("You do a little dance in the " + roomName() + ". " + (catHere() ? "Biscuit leaves the room." : "Nobody sees except Margaret, the spider over the door.")), { secret: true });
+cmd("hug", "", () => print(catHere() ? "You pick Biscuit up and hug her. She puts up with it for about two seconds and then pushes off your chest with her back legs." : "You wrap your arms round yourself. It's colder in here than you thought. {cmd:stoke} the stove?"), { secret: true });
+cmd("sing hum whistle", "", () => print(pick(["You sing a bit of something you heard on 101.3. You don't know the second verse.", "You hum. Under the floor, the cellar hums too, a bit lower.", "You whistle. A blackbird in the garden starts up as well."])), { secret: true });
+cmd("cry", "", () => print("That's alright. Nobody's here but the cat.\n{dim:there's tea in the kitchen when you want it. {cmd:brew}}"), { secret: true });
 cmd("lantern", "light the dock lantern", () => doLantern(), { group: "living", when: () => S.disks.lantern });
 cmd("catsay cowsay", "Pip's program: a cat says a thing", (a, ctx) => {
-  if (!S.disks.pip) return print(/cowsay/.test(ctx.raw) ? "No cows here. Pip is working on something better, she says." : "catsay: not installed. {dim:Pip's working on it.}");
+  if (!S.disks.pip) return print(/cowsay/.test(ctx.raw) ? "No cows. Pip says she's making a cat one instead." : "catsay: not installed. {dim:Pip's working on it.}");
   const msg = (a.join(" ") || pick(["feed me", "i have not been fed", "the armchair is mine", "mrrp"])).slice(0, 40);
   print(" " + "_".repeat(msg.length + 2));
   print("< " + esc(msg) + " >");
@@ -442,7 +442,7 @@ async function pipGame() {
 const MAN_EXTRA = {
   ls: ["-a  show hidden things (Wren hides the good stuff)", "-l  the long way, with owners and sizes"],
   cd: ["cd ..  back out a level", "cd ~   home (the hall)", "cd -   wherever you were before", "you can also just say a room's name from anywhere: cd kitchen"],
-  cat: ["BUGS: if there's a real cat on the keyboard, cat will not help you."],
+  cat: ["cat <file> reads it out. cat star_notes.txt, cat note.txt."],
   brew: ["kinds: black, mint, chamomile, lavender, honey", "BUGS: the kettle. see thump(1). left side."],
   fish: ["press ENTER (or tap) the moment the float shows !", "different fish, different times. the field guide in the parlour knows.", "BUGS: the carp."],
   grep: ["-i ignore case   -v invert   -n line numbers   -r search the whole house", "example: grep -r love"],
@@ -450,17 +450,17 @@ const MAN_EXTRA = {
   send: ["send <thing> to <person>", "things: anything in your pockets, or a file you wrote", "people: ottoline, fenn, pip, juniper", "replies arrive the next morning."],
   write: ["opens a tiny editor. type lines. finish with a line that's just a dot: .", "(:wq works too. so does :q! to give up.)"],
   sleep: ["goes to bed and starts tomorrow. writes your journal on the way.", "if you stay up past 1:30am you'll fall asleep at the desk. Biscuit will sit on you."],
-  pet: ["pet biscuit — yes.  pet biscuit belly — it's a trap."],
-  kill: ["BUGS: will not kill Biscuit. has never killed Biscuit. Biscuit kills kill."],
+  pet: ["pet biscuit. not the belly. Wren did warn you."],
+  kill: ["nothing in this house runs that you'd want to stop."],
   alias: ["alias morning='brew; feed biscuit; cd garden; water'"],
   sky: ["sky north | east | south | west | up", "clear nights only. on the roof. with the disk."],
-  radio: ["101.3 Ottoline (mornings)   93.1 weather   88.8 night piano", "radio scan — turn the dial and see"]
+  radio: ["101.3 Ottoline (mornings)   93.1 weather   88.8 night piano", "radio scan to go through the dial"]
 };
 function doMan(a) {
   const n = (a[0] || "").toLowerCase();
   if (!n) return print("What manual page do you want?  {dim:e.g. {cmd:man fish}, {cmd:man grep}, {cmd:man man}}");
-  if (n === "man") return print("{hi:MAN(1)}\n\n{acc:NAME}\n    man — the manual.\n\n{acc:DESCRIPTION}\n    Explains things. Like Wren, but in a fixed-width font.\n\n{acc:BUGS}\n    Will not explain Biscuit. Nothing can.");
-  if (["biscuit", "cat(8)"].includes(n)) return print("{hi:BISCUIT(8)}\n\n{acc:NAME}\n    biscuit — orange cat, PID 1\n\n{acc:SYNOPSIS}\n    biscuit [--wherever-she-likes]\n\n{acc:DESCRIPTION}\n    See {cmd:cat ~/kitchen/biscuit_manual.txt}.\n\n{acc:BUGS}\n    Several. All load-bearing.");
+  if (n === "man") return print("{hi:MAN(1)}\n\n{acc:NAME}\n    man — the manual.\n\n{acc:DESCRIPTION}\n    Shows the page for a command. Try {cmd:man fish}.\n\n{acc:SEE ALSO}\n    {cmd:help}, and the pencil notes all over the reference book in the parlour.");
+  if (["biscuit", "cat(8)"].includes(n)) return print("{hi:BISCUIT(8)}\n\n{acc:NAME}\n    biscuit — orange cat, PID 1\n\n{acc:SYNOPSIS}\n    biscuit [--wherever-she-likes]\n\n{acc:DESCRIPTION}\n    See {cmd:cat ~/kitchen/biscuit_manual.txt}.\n\n{acc:BUGS}\n    Sits on the keyboard when you're busy.");
   const c = findCmd(n);
   if (!c) return print("No manual entry for " + esc(n) + ". {dim:try {cmd:help}}");
   const aliases = Object.keys(ALIAS_OF).filter(k => ALIAS_OF[k] === c.name);

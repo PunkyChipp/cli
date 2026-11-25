@@ -139,3 +139,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Cast, bite, catch and Biscuit-at-your-elbow lines rewritten as plain sentences; "Extremely interested." and "Fine." gone, no dash in the bite prompt.
 - "fish" away from the dock just tells you where to go instead of a joke about the room name.
 - Rowing lines (fog, stars, grebes, wind) made into whole sentences.
+
+## 34 — dev toys and man pages
+- hug, cry, sing/hum/whistle, dance, xyzzy, hack, matrix, yes: the jokey AI-ish lines ("becomes a liquid", "It's not nothing", "the house has... loved everyone anyway") replaced with plain specific ones tied to the house (the stove pipe, the cellar hum, Margaret the spider over the door).
+- man man / man biscuit / MAN_EXTRA: dropped the "BUGS" gags in favour of something useful; removed the "make love" joke.
+- comet memory fixed: it was the dock in 1962, not the roof.
