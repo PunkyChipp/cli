@@ -37,7 +37,9 @@ async function morning(fellAsleep) {
   else await type(MORNINGS[S.day] || pick([
     w.rain ? "It's raining. You lie and listen to it on the roof for a bit before you get up." : w.snow ? "It's snowed, and everything outside has gone very quiet." : "The sun's coming through the gap in the curtains.",
     "Biscuit is downstairs telling the whole house that she hasn't had breakfast.",
-    "Somebody across the lake has lit a fire already. You can smell it from the bed."
+    "Somebody across the lake has lit a fire already. You can smell it from the bed.",
+    "You hear the post van grinding up the lane, and then the gate.",
+    "The pipes knock twice when you turn the tap on. They did that yesterday as well."
   ]), 70);
   const o = S.flags.overnight || [];
   const grew = o.filter(x => x !== "dry");
@@ -164,14 +166,14 @@ function afterCommand() {
 
 /* ---------- Lantern Night ---------- */
 function lanternStatus() {
-  if (S.flags.lanternLit) return "Lit. A steady blue-gold flame." + (S.flags.answered ? "" : " The cable beside it is warm.");
+  if (S.flags.lanternLit) return "It's lit, with a small blue-gold flame that doesn't flicker." + (S.flags.answered ? "" : " The cable beside it is warm to touch.");
   const need = [];
   if (!S.disks.lantern) need.push("the lantern disk installed in HEARTH");
   if (!has("wick")) need.push("a wick");
-  if (!has("moonflower")) need.push("a moonflower (for the oil)");
+  if (!has("moonflower")) need.push("a moonflower for the oil");
   if (!has("matches")) need.push("matches");
-  return "An iron lantern on a pole. The glass has been cleaned recently.\n" +
-    (need.length ? "{dim:It needs: " + need.join(", ") + ".}" : "{ok:It has everything it needs.} " + (S.day >= SEASON_END ? "{dim:After dark: {cmd:lantern}.}" : "{dim:The 25th.}"));
+  return "An iron lantern on a pole. Somebody has cleaned the glass not long ago, and the oil cup is empty.\n" +
+    (need.length ? "{dim:It needs: " + need.join(", ") + ".}" : "{ok:It has everything it needs.} " + (S.day >= SEASON_END ? "{dim:After dark: {cmd:lantern}.}" : "{dim:It's for the 25th.}"));
 }
 
 async function doLantern() {
@@ -191,7 +193,7 @@ async function doLantern() {
     return;
   }
   if (missing.length) return print("You'll need: " + missing.join(", ") + ".\n{dim:they'll wait. Ottoline said.}");
-  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. After dark. {dim:from 6pm.}");
+  if (S.min < 18 * 60 && S.min >= 6 * 60) return print("It's still light. They won't start till it's dark, after six.");
   await lanternFinale();
 }
 

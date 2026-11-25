@@ -144,3 +144,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 - hug, cry, sing/hum/whistle, dance, xyzzy, hack, matrix, yes: the jokey AI-ish lines ("becomes a liquid", "It's not nothing", "the house has... loved everyone anyway") replaced with plain specific ones tied to the house (the stove pipe, the cellar hum, Margaret the spider over the door).
 - man man / man biscuit / MAN_EXTRA: dropped the "BUGS" gags in favour of something useful; removed the "make love" joke.
 - comet memory fixed: it was the dock in 1962, not the roof.
+
+## 35 — lantern status, mornings, sleep
+- Lantern description and status are full sentences now (the oil cup is empty until you fill it; "It's lit, with a small blue-gold flame that doesn't flicker").
+- "It's still light. After dark. from 6pm." and "bed from 7pm. or nap." rewritten as one plain sentence each.
+- Two more ordinary morning lines (the post van and the gate; the pipes knocking).

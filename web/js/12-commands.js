@@ -699,7 +699,7 @@ async function doNap() {
 }
 
 async function doSleep() {
-  if (S.min < 19 * 60 && S.min >= 5 * 60) return print("It's only " + clock(S.min) + ". {dim:bed from 7pm. or {cmd:nap}.}");
+  if (S.min < 19 * 60 && S.min >= 5 * 60) return print("It's only " + clock(S.min) + ". You can go to bed any time after seven, or have a {cmd:nap} now.");
   print("You check the back door's locked, turn off the lamp, and go up to bed.");
   await pause(700);
   if (S.today.length) {
