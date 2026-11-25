@@ -134,3 +134,8 @@ What each unattended improvement pass changed. Newest at the bottom.
 - Chopping wood: whole sentences instead of "Two logs. A robin watches." fragments; the fire, candle and purr lines lose their simile and list-of-three.
 - Wrong-target replies (feed, thump, cook) now tell you what does work instead of making a joke ("Or not here. Or not real." gone).
 - The "learned a recipe" line no longer uses a dash aside.
+
+## 33 — fishing and rowing
+- Cast, bite, catch and Biscuit-at-your-elbow lines rewritten as plain sentences; "Extremely interested." and "Fine." gone, no dash in the bite prompt.
+- "fish" away from the dock just tells you where to go instead of a joke about the room name.
+- Rowing lines (fog, stars, grebes, wind) made into whole sentences.
