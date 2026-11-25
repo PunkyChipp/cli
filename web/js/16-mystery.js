@@ -59,7 +59,7 @@ function clue(id) {
   S.clues[id] = S.day;
   toast("pinned to the board: <b>" + CLUES[id].title + "</b>");
   sfx("page");
-  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:you pin it to the corkboard in the study. {cmd:board} to see it.}"); showLine(true); } }, 50); }
+  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:You pin it to the corkboard in the study. {cmd:board}}"); showLine(true); } }, 50); }
 }
 
 function doBoard() {

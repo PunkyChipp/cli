@@ -117,3 +117,7 @@ What each unattended improvement pass changed. Newest at the bottom.
 ## 28 — the brackets
 - There were 215 places where the game wrapped a line in "(dim brackets)", like stage directions. Took the brackets off all the whole-line asides (they keep their quieter colour), which removes a lot of the "narrator commenting on itself" feel in one go. Real in-sentence parentheses are untouched.
 - Fixed the few hints that now ran on after a full stop to be proper sentences ("You find it in the bread bin.", "Disks go in HEARTH's drive in the study."), and the hall now shows its doors when you walk into it instead of a file listing.
+
+## 29 — the first letters
+- Rewrote Pip's first letter so it reads like an eleven-year-old actually wrote it (lowercase, run-ons, "the green door", "11 and a half", "it can't of been"), and gave Fenn's and Wren's first two postcards a specific, slightly odd detail each (the man snoring "in two notes", the hat fished out of Lerwick harbour with a net).
+- Capitalised the "You pin it to the corkboard" notice now it has no brackets.

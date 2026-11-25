@@ -1821,36 +1821,42 @@ Ottoline
 {dim:p.s. Biscuit came to the shop on Monday and told me she hadn't been fed since Christmas.}
 {dim:p.p.s. if you hear the cellar, don't worry. it's always done that.}`, onOpen: () => { S.quests.otto_radio = S.quests.otto_radio || "open"; } },
 
-  wren_pc1: { from: "wren", day: 2, file: "1_the_night_train.postcard", subject: "a postcard: a train on a viaduct", text: () => `{dim:[a steam train on a viaduct, hand-tinted]}
+  wren_pc1: { from: "wren", day: 2, file: "1_the_night_train.postcard", subject: "a postcard: a train on a viaduct", text: () => `{dim:[a steam train crossing a viaduct, hand-coloured, a bit faded]}
 
-on the sleeper north. narrow bunk. a man across
-the way snores in a perfect third.
-did you find my note? left side of the kettle.
+on the sleeper to Aberdeen. the bunk is about a foot too
+short. the man in the next compartment snores in two
+notes, one going in and one coming out.
+did you find the note on the screen? LEFT side of the kettle.
 
 {acc:W.}`, onOpen: () => remember("a postcard from Wren, on a sleeper train.") },
 
   fenn_lavender: { from: "fenn", day: 2, subject: "Lavender.", text: () => `${NAME()}.
 
-Fenn. Bees. The house up the hill.
-Wren promised my bees lavender in 1998. Seeds are in her
-shed. Three sprigs would do.
+Abernathy Fenn. Bees. White house at the top of the lane.
+
+Wren said she'd grow my bees some lavender. That was 1998.
+She keeps the seed in her shed. Three sprigs would do them.
 
 {dim:A. Fenn.}`, onOpen: () => { S.quests.fenn_lav = S.quests.fenn_lav || "open"; } },
 
-  pip_hello: { from: "pip", day: 3, subject: "HELLO (from Pip)", text: () => `HELLO. I'm Pip. I'm 11. I live behind the post office.
+  pip_hello: { from: "pip", day: 3, subject: "HELLO (from Pip)", text: () => `hello its Pip. I live behind the post office (the green door). I am 11 and a half.
 
-Wren let me use HEARTH on Saturdays. I know ls and cd and cat.
-I ALSO know there's a program in the cellar she wouldn't let
-me run. She said "when you're older." I'm older now (by a month).
+Wren used to let me come round on Saturdays and use HEARTH. I can
+do ls and cd and cat and I can make the kettle beep from the study,
+which Ottoline thinks is a ghost. please don't tell her.
 
-Can you teach me a new command? Write it in a file and post it:
+there is a program in the cellar Wren never let me run. she said
+"when you're older." I am older now. a bit.
 
-   {cmd:write lesson.txt}     {dim:type, then a line with just a dot}
+can you teach me a new command? you write it in a file and post it.
+like this:
+
+   {cmd:write lesson.txt}     {dim:type it, then a line with just a dot on}
    {cmd:send lesson.txt to pip}
 
-PIP
+from PIP
 
-{dim:p.s. I saw a light IN the lake on tuesday. under the water. Mum says it was the moon. it was not the moon.}`, onOpen: () => { S.quests.pip_lesson = S.quests.pip_lesson || "open"; clue("lights"); } },
+{dim:p.s. on tuesday I saw a light IN the lake. like under the water. Mum says it was the moon reflecting but the moon was behind the hill so it can't of been.}`, onOpen: () => { S.quests.pip_lesson = S.quests.pip_lesson || "open"; clue("lights"); } },
 
   juniper_soup: { from: "juniper", day: 4, subject: "from across the water", text: () => `${NAME()},
 
@@ -1867,11 +1873,12 @@ since 1988.
 
 {dim:p.s. I can see your study light from the eyepiece. Nobody's had it on this late since she left.}`, onOpen: () => { S.quests.jun_soup = S.quests.jun_soup || "open"; } },
 
-  wren_pc2: { from: "wren", day: 5, file: "2_shetland.postcard", subject: "a postcard: ponies", text: () => `{dim:[three Shetland ponies, sideways in the wind]}
+  wren_pc2: { from: "wren", day: 5, file: "2_shetland.postcard", subject: "a postcard: ponies", text: () => `{dim:[three Shetland ponies standing sideways to the wind]}
 
-Lerwick. the wind took my hat. a pony ate
-a page of my book.
-how's the noise? louder? it'll get louder.
+Lerwick. it blew my hat into the harbour and a man in a boat
+fished it out for me with a net. one of the ponies on this card
+ate a page out of my book while I was looking at the view.
+is the noise louder yet? it will be.
 
 {acc:W.}`, onOpen: () => { remember("a postcard from Shetland. she asked if the noise was louder."); clue("hum"); } },
 
@@ -4971,7 +4978,7 @@ function clue(id) {
   S.clues[id] = S.day;
   toast("pinned to the board: <b>" + CLUES[id].title + "</b>");
   sfx("page");
-  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:you pin it to the corkboard in the study. {cmd:board} to see it.}"); showLine(true); } }, 50); }
+  if (!S.flags.boardHinted) { S.flags.boardHinted = true; setTimeout(() => { if (!T.busy) { print("{dim:You pin it to the corkboard in the study. {cmd:board}}"); showLine(true); } }, 50); }
 }
 
 function doBoard() {
