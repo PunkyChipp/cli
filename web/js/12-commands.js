@@ -733,7 +733,7 @@ function doMail(a) {
   openLetter(S.mailbox[0]);
   if (S.mailbox.length) {
     print("");
-    print("{dim:(" + plural(S.mailbox.length, "more letter") + " waiting:} " + S.mailbox.map(id => { const L = letterMeta(id); return PEOPLE[L.from] ? PEOPLE[L.from].short : "Wren"; }).join(", ") + "{dim:) —} {cmd:mail}");
+    print("{dim:(" + plural(S.mailbox.length, "more letter") + " waiting:} " + S.mailbox.map(id => { const L = letterMeta(id); return PEOPLE[L.from] ? PEOPLE[L.from].short : "Wren"; }).join(", ") + "{dim:)} {cmd:mail}");
   }
 }
 
